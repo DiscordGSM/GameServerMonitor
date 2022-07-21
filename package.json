@@ -3,7 +3,7 @@
     "version": "2.0.0",
     "description": "Monitor your game servers on Discord",
     "engines": {
-        "node": "14.x"
+        "node": "16.x"
     },
     "scripts": {
         "build": "npm install -g gamedig & pip install git+https://github.com/Rapptz/discord.py",

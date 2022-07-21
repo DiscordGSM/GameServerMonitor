@@ -1,0 +1,21 @@
+{
+    "name": "Discord Game Server Monitor",
+    "description": "Monitor your game servers on Discord",
+    "repository": "https://github.com/DiscordGSM/GameServerMonitor",
+    "logo": "https://github.com/DiscordGSM/DiscordGSM/raw/master/images/discordgsm-heroku.png",
+    "keywords": ["discordgsm", "query", "gameserver", "gameservers", "monitor", "dgsm", "game-servers", "discord", "gaming", "game"],
+    "env": {
+        "APP_TOKEN": {
+            "description": "Discord Bot Token (https://discordapp.com/developers/applications/)",
+            "value": ""
+        }
+    },
+    "buildpacks": [
+        {
+            "url": "heroku/python"
+        },
+        {
+            "url": "heroku/nodejs"
+        }
+    ]
+}

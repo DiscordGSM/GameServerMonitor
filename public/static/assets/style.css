@@ -1,0 +1,77 @@
+html, body {
+  font-family: Montserrat, Tajawal, sans-serif;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  background-color: #161e2d;
+  height: 100%;
+  -webkit-font-smoothing: antialiased; }
+
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; }
+
+.message {
+  text-align: center;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0px 20px;
+  max-width: 1450px;
+  z-index: 1; }
+
+.message__title {
+  font-size: 22px;
+  font-weight: 100;
+  margin-top: 15px;
+  color: #fff;
+  margin-bottom: 8px; }
+
+p {
+  -webkit-margin-after: 0px;
+  -webkit-margin-before: 0px;
+  font-size: 15px;
+  color: #e8e8e8;
+  line-height: 21px;
+  margin-bottom: 4px; }
+
+p a {
+  color: #aeb1f2;
+  text-decoration: none; }
+
+p a:hover {
+  color: #d0d2f5; }
+
+h2 {
+  color: #fff; }
+
+.colored {
+  color: #ff00c7; }
+
+table {
+  margin-top: 5px;
+  text-align: left;
+  max-width: 450px;
+  border-left: 15px solid #6567a5 !important; }
+
+table tr > td:first-child + td, th:first-child + th {
+  text-align: right; }
+
+.btn-discord {
+  color: white;
+  background-color: #5865F2; }
+
+.btn-discord:focus, .btn-discord:hover {
+  color: white;
+  background-color: #4752c5; }
+
+#particles-js {
+  position: fixed !important;
+  display: block;
+  width: 100%;
+  height: 100%; }
+

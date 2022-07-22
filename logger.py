@@ -36,7 +36,11 @@ class Logger:
     @staticmethod
     def __print_and_write_with_tz(info: str, color: str, *args, **kwargs):
         timestamp = Logger.__get_timestamp_with_zone_info()
-        print(f'\x1b[1m\x1b[90m{timestamp.strftime("%Y-%m-%d %H:%M:%S")}\x1b[0m', f'\x1b[1m\x1b[{color}m{info.ljust(8)}\x1b[0m', *args, **kwargs)
+        
+        if os.getenv('HEROKU_APP_NAME') is not None:
+            print(info.ljust(8), *args, **kwargs)
+        else:  
+            print(f'\x1b[1m\x1b[90m{timestamp.strftime("%Y-%m-%d %H:%M:%S")}\x1b[0m', f'\x1b[1m\x1b[{color}m{info.ljust(8)}\x1b[0m', *args, **kwargs)
         
         Path(Logger.path).mkdir(parents=True, exist_ok=True)
 

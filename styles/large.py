@@ -28,7 +28,7 @@ class Large(Medium, Style):
         values = ['', '', '']
         
         for i, player in enumerate(sorted(players, key=lambda player: player['name'])):
-            values[i % 3] += f"{player['name']}\n"
+            values[i % len(values)] += f"{player['name']}\n"
             
         for i, name in enumerate(field_names):
             embed.add_field(name=name, value=values[i] if values[i] else empty_value)

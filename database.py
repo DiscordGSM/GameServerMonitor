@@ -104,14 +104,16 @@ class Database:
             'unique_servers': row[3],
         }
     
-    def all_servers(self, channel_id: int = None):
+    def all_servers(self, channel_id: int = None, guild_id: int = None):
         """Get all servers"""
         cursor = self.conn.cursor()
         
         if channel_id is None:
             cursor.execute('SELECT * FROM servers ORDER BY position')
-        else:
+        elif channel_id:
             cursor.execute(self.transform('SELECT * FROM servers WHERE channel_id = ? ORDER BY position'), (channel_id,))
+        elif guild_id:
+            cursor.execute(self.transform('SELECT * FROM servers WHERE guild_id = ? ORDER BY position'), (guild_id,))    
         
         servers = [Server.from_list(row) for row in cursor.fetchall()]
         cursor.close()
@@ -184,6 +186,13 @@ class Database:
         sql = 'DELETE FROM servers WHERE id = ?'
         cursor = self.conn.cursor()
         cursor.execute(self.transform(sql), (server.id,))
+        self.conn.commit()
+        cursor.close()
+        
+    def factory_reset(self, guild_id: int):
+        sql = 'DELETE FROM servers WHERE guild_id = ?'
+        cursor = self.conn.cursor()
+        cursor.execute(self.transform(sql), (guild_id,))
         self.conn.commit()
         cursor.close()
         

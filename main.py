@@ -8,8 +8,8 @@ import requests
 from dotenv import load_dotenv
 
 import discord
-from discord import (AutoShardedClient, ButtonStyle, Client, Interaction,
-                     Message, SelectOption, app_commands)
+from discord import (ActivityType, AutoShardedClient, ButtonStyle, Client,
+                     Interaction, Message, SelectOption, app_commands)
 from discord.ext import tasks
 from discord.ui import Button, Modal, Select, TextInput, View
 from logger import Logger
@@ -37,6 +37,7 @@ async def on_ready():
     await sync_commands()
     query_servers.start()
     edit_messages.start()
+    presence_update.start()
     
     if os.getenv('WEB_ENABLE_API', '').lower() == 'true':
         cache_guilds.start()
@@ -520,6 +521,12 @@ def query_server(server: Server):
         server.status = False
         
     return server
+
+@tasks.loop(minutes=5)
+async def presence_update():
+    number_of_servers = int(database.statistics()['unique_servers'])
+    activity = discord.Activity(name=f'{number_of_servers} servers', type=ActivityType.watching)
+    await client.change_presence(status=discord.Status.online, activity=activity)
 
 @tasks.loop(minutes=30)
 async def cache_guilds():

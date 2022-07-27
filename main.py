@@ -467,7 +467,7 @@ async def edit_messages():
     # Splits to servers to chunks because Discord has a rate limit of 5 in each request.
     for servers in channels_servers.values():
         for chunks in to_chunks(servers, 5):
-            results.append(await asyncio.gather(*[edit_message(server) for server in chunks]))
+            results.extend(await asyncio.gather(*[edit_message(server) for server in chunks]))
 
     success = sum(result == True for result in results)
     failed = len(results) - success

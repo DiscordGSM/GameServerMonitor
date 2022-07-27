@@ -449,7 +449,7 @@ async def delete_message(server: Server, update_message_id: bool = False):
     if update_message_id:
         database.update_servers_message_id([server])
 
-@tasks.loop(seconds=os.getenv('RR_EDIT_MESSAGE', 60))
+@tasks.loop(seconds=float(os.getenv('TASK_EDIT_MESSAGE', 60)))
 async def edit_messages():
     """Edit messages (Scheduled)"""
     servers = database.all_servers()
@@ -488,7 +488,7 @@ async def edit_message(server: Server):
         Logger.debug(f'Edit messages: {server.message_id} ({server.game_id})[{server.address}:{server.query_port}] edit_messages discord.HTTPException {e}')
         return False
 
-@tasks.loop(seconds=os.getenv('RR_QUERY_SERVER', 60))
+@tasks.loop(seconds=float(os.getenv('TASK_QUERY_SERVER', 60)))
 async def query_servers():
     """Query servers (Scheduled)"""
     distinct_servers = database.distinct_servers()

@@ -378,6 +378,7 @@ async def fetch_message(server: Server):
         # The specified message was not found.
         Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] fetch_message discord.NotFound {e}')
         server.message_id = None
+        database.update_servers_message_id([server])
     except discord.Forbidden as e:
         # You do not have the permissions required to get a message.
         Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] fetch_message discord.Forbidden {e}')

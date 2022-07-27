@@ -455,9 +455,20 @@ async def edit_messages():
     servers = database.all_servers()
     Logger.debug(f'Edit messages: Tasks = {len(servers)} messages')
     
-    channels_servers = database.all_channels_servers(servers)
-    results = await asyncio.gather(*[edit_message(server) for servers in channels_servers.values() for server in servers])
+    # Credits: https://stackoverflow.com/questions/312443/how-do-i-split-a-list-into-equally-sized-chunks
+    def to_chunks(lst, n):
+        """Yield successive n-sized chunks from lst."""
+        for i in range(0, len(lst), n):
+            yield lst[i:i + n]
     
+    channels_servers = database.all_channels_servers(servers)
+    results = []
+    
+    # Splits to servers to chunks because Discord has a rate limit of 5 in each request.
+    for servers in channels_servers.values():
+        for chunks in to_chunks(servers, 5):
+            results.append(await asyncio.gather(*[edit_message(server) for server in chunks]))
+
     success = sum(result == True for result in results)
     failed = len(results) - success
     Logger.info(f'Edit messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')

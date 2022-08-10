@@ -2,12 +2,16 @@
 📺 Monitor your game servers on Discord and tracks the live data of your game servers.
 
 ## Available Commands
-5 commands are available.
+9 commands are available.
 | Command | Description |
 | - | - |
 | **/addserver** `game_id` | Add server in current channel |
+| **/changestyle** `address` `query_port` | Change server message style |
 | **/delserver** `address` `query_port` | Delete server in current channel |
+| **/editstyledata** `address` `query_port` | Edit server message style data |
 | **/factoryreset**  | Delete all servers in current guild |
+| **/movedown** `address` `query_port` | Move the server message downward |
+| **/moveup** `address` `query_port` | Move the server message upward |
 | **/queryserver** `game_id` | Query server |
 | **/refresh**  | Refresh servers' messages in current channel |
 

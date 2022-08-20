@@ -166,7 +166,7 @@ async def command_query(interaction: Interaction, game_id: str):
     """Query server"""
     Logger.command(interaction, game_id)
     
-    if game := find_game(interaction, game_id):
+    if game := await find_game(interaction, game_id):
         await interaction.response.send_modal(modal(game['id'], False))
 
 @tree.command(name='addserver', description='Add server in current channel', guilds=guilds)
@@ -175,7 +175,7 @@ async def command_addserver(interaction: Interaction, game_id: str):
     """Add server in current channel"""
     Logger.command(interaction, game_id)
 
-    if game := find_game(interaction, game_id):
+    if game := await find_game(interaction, game_id):
         if public:
             limit = int(os.getenv('APP_PUBLIC_SERVER_LIMIT', 10))
             

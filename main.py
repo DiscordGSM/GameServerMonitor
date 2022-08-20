@@ -174,6 +174,10 @@ async def command_query(interaction: Interaction, game_id: str):
 async def command_addserver(interaction: Interaction, game_id: str):
     """Add server in current channel"""
     Logger.command(interaction, game_id)
+    
+    if not type(interaction.channel) == discord.TextChannel:
+        await interaction.response.send_message(f'Command only supports text channel.', ephemeral=True)
+        return
 
     if game := await find_game(interaction, game_id):
         if public:

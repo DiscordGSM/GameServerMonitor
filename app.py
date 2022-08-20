@@ -17,11 +17,11 @@ def index():
     return render_template('index.html', invite_link=invite_link)
 
 if os.getenv('WEB_ENABLE_API', '').lower() == 'true':
-    @app.route('/games')
+    @app.route('/api/v1/games')
     def games():
         return jsonify(gamedig.games)
     
-    @app.route('/info')
+    @app.route('/api/v1/info')
     def info():
         return jsonify({
             'version': __version__, 
@@ -29,19 +29,19 @@ if os.getenv('WEB_ENABLE_API', '').lower() == 'true':
             'statistics': Database().statistics(),
         })
     
-    @app.route('/guilds')
+    @app.route('/api/v1/guilds')
     def guilds():
         with open('public/static/guilds.json', 'r', encoding='utf-8') as f:
             data = json.loads(f.read())
             
         return jsonify(data)
 
-    @app.route('/servers')
+    @app.route('/api/v1/servers')
     def servers():
         return jsonify(Database().all_servers())
 
-    @app.route('/channels')
-    @app.route('/channels/<channel>')
+    @app.route('/api/v1/channels')
+    @app.route('/api/v1/channels/<channel>')
     def channels(channel: str = None):
         if channel is None:
             return jsonify(Database().all_channels_servers())

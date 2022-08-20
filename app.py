@@ -31,7 +31,7 @@ if os.getenv('WEB_ENABLE_API', '').lower() == 'true':
     
     @app.route('/guilds')
     def guilds():
-        with open('guilds.json', 'r', encoding='utf-8') as f:
+        with open('public/static/guilds.json', 'r', encoding='utf-8') as f:
             data = json.loads(f.read())
             
         return jsonify(data)

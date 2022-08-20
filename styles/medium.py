@@ -4,7 +4,7 @@ from typing import Optional, Union
 
 import requests
 from discord import Color, Embed, Emoji, PartialEmoji, TextStyle
-from discord.ui import TextInput, View
+from discord.ui import TextInput
 from server import Server
 from service import gamedig
 from version import __version__
@@ -33,7 +33,6 @@ class Medium(Style):
     @property
     def default_edit_fields(self) -> dict[str, TextInput]:
         return {
-            'content': TextInput(label='Content', default=self.server.style_data.get('content', ''), required=False, style=TextStyle.long),
             'description': TextInput(label='Description', default=self.server.style_data.get('description', ''), required=False, style=TextStyle.long),
             'country': TextInput(label='Country', default=self.server.style_data.get('country', '')),
             'fullname': TextInput(label='Full Name', default=self.server.style_data.get('fullname', '')),
@@ -58,10 +57,6 @@ class Medium(Style):
             pass
         
         return style_data
-    
-    def content(self) -> str:
-        content = self.server.style_data.get('content')
-        return None if not content else content
     
     def embed(self) -> Embed:
         emoji = self.server.status and ':green_circle:' or ':red_circle:'
@@ -125,7 +120,3 @@ class Medium(Style):
         embed.set_footer(text=f'DiscordGSM {__version__} | {advertisement} | Last update: {last_update}', icon_url=icon_url)
         
         return embed
-
-    def view(self) -> View:
-        view = View()
-        return view

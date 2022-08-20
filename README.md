@@ -301,13 +301,6 @@ venv\Scripts\activate.bat
 deactivate
 ```
 
-Download discord.py 2.0 manually
-```
-git clone https://github.com/Rapptz/discord.py
-cd discord.py
-py -m pip install -U .[voice]
-```
-
 Run Flask locally
 ```
 py -m pip install Flask

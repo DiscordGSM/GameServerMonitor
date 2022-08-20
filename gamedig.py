@@ -9,7 +9,7 @@ from server import Server
 
 
 class Gamedig:
-    def __init__(self, file: str = 'games.txt'):
+    def __init__(self, file: str = 'data/games.txt'):
         self.games: dict[str, GamedigGame] = {}
         
         def row_to_dict(row: str):

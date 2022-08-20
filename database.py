@@ -31,7 +31,7 @@ class Database:
             self.conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         else:
             self.type = 'sqlite'
-            self.conn = sqlite3.connect(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'servers.db'))
+            self.conn = sqlite3.connect(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'servers.db'))
             
     def create_table_if_not_exists(self):
         cursor = self.conn.cursor()
@@ -96,7 +96,8 @@ class Database:
         cursor.execute(self.transform(sql))
         row = cursor.fetchone()
         cursor.close()
-    
+        row = [0, 0, 0, 0] if row is None else row
+        
         return {
             'messages': row[0],
             'channels': row[1],
@@ -104,7 +105,7 @@ class Database:
             'unique_servers': row[3],
         }
     
-    def all_servers(self, channel_id: int = None, guild_id: int = None):
+    def all_servers(self, channel_id: int = None, guild_id: int = None, message_id: int = None):
         """Get all servers"""
         cursor = self.conn.cursor()
         
@@ -113,7 +114,9 @@ class Database:
         elif channel_id:
             cursor.execute(self.transform('SELECT * FROM servers WHERE channel_id = ? ORDER BY position'), (channel_id,))
         elif guild_id:
-            cursor.execute(self.transform('SELECT * FROM servers WHERE guild_id = ? ORDER BY position'), (guild_id,))    
+            cursor.execute(self.transform('SELECT * FROM servers WHERE guild_id = ? ORDER BY position'), (guild_id,))
+        elif message_id:
+            cursor.execute(self.transform('SELECT * FROM servers WHERE message_id = ? ORDER BY position'), (message_id,))
         
         servers = [Server.from_list(row) for row in cursor.fetchall()]
         cursor.close()
@@ -133,6 +136,20 @@ class Database:
             
         return channels_servers
     
+    def all_messages_servers(self, servers: list[Server] = None):
+        """Convert or get servers to dict grouped by message id"""
+        all_servers = servers if servers is not None else self.all_servers()
+        messages_servers: dict[int, list[Server]] = {}
+    
+        for server in all_servers:
+            if server.message_id:
+                if server.message_id in messages_servers:
+                    messages_servers[server.message_id].append(server)
+                else:
+                    messages_servers[server.message_id] = [server]
+            
+        return messages_servers
+    
     def distinct_servers(self):
         """Get distinct servers (Query server purpose) (Only fetch game_id, address, query_port, query_extra)"""
         cursor = self.conn.cursor()
@@ -143,6 +160,13 @@ class Database:
         return servers
         
     def add_server(self, s: Server):
+        # Get current servers order by orders in channel
+        servers = self.all_servers(channel_id=s.channel_id)
+        
+        
+        # Get message id
+        
+        
         sql = '''
         INSERT INTO servers (position, guild_id, channel_id, game_id, address, query_port, query_extra, status, result, style_id, style_data)
         VALUES ((SELECT IFNULL(MAX(position + 1), 0) FROM servers WHERE channel_id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
@@ -214,23 +238,41 @@ class Database:
         
         return Server.from_list(row)
     
-    def modify_server_position(self, channel_id: int, message_id: int, direction: bool):
-        servers = self.all_servers(channel_id)
+    def modify_server_position(self, server: Server, direction: bool):
+        servers = self.all_servers(channel_id=server.channel_id)
         
-        for i, server in enumerate(servers):
-            if server.message_id == message_id:
+        for i, s in enumerate(servers):
+            if s.id == server.id:
                 if direction: # Move Up
                     if i == 0:
                         break
                     
-                    return self.swap_servers_positon(server, servers[i - 1])
+                    return self.swap_servers_positon(s, servers[i - 1])
                 else: # Move Down
                     if i == len(servers) - 1:
                         break
                     
-                    return self.swap_servers_positon(server, servers[i + 1])
+                    return self.swap_servers_positon(s, servers[i + 1])
                 
         return []
+    
+    # def modify_server_position(self, channel_id: int, message_id: int, direction: bool):
+    #     servers = self.all_servers(channel_id)
+        
+    #     for i, server in enumerate(servers):
+    #         if server.message_id == message_id:
+    #             if direction: # Move Up
+    #                 if i == 0:
+    #                     break
+                    
+    #                 return self.swap_servers_positon(server, servers[i - 1])
+    #             else: # Move Down
+    #                 if i == len(servers) - 1:
+    #                     break
+                    
+    #                 return self.swap_servers_positon(server, servers[i + 1])
+                
+    #     return []
             
     def swap_servers_positon(self, server1: Server, server2: Server):
         if self.type == 'pgsql':

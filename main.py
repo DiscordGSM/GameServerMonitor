@@ -4,29 +4,34 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 
-import requests
-from dotenv import load_dotenv
-
 import discord
+import requests
 from discord import (ActivityType, AutoShardedClient, ButtonStyle, Client,
                      Interaction, Message, SelectOption, app_commands)
 from discord.ext import tasks
 from discord.ui import Button, Modal, Select, TextInput, View
+from dotenv import load_dotenv
+
 from logger import Logger
 from server import Server
 from service import database, gamedig, guilds, invite_link, public
-from styles import Style
+from styles.style import Style
 
 load_dotenv()
 
-messages: dict[int, Message] = {}
+# DiscordGSM styles
 styles = {style.__name__: style for style in Style.__subclasses__()}
 
+# Discord messages cache
+messages: dict[int, Message] = {}
+
+# Client setup
 intents = discord.Intents.default()
 shard_ids = [int(shard_id) for shard_id in os.getenv('APP_SHARD_IDS').replace(';', ',').split(',') if shard_id] if len(os.getenv('APP_SHARD_IDS', '')) > 0 else None
 shard_count = int(os.getenv('APP_SHARD_COUNT', 1))
 client = Client(intents=intents) if not public else AutoShardedClient(intents=intents, shard_ids=shard_ids, shard_count=shard_count)
 
+#region Application event
 @client.event
 async def on_ready():
     await client.wait_until_ready()
@@ -71,10 +76,32 @@ async def tree_sync(guild=None):
         Logger.error(f'The client does not have the applications.commands scope in the guild. {e} {guild.id if guild else ""}')
     except discord.HTTPException as e:
         Logger.error(f'Syncing the commands failed. {e} {guild.id if guild else ""}')
+#endregion
 
+#region Application checks
+def is_owner(interaction: Interaction) -> bool:
+    return interaction.user.id == interaction.guild.owner.id
+
+def is_administrator(interaction: Interaction) -> bool:
+    return interaction.user.guild_permissions.administrator
+
+def custom_command_query_check(interaction: Interaction) -> bool:
+    if os.getenv('COMMAND_QUERY_PUBLIC', '').lower() == 'true':
+        return True
+    
+    return is_administrator(interaction)
+
+def cooldown_for_everyone_except_administrator(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
+    if is_administrator(interaction):
+        return None
+    
+    return app_commands.Cooldown(1, float(os.getenv('COMMAND_QUERY_COOLDOWN', 5)))
+#endregion
+
+#region Application commands
 tree = app_commands.CommandTree(client)
 
-def modal(game_id: str, save: bool):
+def modal(game_id: str, is_add_server: bool):
     """Query server modal"""
     game = gamedig.find(game_id)
     default_port = gamedig.default_port(game_id)
@@ -96,7 +123,7 @@ def modal(game_id: str, save: bool):
     #     modal.add_item(query_extra['token'])
     
     async def modal_on_submit(interaction: Interaction):
-        if save:
+        if is_add_server:
             try:
                 database.find_server(interaction.channel.id, str(query_param['host']), str(query_param['port']))
                 await interaction.response.send_message('The server already exists in the channel', ephemeral=True)
@@ -109,127 +136,89 @@ def modal(game_id: str, save: bool):
         except Exception as e:
             await interaction.response.send_message(content=f"Fail to query the server `{query_param['host']}:{query_param['port']}`. Please try again.", ephemeral=True)
             return
-        
+
         server = Server.new(interaction.guild_id, interaction.channel_id, game_id, str(query_param['host']), str(query_param['port']), query_extra, result)
         style = styles['Medium'](server)
         server.style_id = style.id
         server.style_data = style.default_style_data()
         
-        if save:
+        if is_add_server:
             try:
                 server = database.add_server(server)
             except Exception as e:
                 await interaction.response.send_message(f"Fail to add the server `{query_param['host']}:{query_param['port']}`. Please try again.")
                 Logger.error(f"Fail to add the server {query_param['host']}:{query_param['port']} {e}")
                 return
-        
+            
             await interaction.response.defer()
-            await send_message(server, True)
+            await refresh_channel_messages(interaction.channel.id, resend=True)
         else:
-            style = styles.get(server.style_id, styles['Medium'])(server)
-            await interaction.response.send_message(content=style.content(), embed=style.embed(), view=style.view())
+            await interaction.response.send_message(embed=style.embed(), ephemeral=True)
         
     modal.on_submit = modal_on_submit
     
     return modal
-
-def is_owner(interaction: Interaction) -> bool:
-    return interaction.user.id == interaction.guild.owner.id
-
-def is_administrator(interaction: Interaction) -> bool:
-    return interaction.user.guild_permissions.administrator
-
-def custom_command_query_check(interaction: Interaction) -> bool:
-    if os.getenv('COMMAND_QUERY_PUBLIC', '').lower() == 'true':
-        return True
-    
-    return is_administrator(interaction)
-
-def cooldown_for_everyone_except_administrator(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
-    if is_administrator(interaction):
-        return None
-    
-    return app_commands.Cooldown(1, float(os.getenv('COMMAND_QUERY_COOLDOWN', 5)))
 
 @tree.command(name='queryserver', description='Query server', guilds=guilds)
 @app_commands.check(custom_command_query_check)
 @app_commands.checks.dynamic_cooldown(cooldown_for_everyone_except_administrator)
 async def command_query(interaction: Interaction, game_id: str):
     """Query server"""
-    Logger.info(f'{interaction.guild.name}({interaction.guild.id}) #{interaction.channel.name}({interaction.channel.id}) {interaction.user.name}({interaction.user.id}): /{interaction.command.name}') 
-
-    # Check game_id exists
-    try:
-        game = gamedig.find(game_id)
-    except LookupError:
-        await interaction.response.send_message(f'{game_id} is not a valid game id', ephemeral=True)
-        return
+    Logger.command(interaction, game_id)
     
-    await interaction.response.send_modal(modal(game['id'], False))
+    if game := find_game(interaction, game_id):
+        await interaction.response.send_modal(modal(game['id'], False))
 
 @tree.command(name='addserver', description='Add server in current channel', guilds=guilds)
 @app_commands.check(is_administrator)
 async def command_addserver(interaction: Interaction, game_id: str):
     """Add server in current channel"""
-    Logger.info(f'{interaction.guild.name}({interaction.guild.id}) #{interaction.channel.name}({interaction.channel.id}) {interaction.user.name}({interaction.user.id}): /{interaction.command.name}') 
-    
-    # Check game_id exists
-    try:
-        game = gamedig.find(game_id)
-    except LookupError:
-        await interaction.response.send_message(f'{game_id} is not a valid game id', ephemeral=True)
-        return
-    
-    if public:
-        limit = int(os.getenv('APP_PUBLIC_SERVER_LIMIT', 10))
+    Logger.command(interaction, game_id)
+
+    if game := find_game(interaction, game_id):
+        if public:
+            limit = int(os.getenv('APP_PUBLIC_SERVER_LIMIT', 10))
+            
+            if len(database.all_servers(guild_id=interaction.guild.id)) > limit:
+                await interaction.response.send_message(f'The server quota has been exceeded. Limit: {limit}', ephemeral=True)
+                return
         
-        if len(database.all_servers(guild_id=interaction.guild.id)) > limit:
-            await interaction.response.send_message(f'The server quota has been exceeded. Limit: {limit}', ephemeral=True)
-            return
-    
-    await interaction.response.send_modal(modal(game['id'], True))
+        await interaction.response.send_modal(modal(game['id'], True))
 
 @tree.command(name='delserver', description='Delete server in current channel', guilds=guilds)
 @app_commands.check(is_administrator)
 async def command_delserver(interaction: Interaction, address: str, query_port: int):
     """Delete server in current channel"""
-    Logger.info(f'{interaction.guild.name}({interaction.guild.id}) #{interaction.channel.name}({interaction.channel.id}) {interaction.user.name}({interaction.user.id}): /{interaction.command.name}') 
+    Logger.command(interaction, address, query_port)
     
-    await interaction.response.defer(thinking=True)
-    
-    try:
-        server = database.find_server(interaction.channel.id, address, query_port)
-    except database.ServerNotFoundError:
-        await interaction.response.send_message('The server does not exist in the channel', ephemeral=True)
-        return
-
-    database.delete_server(server)
-    await delete_message(server)
-    await interaction.delete_original_message()
+    if server := await find_server(interaction, address, query_port):
+        await interaction.response.defer(thinking=True)
+        database.delete_server(server)
+        await refresh_channel_messages(interaction.channel.id, resend=True)
+        await interaction.delete_original_message()
 
 @tree.command(name='refresh', description='Refresh servers\' messages in current channel', guilds=guilds)
 @app_commands.check(is_administrator)
 async def command_refresh(interaction: Interaction):
     """Refresh servers\' messages in current channel"""
-    Logger.info(f'{interaction.guild.name}({interaction.guild.id}) #{interaction.channel.name}({interaction.channel.id}) {interaction.user.name}({interaction.user.id}): /{interaction.command.name}') 
+    Logger.command(interaction)
+    
     await interaction.response.defer(thinking=True)
-    servers = database.all_servers(channel_id=interaction.channel.id)
-    await delete_messages(servers)
-    await send_messages(servers)
+    await refresh_channel_messages(interaction.channel.id, resend=True)
     await interaction.delete_original_message()
     
 @tree.command(name='factoryreset', description='Delete all servers in current guild', guilds=guilds)
 @app_commands.check(is_administrator)
 async def command_factoryreset(interaction: Interaction):
     """Delete all servers in current guild"""
-    Logger.info(f'{interaction.guild.name}({interaction.guild.id}) #{interaction.channel.name}({interaction.channel.id}) {interaction.user.name}({interaction.user.id}): /{interaction.command.name}') 
+    Logger.command(interaction)
     
     button = Button(style=ButtonStyle.red, label='Delete all servers')
     
     async def button_callback(interaction: Interaction):
         servers = database.all_servers(guild_id=interaction.guild.id)
         database.factory_reset(interaction.guild.id)
-        await delete_messages(servers)
+        await asyncio.gather(*[delete_message(server) for server in servers])
     
     button.callback = button_callback
     
@@ -238,118 +227,94 @@ async def command_factoryreset(interaction: Interaction):
     
     await interaction.response.send_message(content='Are you sure you want to delete all servers in current guild? This cannot be undone.', view=view, ephemeral=True)
     
-@tree.context_menu(name='Move Upward', guilds=guilds)
+@tree.command(name='moveup', description='Move the server message upward', guilds=guilds)
 @app_commands.check(is_administrator)
-async def context_menu_move_up(interaction: discord.Interaction, message: discord.Message):
+async def command_move_up(interaction: discord.Interaction, address: str, query_port: int):
     """Move the server message upward"""
-    Logger.info(f'{interaction.guild.name}({interaction.guild.id}) #{interaction.channel.name}({interaction.channel.id}) {interaction.user.name}({interaction.user.id}): /{interaction.command.name}') 
-    await interaction.response.defer(thinking=True)
-    await asyncio.gather(*[edit_message(server) for server in database.modify_server_position(interaction.channel.id, message.id, True)])    
-    await interaction.delete_original_message()
-    
-@tree.context_menu(name='Move Downward', guilds=guilds)
-@app_commands.check(is_administrator)
-async def context_menu_move_down(interaction: discord.Interaction, message: discord.Message):
-    """Move the server message downward"""
-    await interaction.response.defer(thinking=True)
-    await asyncio.gather(*[edit_message(server) for server in database.modify_server_position(interaction.channel.id, message.id, False)])
-    await interaction.delete_original_message()
-    
-@tree.context_menu(name='Delete Server', guilds=guilds)
-@app_commands.check(is_administrator)
-async def context_menu_delete_server(interaction: discord.Interaction, message: discord.Message):
-    """Delete server in current channel"""
-    Logger.info(f'{interaction.guild.name}({interaction.guild.id}) #{interaction.channel.name}({interaction.channel.id}) {interaction.user.name}({interaction.user.id}): /{interaction.command.name}') 
-    await interaction.response.defer(thinking=True)
-    
-    try:
-        server = database.find_server(interaction.channel.id, message_id=message.id)
-    except database.ServerNotFoundError:
-        await interaction.delete_original_message()
-        return
-    
-    database.delete_server(server)
-    await delete_message(server)
-    await interaction.delete_original_message()
+    Logger.command(interaction, address, query_port)
 
-@tree.context_menu(name='Change Style', guilds=guilds)
-@app_commands.check(is_administrator)
-async def context_menu_change_style(interaction: discord.Interaction, message: discord.Message):
-    try:
-        server = database.find_server(interaction.channel.id, message_id=message.id)
-    except database.ServerNotFoundError:
-        await interaction.response.send_message('The server does not exist in the channel', ephemeral=True)
-        return
-    
-    style = styles.get(server.style_id, styles['Medium'])(server)
-    options = []
-
-    for id in styles:
-        s = styles[id](server)
-        options.append(SelectOption(label=s.display_name, value=id, description=s.description, emoji=s.emoji, default=id==style.id))
-    
-    select = Select(options=options)
-    
-    async def select_callback(interaction: Interaction):
-        if select.values[0] not in styles:
-            return
-
+    if server := await find_server(interaction, address, query_port):
         await interaction.response.defer(thinking=True)
-        server.style_id = select.values[0]
-        database.update_server_style_id(server)
-        await edit_message(server)
+        database.modify_server_position(server, True)
+        await refresh_channel_messages(interaction.channel.id, resend=False)
         await interaction.delete_original_message()
     
-    select.callback = select_callback
-    
-    button = Button(label='Edit Style Data')
-    
-    async def button_callback(interaction: Interaction):
-        await interaction.response.send_modal(style.edit_modal())
-    
-    button.callback = button_callback
-    
-    view = View()
-    view.add_item(select)
-    # view.add_item(button)
-    
-    await interaction.response.send_message(content=f'`{server.address}:{server.query_port}` Current style:', view=view, ephemeral=True)
-
-@tree.context_menu(name='Edit Style Data', guilds=guilds)
+@tree.command(name='movedown', description='Move the server message downward', guilds=guilds)
 @app_commands.check(is_administrator)
-async def context_menu_edit_style_style(interaction: discord.Interaction, message: discord.Message):
-    try:
-        server = database.find_server(interaction.channel.id, message_id=message.id)
-    except database.ServerNotFoundError:
-        await interaction.response.send_message('The server does not exist in the channel', ephemeral=True)
-        return
+async def command_move_down(interaction: discord.Interaction, address: str, query_port: int):
+    """Move the server message downward"""
+    Logger.command(interaction, address, query_port)
     
-    style = styles.get(server.style_id, styles['Medium'])(server)
-    modal = Modal(title=f'Edit {server.address}:{server.query_port}')
-    edit_fields = style.default_edit_fields
+    if server := await find_server(interaction, address, query_port):
+        await interaction.response.defer(thinking=True)
+        database.modify_server_position(server, False)
+        await refresh_channel_messages(interaction.channel.id, resend=False)
+        await interaction.delete_original_message()
 
-    for item in edit_fields.values():
-        modal.add_item(item)
+@tree.command(name='changestyle', description='Change server message style', guilds=guilds)
+@app_commands.check(is_administrator)
+async def command_change_style(interaction: discord.Interaction, address: str, query_port: int):
+    """Change server message style"""
+    Logger.command(interaction, address, query_port)
+    
+    if server := await find_server(interaction, address, query_port):
+        style = styles.get(server.style_id, styles['Medium'])(server)
+        options = []
+
+        for id in styles:
+            s = styles[id](server)
+            options.append(SelectOption(label=s.display_name, value=id, description=s.description, emoji=s.emoji, default=id==style.id))
         
-    async def modal_on_submit(interaction: Interaction):
-        await interaction.response.defer()
-        server.style_data = {k: str(v) for k, v in edit_fields.items()}
-        database.update_server_style_data(server)
-        await edit_message(server)
+        select = Select(options=options)
+        
+        async def select_callback(interaction: Interaction):
+            if select.values[0] not in styles:
+                return
+
+            await interaction.response.defer(thinking=True)
+            server.style_id = select.values[0]
+            database.update_server_style_id(server)
+            await refresh_channel_messages(interaction.channel.id, resend=False)
+            await interaction.delete_original_message()
+        
+        select.callback = select_callback
+        view = View()
+        view.add_item(select)
+        
+        await interaction.response.send_message(content=f'`{server.address}:{server.query_port}` Current style:', view=view, ephemeral=True)
+
+@tree.command(name='editstyledata', description='Edit server message style data', guilds=guilds)
+@app_commands.check(is_administrator)
+async def command_edit_style_data(interaction: discord.Interaction, address: str, query_port: int):
+    """Edit server message style data"""
+    Logger.command(interaction, address, query_port)
     
-    modal.on_submit = modal_on_submit
-    
-    await interaction.response.send_modal(modal)
+    if server := await find_server(interaction, address, query_port):
+        style = styles.get(server.style_id, styles['Medium'])(server)
+        modal = Modal(title=f'Edit {server.address}:{server.query_port}')
+        edit_fields = style.default_edit_fields
+
+        for item in edit_fields.values():
+            modal.add_item(item)
+            
+        async def modal_on_submit(interaction: Interaction):
+            await interaction.response.defer()
+            server.style_data = {k: str(v) for k, v in edit_fields.items()}
+            database.update_server_style_data(server)
+            await refresh_channel_messages(interaction.channel.id, resend=False)
+        
+        modal.on_submit = modal_on_submit
+        
+        await interaction.response.send_modal(modal)
     
 @command_query.error
 @command_addserver.error
 @command_delserver.error
 @command_refresh.error
-@context_menu_move_up.error
-@context_menu_move_down.error
-@context_menu_delete_server.error
-@context_menu_change_style.error
-@context_menu_edit_style_style.error
+@command_move_up.error
+@command_move_down.error
+@command_change_style.error
+@command_edit_style_data.error
 async def command_error_handler(interaction: Interaction, error: app_commands.AppCommandError):
     if isinstance(error, app_commands.CommandOnCooldown):
         await interaction.response.send_message(str(error), ephemeral=True)
@@ -357,6 +322,26 @@ async def command_error_handler(interaction: Interaction, error: app_commands.Ap
         await interaction.response.send_message('You don\'t have sufficient privileges to use this command', ephemeral=True)
     else:
         Logger.error(str(error))
+#endregion
+
+#region Application functions
+async def find_game(interaction: Interaction, game_id: str):
+    """Find game by game_id, return """
+    try:
+        game = gamedig.find(game_id)
+        return game
+    except LookupError:
+        await interaction.response.send_message(f'{game_id} is not a valid game id', ephemeral=True)
+        return None
+
+async def find_server(interaction: Interaction, address: str, query_port: int):
+    """Find server by channel id, and return server"""
+    try:
+        server = database.find_server(interaction.channel.id, address, query_port)
+        return server
+    except database.ServerNotFoundError:
+        await interaction.response.send_message('The server does not exist in the channel', ephemeral=True)
+        return None
 
 async def fetch_message(server: Server):
     """Fetch message with local cache"""
@@ -388,38 +373,33 @@ async def fetch_message(server: Server):
 
     return None
 
-async def send_messages(servers: list[Server]):
-    """Send messages"""
-    for server in servers:
-        await send_message(server)
+async def refresh_channel_messages(channel_id: int, resend: bool):
+    servers = database.all_servers(channel_id=channel_id)
+    
+    if not resend:
+        await asyncio.gather(*[edit_message(chunks) for chunks in database.all_channels_servers(servers).values()])
+        return
+    
+    channel = client.get_channel(channel_id)
+    await channel.purge(check=lambda m: m.author==client.user)
+    
+    for chunks in to_chunks(servers, 10):
+        try:
+            message = await channel.send(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in chunks])
+        except discord.Forbidden as e:
+            # You do not have the proper permissions to send the message.
+            Logger.error(f'Channel {channel_id} send_message discord.Forbidden {e}')
+            break
+        except discord.HTTPException as e:
+            # Sending the message failed.
+            Logger.error(f'Channel {channel_id} send_message discord.HTTPException {e}')
+            break
         
-    database.update_servers_message_id(servers)
-
-async def send_message(server: Server, update_message_id: bool = False):
-    """Send message"""
-    channel = client.get_channel(server.channel_id)
+        for server in chunks:
+            server.message_id = message.id
+        
+        messages[message.id] = message
     
-    try:
-        style = styles.get(server.style_id, styles['Medium'])(server)
-        message = await channel.send(content=style.content(), embed=style.embed(), view=style.view())
-    except discord.Forbidden as e:
-        # You do not have the proper permissions to send the message.
-        Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] send_message discord.Forbidden {e}')
-        return
-    except discord.HTTPException as e:
-        # Sending the message failed.
-        Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] send_message discord.HTTPException {e}')
-        return
-    
-    server.message_id = message.id
-    messages[message.id] = message
-    
-    if update_message_id:
-        database.update_servers_message_id([server])
-
-async def delete_messages(servers: list[Server]):
-    """Delete messages"""
-    await asyncio.gather(*[delete_message(server) for server in servers])
     database.update_servers_message_id(servers)
 
 async def delete_message(server: Server, update_message_id: bool = False):
@@ -428,7 +408,7 @@ async def delete_message(server: Server, update_message_id: bool = False):
     
     if message is None:
         return
-    
+
     try:
         await message.delete()
     except discord.Forbidden as e:
@@ -449,56 +429,60 @@ async def delete_message(server: Server, update_message_id: bool = False):
     if update_message_id:
         database.update_servers_message_id([server])
 
+# Credits: https://stackoverflow.com/questions/312443/how-do-i-split-a-list-into-equally-sized-chunks
+def to_chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+#endregion
+
+#region Application tasks
 @tasks.loop(seconds=float(os.getenv('TASK_EDIT_MESSAGE', 60)))
 async def edit_messages():
     """Edit messages (Scheduled)"""
     servers = database.all_servers()
     Logger.debug(f'Edit messages: Tasks = {len(servers)} messages')
-    
-    # Credits: https://stackoverflow.com/questions/312443/how-do-i-split-a-list-into-equally-sized-chunks
-    def to_chunks(lst, n):
-        """Yield successive n-sized chunks from lst."""
-        for i in range(0, len(lst), n):
-            yield lst[i:i + n]
-    
-    channels_servers = database.all_channels_servers(servers)
-    results = []
-    
-    # Splits to servers to chunks because Discord has a rate limit of 5 in each request.
-    for servers in channels_servers.values():
-        for server in servers:
-            results.append(await edit_message(server))
-        # for chunks in to_chunks(servers, 4):
-        #     results.extend(await asyncio.gather(*[edit_message(server) for server in chunks]))
 
+    results = await asyncio.gather(*[edit_message(chunks) for chunks in database.all_messages_servers().values()])
     success = sum(result == True for result in results)
     failed = len(results) - success
     Logger.info(f'Edit messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
-
-async def edit_message(server: Server):
-    """Edit message"""
-    if server.message_id is None:
-        Logger.debug(f'Edit messages: {server.message_id} ({server.game_id})[{server.address}:{server.query_port}] ignored')
-        return None
     
-    message = await fetch_message(server)
+async def edit_message(servers: list[Server]):
+    if len(servers) <= 0:
+        return True
+    
+    message = await fetch_message(servers[0])
     
     if message is None:
-        Logger.debug(f'Edit messages: {server.message_id} ({server.game_id})[{server.address}:{server.query_port}] ignored')
-        return None
-
+        channel = client.get_channel(servers[0].channel_id)
+    
+        try:
+            message = await channel.send(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in servers])
+        except discord.Forbidden as e:
+            # You do not have the proper permissions to send the message.
+            Logger.error(f'send_message discord.Forbidden {e}')
+            return False
+        except discord.HTTPException as e:
+            # Sending the message failed.
+            Logger.error(f'send_message discord.HTTPException {e}')
+            return False
+        
+        messages[message.id] = message
+        database.update_servers_message_id(servers)
+        return True
+    
     try:
-        style = styles.get(server.style_id, styles['Medium'])(server)
-        message = await message.edit(content=style.content(), embed=style.embed(), view=style.view())
-        Logger.debug(f'Edit messages: {server.message_id} ({server.game_id})[{server.address}:{server.query_port}] success')
+        message = await message.edit(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in servers])
+        Logger.debug(f'Edit messages: {message.id} success')
         return True
     except discord.Forbidden as e:
         # Tried to suppress a message without permissions or edited a message's content or embed that isn't yours.
-        Logger.debug(f'Edit messages: {server.message_id} ({server.game_id})[{server.address}:{server.query_port}] edit_messages discord.Forbidden {e}')
+        Logger.debug(f'Edit messages: {message.id} edit_messages discord.Forbidden {e}')
         return False
     except discord.HTTPException as e:
         # Editing the message failed.
-        Logger.debug(f'Edit messages: {server.message_id} ({server.game_id})[{server.address}:{server.query_port}] edit_messages discord.HTTPException {e}')
+        Logger.debug(f'Edit messages: {message.id} edit_messages discord.HTTPException {e}')
         return False
 
 @tasks.loop(seconds=float(os.getenv('TASK_QUERY_SERVER', 60)))
@@ -508,12 +492,12 @@ async def query_servers():
     Logger.debug(f'Query servers: Tasks = {len(distinct_servers)} unique servers')
 
     with ThreadPoolExecutor() as executor:
-        servers, success, failed = await asyncio.get_event_loop().run_in_executor(executor, query_servers_sync, distinct_servers)
+        servers, success, failed = await asyncio.get_event_loop().run_in_executor(executor, query_servers_func, distinct_servers)
         
     database.update_servers(servers) 
     Logger.info(f'Query servers: Total = {len(servers)}, Success = {success}, Failed = {failed} ({len(servers) > 0 and int(failed / len(servers) * 100) or 0}% fail)')
     
-def query_servers_sync(distinct_servers: list[Server]):
+def query_servers_func(distinct_servers: list[Server]):
     """Query servers with ThreadPoolExecutor"""
     with ThreadPoolExecutor() as executor:
         servers: list[Server] = []
@@ -554,7 +538,7 @@ async def cache_guilds():
         'icon_url': guild.icon.url if guild.icon is not None else None,
     } for guild in client.guilds]
 
-    with open('guilds.json', 'w', encoding='utf-8') as f:
+    with open('public/static/guilds.json', 'w', encoding='utf-8') as f:
         json.dump(guilds, f, ensure_ascii=False)
         
 @tasks.loop(minutes=5)
@@ -568,6 +552,7 @@ async def heroku_query():
         Logger.debug(f'Sends a GET request to {url}')
     except Exception as e:
         Logger.error(f'Sends a GET request to {url}, {e}')
+#endregion
 
 if __name__ == '__main__':
     client.run(os.environ['APP_TOKEN'])

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Optional, Union
 
 from discord import Embed, Emoji, PartialEmoji
-from discord.ui import TextInput, View
+from discord.ui import TextInput
 from server import Server
 
 
@@ -42,13 +42,5 @@ class Style(ABC):
         raise NotImplementedError()
     
     @abstractmethod
-    def content(self) -> str:
-        raise NotImplementedError()
-    
-    @abstractmethod
     def embed(self) -> Embed:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def view(self) -> View:
         raise NotImplementedError()

@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from discord import Interaction
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,6 +12,13 @@ load_dotenv()
 class Logger:
     """Custom Logger"""
     path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'logs')
+    
+    @staticmethod
+    def command(interaction: Interaction, *args, **kwargs):
+        message = f'{interaction.guild.name}({interaction.guild.id}) '
+        message += f'#{interaction.channel.name}({interaction.channel.id}) '
+        message += f'{interaction.user.name}({interaction.user.id}): /{interaction.command.name}'
+        Logger.info(message, *args, **kwargs)
     
     @staticmethod
     def info(*args, **kwargs):

@@ -1,5 +1,4 @@
 from discord import Embed
-from discord.ui import View
 from server import Server
 
 from styles.medium import Medium
@@ -34,8 +33,3 @@ class Large(Medium, Style):
             embed.add_field(name=name, value=values[i] if values[i] else empty_value)
         
         return embed
-        
-    def view(self) -> View:
-        view = View()
-        return view
-        

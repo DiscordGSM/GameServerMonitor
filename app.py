@@ -16,7 +16,7 @@ app = Flask(__name__, static_url_path='', static_folder='public/static', templat
 def index():
     return render_template('index.html', invite_link=invite_link)
 
-if os.getenv('WEB_ENABLE_API', '').lower() == 'true':
+if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
     @app.route('/api/v1/games')
     def games():
         return jsonify(gamedig.games)

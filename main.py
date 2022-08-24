@@ -37,7 +37,7 @@ async def on_ready():
     await client.wait_until_ready()
     
     Logger.info(f'Logged on as {client.user}')
-    Logger.info(f'Invite link: {invite_link}')
+    Logger.info(f'Add to Server: {invite_link}')
     
     await sync_commands()
     query_servers.start()

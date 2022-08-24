@@ -8,6 +8,7 @@ import psycopg2
 from dotenv import load_dotenv
 
 from server import Server
+from logger import Logger
 
 load_dotenv()
 
@@ -18,9 +19,11 @@ def stringify(data: dict):
 class Database:
     """Database with connection and cursor prepared"""
     
-    def __init__(self):
+    def __init__(self, log=False):
         self.connect()
-        self.create_table_if_not_exists()
+        
+        if log:
+            Logger.info(f'Connected to {self.type} database')
     
     def connect(self):
         DB_CONNECTION = os.getenv('DB_CONNECTION', '')
@@ -28,7 +31,7 @@ class Database:
         
         if DATABASE_URL.startswith('postgres://') or DB_CONNECTION == 'pgsql':
             self.type = 'pgsql'
-            self.conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+            self.conn = psycopg2.connect(DATABASE_URL, sslmode=os.getenv('POSTGRES_SSL_MODE', 'require'))
         else:
             self.type = 'sqlite'
             self.conn = sqlite3.connect(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'servers.db'))
@@ -195,12 +198,8 @@ class Database:
     def update_servers(self, servers: list[Server]):
         """Update servers status and result, the result will only be updated if status is True"""
         parameters = [(server.status, server.status, stringify(server.result), server.game_id, server.address, server.query_port, stringify(server.query_extra)) for server in servers]
-        
-        if self.type == 'pgsql':
-            sql = 'UPDATE servers SET status = ?, result = case when ? then ? else result end WHERE game_id = ? AND address = ? AND query_port = ? AND query_extra = ?'
-        elif self.type == 'sqlite':
-            sql = 'UPDATE servers SET status = ?, result = IIF(? is 1, ?, result) WHERE game_id = ? AND address = ? AND query_port = ? AND query_extra = ?'
-        
+        sql = 'UPDATE servers SET status = ?, result = case when ? then ? else result end WHERE game_id = ? AND address = ? AND query_port = ? AND query_extra = ?'
+
         cursor = self.conn.cursor()
         cursor.executemany(self.transform(sql), parameters)
         self.conn.commit()
@@ -255,24 +254,6 @@ class Database:
                     return self.swap_servers_positon(s, servers[i + 1])
                 
         return []
-    
-    # def modify_server_position(self, channel_id: int, message_id: int, direction: bool):
-    #     servers = self.all_servers(channel_id)
-        
-    #     for i, server in enumerate(servers):
-    #         if server.message_id == message_id:
-    #             if direction: # Move Up
-    #                 if i == 0:
-    #                     break
-                    
-    #                 return self.swap_servers_positon(server, servers[i - 1])
-    #             else: # Move Down
-    #                 if i == len(servers) - 1:
-    #                     break
-                    
-    #                 return self.swap_servers_positon(server, servers[i + 1])
-                
-    #     return []
             
     def swap_servers_positon(self, server1: Server, server2: Server):
         if self.type == 'pgsql':
@@ -333,7 +314,3 @@ if __name__ == '__main__':
     if args.subparser_name == 'find':
         for server in database.all_servers():
             print(server)
-    
-     
-    #database.cursor.execute('Select * from servers')
-    #print(database.modify_server_position(712764173905559654, 975893354686578688, True))

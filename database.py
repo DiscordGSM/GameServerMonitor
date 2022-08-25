@@ -112,14 +112,18 @@ class Database:
         """Get all servers"""
         cursor = self.conn.cursor()
         
-        if channel_id is None:
-            cursor.execute('SELECT * FROM servers ORDER BY position')
-        elif channel_id:
+        if channel_id:
+            print("channelid")
             cursor.execute(self.transform('SELECT * FROM servers WHERE channel_id = ? ORDER BY position'), (channel_id,))
         elif guild_id:
+            print("guild_id")
             cursor.execute(self.transform('SELECT * FROM servers WHERE guild_id = ? ORDER BY position'), (guild_id,))
         elif message_id:
+            print("message_id")
             cursor.execute(self.transform('SELECT * FROM servers WHERE message_id = ? ORDER BY position'), (message_id,))
+        else:
+            print("servers")
+            cursor.execute('SELECT * FROM servers ORDER BY position')
         
         servers = [Server.from_list(row) for row in cursor.fetchall()]
         cursor.close()
@@ -163,13 +167,6 @@ class Database:
         return servers
         
     def add_server(self, s: Server):
-        # Get current servers order by orders in channel
-        servers = self.all_servers(channel_id=s.channel_id)
-        
-        
-        # Get message id
-        
-        
         sql = '''
         INSERT INTO servers (position, guild_id, channel_id, game_id, address, query_port, query_extra, status, result, style_id, style_data)
         VALUES ((SELECT IFNULL(MAX(position + 1), 0) FROM servers WHERE channel_id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
@@ -301,16 +298,16 @@ class Database:
 if __name__ == '__main__':
     parser = ArgumentParser()
     subparsers = parser.add_subparsers(dest='subparser_name')
-    subparsers.add_parser('find')
-    
+    subparsers.add_parser('all')
+
     args = parser.parse_args()
     
     if len(sys.argv) <= 1:
         parser.print_help(sys.stderr)
         sys.exit(-1)
-        
+    
     database = Database()
         
-    if args.subparser_name == 'find':
+    if args.subparser_name == 'all':
         for server in database.all_servers():
             print(server)

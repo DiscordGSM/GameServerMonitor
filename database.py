@@ -113,16 +113,12 @@ class Database:
         cursor = self.conn.cursor()
         
         if channel_id:
-            print("channelid")
             cursor.execute(self.transform('SELECT * FROM servers WHERE channel_id = ? ORDER BY position'), (channel_id,))
         elif guild_id:
-            print("guild_id")
             cursor.execute(self.transform('SELECT * FROM servers WHERE guild_id = ? ORDER BY position'), (guild_id,))
         elif message_id:
-            print("message_id")
             cursor.execute(self.transform('SELECT * FROM servers WHERE message_id = ? ORDER BY position'), (message_id,))
         else:
-            print("servers")
             cursor.execute('SELECT * FROM servers ORDER BY position')
         
         servers = [Server.from_list(row) for row in cursor.fetchall()]

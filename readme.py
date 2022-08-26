@@ -7,7 +7,14 @@ import operator
 def main():
     """Generate README.md"""
     text = f'''# Discord Game Server Monitor
+[![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/DiscordGSM/GameServerMonitor/)
+[![GitHub license](https://img.shields.io/github/license/GameServerMonitor/DiscordGSM.svg)](https://github.com/DiscordGSM/GameServerMonitor/blob/master/LICENSE)
+[![GitHub release](https://img.shields.io/github/release/GameServerMonitor/DiscordGSM.svg)](https://github.com/DiscordGSM/GameServerMonitor/releases/)
+[![Discord Shield](https://discordapp.com/api/guilds/680159496584429582/widget.png?style=shield)](https://discord.gg/Cg4Au9T)
+
 📺 Monitor your game servers on Discord and tracks the live data of your game servers.
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/amjCni?referralCode=DylKEu)
 '''
 
     with open('README.md', 'w', encoding='utf-8') as fp:
@@ -41,13 +48,6 @@ venv commands
 py -m venv venv
 venv\\Scripts\\activate.bat
 deactivate
-```
-
-Download discord.py 2.0 manually
-```
-git clone https://github.com/Rapptz/discord.py
-cd discord.py
-py -m pip install -U .[voice]
 ```
 
 Run Flask locally

@@ -464,6 +464,10 @@ async def edit_message(servers: list[Server]):
     
     if message is None:
         channel = client.get_channel(servers[0].channel_id)
+        
+        if channel is None:
+            Logger.error(f'send_message discord.Forbidden channel not found ({servers[0].channel_id})')
+            return False
     
         try:
             message = await channel.send(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in servers])

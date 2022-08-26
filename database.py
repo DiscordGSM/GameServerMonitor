@@ -26,7 +26,7 @@ class Database:
         DB_CONNECTION = os.getenv('DB_CONNECTION', '')
         DATABASE_URL = os.getenv('DATABASE_URL', '')
         
-        if DATABASE_URL.startswith('postgres://') or DB_CONNECTION == 'pgsql':
+        if DATABASE_URL.startswith('postgres://') or DATABASE_URL.startswith('postgresql://') or DB_CONNECTION == 'pgsql':
             self.type = 'pgsql'
             self.conn = psycopg2.connect(DATABASE_URL, sslmode=os.getenv('POSTGRES_SSL_MODE', 'require'))
         else:

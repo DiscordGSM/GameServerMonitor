@@ -19,6 +19,7 @@ from styles.style import Style
 
 load_dotenv()
 
+# Create table here because it will cause thread issue on service.py
 database.create_table_if_not_exists()
 
 # DiscordGSM styles

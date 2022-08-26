@@ -19,6 +19,8 @@ from styles.style import Style
 
 load_dotenv()
 
+database.create_table_if_not_exists()
+
 # DiscordGSM styles
 styles = {style.__name__: style for style in Style.__subclasses__()}
 

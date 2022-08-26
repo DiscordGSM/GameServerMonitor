@@ -11,8 +11,6 @@ from gamedig import Gamedig
 load_dotenv()
 
 database = Database()
-database.create_table_if_not_exists()
-
 gamedig = Gamedig()
 
 client_id = base64.b64decode(os.environ['APP_TOKEN'].split('.')[0]).decode()

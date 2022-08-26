@@ -1,1 +1,1 @@
-web: gunicorn app:app & python3 main.py
+web: bash -c "gunicorn app:app & python3 -u main.py"

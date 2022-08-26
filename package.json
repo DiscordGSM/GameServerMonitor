@@ -6,7 +6,7 @@
         "node": "16.x"
     },
     "scripts": {
-        "build": "npm install -g gamedig & pip install git+https://github.com/Rapptz/discord.py",
+        "build": "npm install -g gamedig",
         "start": "gunicorn app:app & python3 main.py"
     },
     "license": "MIT"

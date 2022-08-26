@@ -28,9 +28,10 @@ class Gamedig:
             
             for row in reader:
                 if len(row) > 0: 
+                    id = row[0].split(',')[0]
                     options = len(row) > 3 and row_to_dict(row[3]) or {}
                     extra = len(row) > 4 and row_to_dict(row[4]) or {}
-                    self.games[row[0]] = GamedigGame(id=row[0], fullname=row[1], protocol=row[2], options=options, extra=extra)
+                    self.games[id] = GamedigGame(id=id, fullname=row[1], protocol=row[2], options=options, extra=extra)
 
     def find(self, game_id: str):
         if game_id in self.games:

@@ -19,11 +19,8 @@ def stringify(data: dict):
 class Database:
     """Database with connection and cursor prepared"""
     
-    def __init__(self, log=False):
+    def __init__(self):
         self.connect()
-        
-        if log:
-            Logger.info(f'Connected to {self.type} database')
     
     def connect(self):
         DB_CONNECTION = os.getenv('DB_CONNECTION', '')

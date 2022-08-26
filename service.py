@@ -10,7 +10,7 @@ from gamedig import Gamedig
 
 load_dotenv()
 
-database = Database(True)
+database = Database()
 database.create_table_if_not_exists()
 
 gamedig = Gamedig()

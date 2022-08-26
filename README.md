@@ -112,7 +112,7 @@
 | farcry | Far Cry (2004) | `/addserver farcry` |
 | farcry2 | Far Cry 2 (2008) | `/addserver farcry2` |
 | fortressforever | Fortress Forever (2007) | `/addserver fortressforever` |
-| operationflashpoint,flashpoint | Operation Flashpoint: Cold War Crisis (2001) | `/addserver operationflashpoint,flashpoint` |
+| operationflashpoint | Operation Flashpoint: Cold War Crisis (2001) | `/addserver operationflashpoint` |
 | flashpointresistance | Operation Flashpoint: Resistance (2002) | `/addserver flashpointresistance` |
 | ffow | Frontlines: Fuel of War (2008) | `/addserver ffow` |
 | fivem | Grand Theft Auto V - FiveM (2013) | `/addserver fivem` |
@@ -122,7 +122,7 @@
 | graw2 | Tom Clancy's Ghost Recon Advanced Warfighter 2 (2007) | `/addserver graw2` |
 | giantscitizenkabuto | Giants: Citizen Kabuto (2000) | `/addserver giantscitizenkabuto` |
 | globaloperations | Global Operations (2002) | `/addserver globaloperations` |
-| geneshift,mutantfactions | Geneshift (2017) | `/addserver geneshift,mutantfactions` |
+| geneshift | Geneshift (2017) | `/addserver geneshift` |
 | ges | GoldenEye: Source (2010) | `/addserver ges` |
 | gore | Gore: Ultimate Soldier (2002) | `/addserver gore` |
 | groundbreach | Ground Breach (2018) | `/addserver groundbreach` |
@@ -166,8 +166,8 @@
 | mohab | Medal of Honor: Airborne (2007) | `/addserver mohab` |
 | moh2010 | Medal of Honor (2010) | `/addserver moh2010` |
 | mohwf | Medal of Honor: Warfighter (2012) | `/addserver mohwf` |
-| minecraft,minecraftping | Minecraft (2009) | `/addserver minecraft,minecraftping` |
-| minecraftpe,minecraftbe | Minecraft: Bedrock Edition (2011) | `/addserver minecraftpe,minecraftbe` |
+| minecraft | Minecraft (2009) | `/addserver minecraft` |
+| minecraftpe | Minecraft: Bedrock Edition (2011) | `/addserver minecraftpe` |
 | mnc | Monday Night Combat (2011) | `/addserver mnc` |
 | mordhau | Mordhau (2019) | `/addserver mordhau` |
 | mtavc | Grand Theft Auto: Vice City - Multi Theft Auto (2002) | `/addserver mtavc` |
@@ -259,7 +259,7 @@
 | teamspeak2 | Teamspeak 2 | `/addserver teamspeak2` |
 | teamspeak3 | Teamspeak 3 | `/addserver teamspeak3` |
 | terminus | Terminus | `/addserver terminus` |
-| terraria,tshock | Terraria - TShock (2011) | `/addserver terraria,tshock` |
+| terraria | Terraria - TShock (2011) | `/addserver terraria` |
 | thps3 | Tony Hawk's Pro Skater 3 | `/addserver thps3` |
 | thps4 | Tony Hawk's Pro Skater 4 | `/addserver thps4` |
 | thu2 | Tony Hawk's Underground 2 | `/addserver thu2` |
@@ -299,6 +299,13 @@ venv commands
 py -m venv venv
 venv\Scripts\activate.bat
 deactivate
+```
+
+Download discord.py 2.0 manually
+```
+git clone https://github.com/Rapptz/discord.py
+cd discord.py
+py -m pip install -U .[voice]
 ```
 
 Run Flask locally

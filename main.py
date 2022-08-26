@@ -36,6 +36,7 @@ client = Client(intents=intents) if not public else AutoShardedClient(intents=in
 async def on_ready():
     await client.wait_until_ready()
     
+    Logger.info(f'Connected to {database.type} database')
     Logger.info(f'Logged on as {client.user}')
     Logger.info(f'Add to Server: {invite_link}')
     

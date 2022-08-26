@@ -203,7 +203,7 @@ async def command_delserver(interaction: Interaction, address: str, query_port: 
         await interaction.response.defer(thinking=True)
         database.delete_server(server)
         await refresh_channel_messages(interaction.channel.id, resend=True)
-        await interaction.delete_original_message()
+        await interaction.delete_original_response()
 
 @tree.command(name='refresh', description='Refresh servers\' messages in current channel', guilds=guilds)
 @app_commands.check(is_administrator)
@@ -213,7 +213,7 @@ async def command_refresh(interaction: Interaction):
     
     await interaction.response.defer(thinking=True)
     await refresh_channel_messages(interaction.channel.id, resend=True)
-    await interaction.delete_original_message()
+    await interaction.delete_original_response()
     
 @tree.command(name='factoryreset', description='Delete all servers in current guild', guilds=guilds)
 @app_commands.check(is_administrator)
@@ -245,7 +245,7 @@ async def command_move_up(interaction: discord.Interaction, address: str, query_
         await interaction.response.defer(thinking=True)
         database.modify_server_position(server, True)
         await refresh_channel_messages(interaction.channel.id, resend=False)
-        await interaction.delete_original_message()
+        await interaction.delete_original_response()
     
 @tree.command(name='movedown', description='Move the server message downward', guilds=guilds)
 @app_commands.check(is_administrator)
@@ -257,7 +257,7 @@ async def command_move_down(interaction: discord.Interaction, address: str, quer
         await interaction.response.defer(thinking=True)
         database.modify_server_position(server, False)
         await refresh_channel_messages(interaction.channel.id, resend=False)
-        await interaction.delete_original_message()
+        await interaction.delete_original_response()
 
 @tree.command(name='changestyle', description='Change server message style', guilds=guilds)
 @app_commands.check(is_administrator)
@@ -283,7 +283,7 @@ async def command_change_style(interaction: discord.Interaction, address: str, q
             server.style_id = select.values[0]
             database.update_server_style_id(server)
             await refresh_channel_messages(interaction.channel.id, resend=False)
-            await interaction.delete_original_message()
+            await interaction.delete_original_response()
         
         select.callback = select_callback
         view = View()

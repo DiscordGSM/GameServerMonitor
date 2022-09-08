@@ -106,7 +106,7 @@ def cooldown_for_everyone_except_administrator(interaction: discord.Interaction)
 #region Application commands
 tree = app_commands.CommandTree(client)
 
-def modal(game_id: str, is_add_server: bool):
+def modal(game_id: str, is_add_server: bool, author_id: int):
     """Query server modal"""
     game = gamedig.find(game_id)
     default_port = gamedig.default_port(game_id)
@@ -149,7 +149,7 @@ def modal(game_id: str, is_add_server: bool):
         
         if public:
             webhook = SyncWebhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'))
-            webhook.send(content=f'Server was added by <@{interaction.message.author.id}>', embed=style.embed())
+            webhook.send(content=f'Server was added by <@{author_id}>', embed=style.embed())
         
         if is_add_server:
             try:
@@ -176,7 +176,7 @@ async def command_query(interaction: Interaction, game_id: str):
     Logger.command(interaction, game_id)
     
     if game := await find_game(interaction, game_id):
-        await interaction.response.send_modal(modal(game['id'], False))
+        await interaction.response.send_modal(modal(game['id'], False, interaction.message.author.id))
 
 @tree.command(name='addserver', description='Add server in current channel', guilds=guilds)
 @app_commands.check(is_administrator)
@@ -196,7 +196,7 @@ async def command_addserver(interaction: Interaction, game_id: str):
                 await interaction.response.send_message(f'The server quota has been exceeded. Limit: {limit}', ephemeral=True)
                 return
         
-        await interaction.response.send_modal(modal(game['id'], True))
+        await interaction.response.send_modal(modal(game['id'], True, interaction.message.author.id))
 
 @tree.command(name='delserver', description='Delete server in current channel', guilds=guilds)
 @app_commands.check(is_administrator)

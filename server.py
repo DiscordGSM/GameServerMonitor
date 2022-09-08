@@ -61,7 +61,12 @@ class Server:
         )
     
     @staticmethod
-    def from_list(row: tuple) -> Server:
+    def from_list(row: tuple, filter_secret = False) -> Server:
+        query_extra: dict = json.loads(row[8])
+        
+        if filter_secret:
+            query_extra = {k: v for k, v in query_extra.items() if not str(k).startswith('_')}
+        
         return Server(
             id=row[0],
             position=row[1],

@@ -122,9 +122,9 @@ def modal(game_id: str, is_add_server: bool):
     elif game_id == 'teamspeak3':
         query_extra['teamspeakQueryPort'] = TextInput(label='TeamSpeak Query Port', max_length='5', default=10011)
         modal.add_item(query_extra['teamspeakQueryPort'])
-    # elif game_id == 'terraria' or game_id == 'tshock':
-    #     query_extra['token'] = TextInput(label='REST user token')
-    #     modal.add_item(query_extra['token'])
+    elif game_id == 'terraria':
+        query_extra['_token'] = TextInput(label='REST user token')
+        modal.add_item(query_extra['_token'])
     
     async def modal_on_submit(interaction: Interaction):
         if is_add_server:

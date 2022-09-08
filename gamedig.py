@@ -65,7 +65,7 @@ class Gamedig:
         args = ['cmd.exe', '/c', 'gamedig'] if platform.system() == 'Windows' else ['gamedig']
         
         for option, value in kv.items():
-            args.extend([f'--{option}', Gamedig.__escape_argument(str(value)) if platform.system() == 'Windows' else str(value)])
+            args.extend([f'--{str(option).lstrip("_")}', Gamedig.__escape_argument(str(value)) if platform.system() == 'Windows' else str(value)])
         
         process = subprocess.run(args, stdout=subprocess.PIPE)
         output = process.stdout.decode('utf8')

@@ -8,7 +8,6 @@ import psycopg2
 from dotenv import load_dotenv
 
 from server import Server
-from logger import Logger
 
 load_dotenv()
 
@@ -105,7 +104,7 @@ class Database:
             'unique_servers': row[3],
         }
     
-    def all_servers(self, channel_id: int = None, guild_id: int = None, message_id: int = None):
+    def all_servers(self, channel_id: int = None, guild_id: int = None, message_id: int = None, filter_secret = False):
         """Get all servers"""
         cursor = self.conn.cursor()
         
@@ -118,7 +117,7 @@ class Database:
         else:
             cursor.execute('SELECT * FROM servers ORDER BY position')
         
-        servers = [Server.from_list(row) for row in cursor.fetchall()]
+        servers = [Server.from_list(row, filter_secret) for row in cursor.fetchall()]
         cursor.close()
         
         return servers

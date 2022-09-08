@@ -38,23 +38,21 @@ if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
 
     @app.route('/api/v1/servers')
     def servers():
-        return jsonify(Database().all_servers())
+        return jsonify(Database().all_servers(filter_secret=True))
 
     @app.route('/api/v1/channels')
-    @app.route('/api/v1/channels/<channel>')
-    def channels(channel: str = None):
-        if channel is None:
-            return jsonify(Database().all_channels_servers())
-        
-        if not channel.isdigit():
+    @app.route('/api/v1/channels/<channel_id>')
+    def channels(channel_id: str = None):
+        if channel_id is not None and not channel_id.isdigit():
             return jsonify({'error': 'Invalid channel id'})
         
-        channels_servers = Database().all_channels_servers()
+        database = Database()
         
-        if not int(channel) in channels_servers:
-            return jsonify({'error': 'Channel id does not exist'})
+        if channel_id is None:
+            servers = database.all_servers(filter_secret=True)
+            return jsonify(database.all_channels_servers(servers))
         
-        return jsonify(channels_servers[int(channel)])
+        return jsonify(database.all_servers(channel_id=int(channel_id), filter_secret=True))
 
 if __name__ == '__main__':
     app.run(debug=os.getenv('APP_DEBUG', '').lower() == 'true')

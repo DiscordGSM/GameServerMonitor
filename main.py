@@ -157,7 +157,7 @@ def modal(game_id: str, is_add_server: bool):
             await interaction.response.defer()
             await refresh_channel_messages(interaction.channel.id, resend=True)
         else:
-            await interaction.response.send_message(embed=style.embed(), ephemeral=True)
+            await interaction.response.send_message(content='Query successfully!', embed=style.embed())
         
     modal.on_submit = modal_on_submit
     

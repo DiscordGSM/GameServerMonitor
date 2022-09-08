@@ -7,7 +7,8 @@ from typing import Optional
 import discord
 import requests
 from discord import (ActivityType, AutoShardedClient, ButtonStyle, Client,
-                     Interaction, Message, SelectOption, app_commands)
+                     Interaction, Message, SelectOption, SyncWebhook,
+                     app_commands)
 from discord.ext import tasks
 from discord.ui import Button, Modal, Select, TextInput, View
 from dotenv import load_dotenv
@@ -145,6 +146,10 @@ def modal(game_id: str, is_add_server: bool):
         style = styles['Medium'](server)
         server.style_id = style.id
         server.style_data = style.default_style_data()
+        
+        if public:
+            webhook = SyncWebhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'))
+            webhook.send(content=f'Server was added by <@{interaction.message.author.id}>', embed=style.embed())
         
         if is_add_server:
             try:

@@ -148,8 +148,9 @@ def modal(game_id: str, is_add_server: bool):
         server.style_data = style.default_style_data()
         
         if public:
+            content = f'Server was added by <@{interaction.user.id}> on #{interaction.channel.name}({interaction.channel.id}) {interaction.guild.name}({interaction.guild.id})'
             webhook = SyncWebhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'))
-            webhook.send(content=f'Server was added by <@{interaction.user.id}>', embed=style.embed())
+            webhook.send(content=content, embed=style.embed())
         
         if is_add_server:
             try:

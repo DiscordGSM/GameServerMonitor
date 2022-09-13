@@ -49,7 +49,7 @@ async def on_ready():
     edit_messages.start()
     presence_update.start()
     
-    if os.getenv('WEB_ENABLE_API', '').lower() == 'true':
+    if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
         cache_guilds.start()
         
     if os.getenv('HEROKU_APP_NAME') is not None:

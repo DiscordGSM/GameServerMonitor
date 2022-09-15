@@ -65,7 +65,7 @@ async def on_guild_join(guild: discord.Guild):
         return
         
     """Sync the commands to guild when discordgsm joins a guild."""
-    if guild.id in guilds:
+    if guild.id in [guild.id for guild in guilds]:
         await sync_commands()
         
 @client.event

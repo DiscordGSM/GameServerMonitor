@@ -55,6 +55,28 @@ async def on_ready():
     if os.getenv('HEROKU_APP_NAME') is not None:
         heroku_query.start()
 
+@client.event
+async def on_guild_join(guild: discord.Guild):
+    if public:
+        content = f'DiscordGSM joined {guild.name}({guild.id})'
+        webhook = SyncWebhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'))
+        webhook.send(content=content)
+        return
+        
+    """Sync the commands to guild when discordgsm joins a guild."""
+    if guild.id in guilds:
+        await sync_commands()
+        
+@client.event
+async def on_guild_remove(guild: discord.Guild):
+    """Remove all related servers in database when discordgsm leaves"""
+    database.factory_reset(guild.id)
+    
+@client.event
+async def on_guild_channel_delete(channel: discord.abc.GuildChannel):
+    """Remove all related servers in database when channel deletes"""
+    database.delete_servers(channel_id=channel.id)
+    
 async def sync_commands():
     """Syncs the application commands to Discord.""" 
     if not public:
@@ -81,6 +103,7 @@ async def tree_sync(guild=None):
         Logger.error(f'The client does not have the applications.commands scope in the guild. {e} {guild.id if guild else ""}')
     except discord.HTTPException as e:
         Logger.error(f'Syncing the commands failed. {e} {guild.id if guild else ""}')
+        
 #endregion
 
 #region Application checks

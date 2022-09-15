@@ -208,6 +208,13 @@ class Database:
         self.conn.commit()
         cursor.close()
         
+    def delete_servers(self, channel_id: int):
+        sql = 'DELETE FROM servers WHERE channel_id = ?'
+        cursor = self.conn.cursor()
+        cursor.execute(self.transform(sql), (channel_id,))
+        self.conn.commit()
+        cursor.close()
+        
     def find_server(self, channel_id: int, address: str = None, query_port: str = None, message_id: int = None):
         cursor = self.conn.cursor()
         

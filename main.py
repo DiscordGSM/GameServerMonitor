@@ -57,8 +57,10 @@ async def on_ready():
 
 @client.event
 async def on_guild_join(guild: discord.Guild):
+    content = f'{client.user} joined {guild.name}({guild.id}) 🎉.'
+    Logger.info(content)
+    
     if public:
-        content = f'DiscordGSM joined {guild.name}({guild.id})'
         webhook = SyncWebhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'))
         webhook.send(content=content)
         return
@@ -69,13 +71,15 @@ async def on_guild_join(guild: discord.Guild):
         
 @client.event
 async def on_guild_remove(guild: discord.Guild):
-    """Remove all related servers in database when discordgsm leaves"""
+    """Remove all associated servers in database when discordgsm leaves"""
     database.factory_reset(guild.id)
+    Logger.info(f'{client.user} left {guild.name}({guild.id}), associated servers were deleted.')
     
 @client.event
 async def on_guild_channel_delete(channel: discord.abc.GuildChannel):
-    """Remove all related servers in database when channel deletes"""
+    """Remove all associated servers in database when channel deletes"""
     database.delete_servers(channel_id=channel.id)
+    Logger.info(f'Channel #{channel.name}({channel.id}) deleted, associated servers were deleted.')
     
 async def sync_commands():
     """Syncs the application commands to Discord.""" 

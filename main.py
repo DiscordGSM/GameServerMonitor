@@ -44,7 +44,7 @@ async def on_ready():
     Logger.info(f'Logged on as {client.user}')
     Logger.info(f'Add to Server: {invite_link}')
     
-    await sync_commands()
+    await sync_commands(guilds)
     query_servers.start()
     edit_messages.start()
     presence_update.start()
@@ -63,10 +63,10 @@ async def on_guild_join(guild: discord.Guild):
         webhook = SyncWebhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'))
         webhook.send(content=f'<@{client.user.id}> joined {guild.name}({guild.id}) 🎉.')
         return
-        
+    
     """Sync the commands to guild when discordgsm joins a guild."""
     if guild.id in [guild.id for guild in guilds]:
-        await sync_commands()
+        await sync_commands([discord.Object(id=guild.id)])
         
 @client.event
 async def on_guild_remove(guild: discord.Guild):
@@ -80,7 +80,7 @@ async def on_guild_channel_delete(channel: discord.abc.GuildChannel):
     database.delete_servers(channel_id=channel.id)
     Logger.info(f'Channel #{channel.name}({channel.id}) deleted, associated servers were deleted.')
     
-async def sync_commands():
+async def sync_commands(guilds: list[discord.Object]):
     """Syncs the application commands to Discord.""" 
     if not public:
         for guild in guilds:
@@ -91,7 +91,7 @@ async def sync_commands():
         
     await tree_sync()
                 
-async def tree_sync(guild=None):
+async def tree_sync(guild: discord.Object = None):
     """Syncs the application commands to Discord."""
     try:
         await tree.sync(guild=guild)
@@ -106,7 +106,6 @@ async def tree_sync(guild=None):
         Logger.error(f'The client does not have the applications.commands scope in the guild. {e} {guild.id if guild else ""}')
     except discord.HTTPException as e:
         Logger.error(f'Syncing the commands failed. {e} {guild.id if guild else ""}')
-        
 #endregion
 
 #region Application checks

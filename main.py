@@ -57,12 +57,11 @@ async def on_ready():
 
 @client.event
 async def on_guild_join(guild: discord.Guild):
-    content = f'{client.user} joined {guild.name}({guild.id}) 🎉.'
-    Logger.info(content)
+    Logger.info(f'{client.user} joined {guild.name}({guild.id}) 🎉.')
     
     if public:
         webhook = SyncWebhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'))
-        webhook.send(content=content)
+        webhook.send(content=f'<@{client.user.id}> joined {guild.name}({guild.id}) 🎉.')
         return
         
     """Sync the commands to guild when discordgsm joins a guild."""

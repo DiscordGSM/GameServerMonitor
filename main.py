@@ -479,10 +479,17 @@ def to_chunks(lst, n):
 @tasks.loop(seconds=float(os.getenv('TASK_EDIT_MESSAGE', 60)))
 async def edit_messages():
     """Edit messages (Scheduled)"""
-    servers = database.all_servers()
-    Logger.debug(f'Edit messages: Tasks = {len(servers)} messages')
-
-    results = await asyncio.gather(*[edit_message(chunks) for chunks in database.all_messages_servers().values()])
+    messages_servers = database.all_messages_servers()
+    message_ids = [*messages_servers]
+    Logger.debug(f'Edit messages: Tasks = {len(message_ids)} messages')
+    
+    results = []
+    
+    # Rate limit: 50 requests per second
+    for chunks in to_chunks(message_ids, 50):
+        results += await asyncio.gather(*[edit_message(messages_servers[message_id]) for message_id in chunks])
+        await asyncio.sleep(1)
+    
     success = sum(result == True for result in results)
     failed = len(results) - success
     Logger.info(f'Edit messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
@@ -497,18 +504,19 @@ async def edit_message(servers: list[Server]):
         channel = client.get_channel(servers[0].channel_id)
         
         if channel is None:
-            Logger.error(f'send_message discord.Forbidden channel not found ({servers[0].channel_id})')
+            Logger.error(f'Send messages: discord.Forbidden channel not found ({servers[0].channel_id})')
             return False
     
         try:
             message = await channel.send(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in servers])
+            Logger.debug(f'Send messages: {message}')
         except discord.Forbidden as e:
             # You do not have the proper permissions to send the message.
-            Logger.error(f'send_message discord.Forbidden {e}')
+            Logger.error(f'Send messages: discord.Forbidden {e}')
             return False
         except discord.HTTPException as e:
             # Sending the message failed.
-            Logger.error(f'send_message discord.HTTPException {e}')
+            Logger.error(f'Send messages: discord.HTTPException {e}')
             return False
         
         messages[message.id] = message

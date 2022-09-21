@@ -100,7 +100,7 @@ class Medium(Style):
             players_string = '0' # example: 0
             
         players_string = f"{players_string}/{self.server.result['maxplayers']}"
-        embed.add_field(name=f"Players", value=f"{players_string} ({int(players / self.server.result['maxplayers'] * 100)}%)", inline=True)
+        embed.add_field(name=f"Players", value=f"{players_string} ({int(players) / int(self.server.result['maxplayers']) * 100}%)", inline=True)
 
         if 'image_url' in self.server.style_data:
             image_url = str(self.server.style_data['image_url'])

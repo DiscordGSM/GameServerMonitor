@@ -234,7 +234,6 @@ async def command_delserver(interaction: Interaction, address: str, query_port: 
         await interaction.response.defer(thinking=True)
         database.delete_server(server)
         await refresh_channel_messages(interaction.channel.id, resend=True)
-        await interaction.delete_original_response()
 
 @tree.command(name='refresh', description='Refresh servers\' messages in current channel', guilds=guilds)
 @app_commands.check(is_administrator)
@@ -244,7 +243,6 @@ async def command_refresh(interaction: Interaction):
     
     await interaction.response.defer(thinking=True)
     await refresh_channel_messages(interaction.channel.id, resend=True)
-    await interaction.delete_original_response()
     
 @tree.command(name='factoryreset', description='Delete all servers in current guild', guilds=guilds)
 @app_commands.check(is_administrator)

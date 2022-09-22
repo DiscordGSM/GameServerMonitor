@@ -10,6 +10,31 @@ import requests
 from server import Server
 
 
+class GamedigGame(TypedDict):
+    id: str
+    fullname: str
+    protocol: str
+    options: dict
+    extra: dict
+
+
+class GamedigPlayer(TypedDict):
+    name: str
+    raw: dict
+
+
+class GamedigResult(TypedDict):
+    name: str
+    map: str
+    password: bool
+    maxplayers: int
+    players: list[GamedigPlayer]
+    bots: list[GamedigPlayer]
+    connect: str
+    ping: int
+    raw: dict
+
+
 class Gamedig:
     def __init__(self, file: str = 'data/games.txt'):
         self.games: dict[str, GamedigGame] = {}
@@ -55,6 +80,19 @@ class Gamedig:
             return int(game['options']['port'])
 
     @staticmethod
+    def game_port(result: GamedigResult):
+        """Attempt to get the game port from GamedigResult, return None if failure."""
+        game_port: int = None
+        
+        if ':' in result['connect']:
+            elements = result['connect'].split(':')
+            
+            if len(elements) == 2 and elements[1].isdigit():
+                game_port = int(elements[1])
+                
+        return game_port
+
+    @staticmethod
     def query(server: Server):
         return Gamedig.run({
             'type': server.game_id,
@@ -94,31 +132,6 @@ class Gamedig:
     def __escape_for_cmd_exe(arg: str):
         meta_re = re.compile(r'([()%!^"<>&|])')
         return meta_re.sub('^\1', arg)
-
-
-class GamedigGame(TypedDict):
-    id: str
-    fullname: str
-    protocol: str
-    options: dict
-    extra: dict
-
-
-class GamedigPlayer(TypedDict):
-    name: str
-    raw: dict
-
-
-class GamedigResult(TypedDict):
-    name: str
-    map: str
-    password: bool
-    maxplayers: int
-    players: list[GamedigPlayer]
-    bots: list[GamedigPlayer]
-    connect: str
-    ping: int
-    raw: dict
 
 
 def query_terraria(host: str, port: int, token: str):

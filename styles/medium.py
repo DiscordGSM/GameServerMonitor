@@ -43,7 +43,7 @@ class Medium(Style):
         style_data = {'fullname': game['fullname']}
         
         try:
-            if gamedig.default_port(self.server.game_id) == 27015:
+            if gamedig.default_port(self.server.game_id) == 27015 and gamedig.game_port(self.server.result) == int(self.server.query_port):
                 style_data['description'] = f'Connect: steam://connect/{self.server.address}:{self.server.query_port}'
         except:
             pass
@@ -81,13 +81,7 @@ class Medium(Style):
         embed = Embed(title=title, description=None if not description else description, color=color)
         embed.add_field(name='Status', value=f"{emoji} **{self.server.status and 'Online' or 'Offline'}**", inline=True)
         
-        game_port: int = None
-        
-        if ':' in self.server.result['connect']:
-            elements = self.server.result['connect'].split(':')
-            
-            if len(elements) == 2 and elements[1].isdigit():
-                game_port = int(elements[1])
+        game_port = gamedig.game_port(self.server.result)
 
         if game_port is None or game_port == int(self.server.query_port):
             embed.add_field(name='Address:Port', value=f'`{self.server.address}:{self.server.query_port}`', inline=True)

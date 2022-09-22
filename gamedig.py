@@ -5,6 +5,8 @@ import re
 import subprocess
 from typing import TypedDict
 
+import requests
+
 from server import Server
 
 
@@ -62,6 +64,9 @@ class Gamedig:
 
     @staticmethod
     def run(kv: dict):
+        if kv['type'] == 'terraria':
+            return query_terraria(kv['host'], kv['port'], kv['_token'])
+        
         args = ['cmd.exe', '/c', 'gamedig'] if platform.system() == 'Windows' else ['gamedig']
         
         for option, value in kv.items():
@@ -112,10 +117,32 @@ class GamedigResult(TypedDict):
     players: list[GamedigPlayer]
     bots: list[GamedigPlayer]
     connect: str
-    ping: str
+    ping: int
     raw: dict
 
 
+def query_terraria(host: str, port: int, token: str):
+    url = f'http://{host}:{port}/v2/server/status?players=true&rules=false&token={token}'
+    response = requests.get(url)
+    
+    if response.status_code != 200:
+        raise Exception('Fail to query terraria server')
+    
+    data = response.json()
+    players: list[GamedigPlayer] = [{'name': player['nickname'], 'raw': player} for player in data['players']]
+    result: GamedigResult = {
+        'name': data['name'],
+        'map': data['world'],
+        'password': data['serverpassword'],
+        'maxplayers': data['maxplayers'],
+        'players': players,
+        'bots': [],
+        'connect': f"{host}:{data['port']}",
+        'ping': response.elapsed.microseconds,
+    }
+    
+    return result
+    
 if __name__ == '__main__':
     r = Gamedig.run({
         'type': 'tf2',

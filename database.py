@@ -252,11 +252,7 @@ class Database:
         return []
             
     def swap_servers_positon(self, server1: Server, server2: Server):
-        if self.type == 'pgsql':
-            sql = 'UPDATE servers SET position = case when position = ? then ? else ? end, message_id = case when message_id = ? then ? else ? end WHERE id IN (?, ?)'
-        elif self.type == 'sqlite':
-            sql = 'UPDATE servers SET position = IIF(position is ?, ?, ?), message_id = IIF(message_id is ?, ?, ?) WHERE id IN (?, ?)'
-        
+        sql = 'UPDATE servers SET position = case when position = ? then ? else ? end, message_id = case when message_id = ? then ? else ? end WHERE id IN (?, ?)'
         cursor = self.conn.cursor()
         cursor.execute(self.transform(sql), (server1.position, server2.position, server1.position, server1.message_id, server2.message_id, server1.message_id, server1.id, server2.id))
         self.conn.commit()

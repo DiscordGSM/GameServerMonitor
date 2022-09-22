@@ -89,7 +89,7 @@ class Medium(Style):
             if len(elements) == 2 and elements[1].isdigit():
                 game_port = int(elements[1])
 
-        if game_port is None or game_port == self.server.query_port:
+        if game_port is None or game_port == int(self.server.query_port):
             embed.add_field(name='Address:Port', value=f'`{self.server.address}:{self.server.query_port}`', inline=True)
         else:
             embed.add_field(name='Address:Port (Query)', value=f'`{self.server.address}:{game_port} ({self.server.query_port})`', inline=True)

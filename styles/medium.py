@@ -99,8 +99,10 @@ class Medium(Style):
         else:
             players_string = '0' # example: 0
             
-        players_string = f"{players_string}/{self.server.result['maxplayers']}"
-        embed.add_field(name=f"Players", value=f"{players_string} ({int(players) / int(self.server.result['maxplayers']) * 100}%)", inline=True)
+        maxplayers = int(self.server.result['maxplayers'])
+        players_string = f"{players_string}/{maxplayers}"
+        percentage = 0 if maxplayers <= 0 else int(players / int(self.server.result['maxplayers']) * 100)
+        embed.add_field(name=f"Players", value=f"{players_string} ({percentage}%)", inline=True)
 
         if 'image_url' in self.server.style_data:
             image_url = str(self.server.style_data['image_url'])

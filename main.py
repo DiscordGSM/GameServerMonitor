@@ -164,7 +164,7 @@ def modal(game_id: str, is_add_server: bool):
         try:
             result = gamedig.run(query_param | query_extra)
         except Exception as e:
-            await interaction.response.send_message(content=f"Fail to query the server `{query_param['host']}:{query_param['port']}`. Please try again.", ephemeral=True)
+            await interaction.response.send_message(content=f"Fail to query {game_id} server `{query_param['host']}:{query_param['port']}`. Please try again.", ephemeral=True)
             return
 
         server = Server.new(interaction.guild_id, interaction.channel_id, game_id, str(query_param['host']), str(query_param['port']), query_extra, result)
@@ -411,6 +411,7 @@ async def fetch_message(server: Server):
     return None
 
 async def refresh_channel_messages(channel_id: int, resend: bool):
+    """When resend=True, no need to await interaction.delete_original_response()"""
     servers = database.all_servers(channel_id=channel_id)
     
     if not resend:

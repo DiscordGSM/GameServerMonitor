@@ -80,8 +80,20 @@ class Medium(Style):
         
         embed = Embed(title=title, description=None if not description else description, color=color)
         embed.add_field(name='Status', value=f"{emoji} **{self.server.status and 'Online' or 'Offline'}**", inline=True)
-        embed.add_field(name='Address:Port', value=f'`{self.server.address}:{self.server.query_port}`', inline=True)
+        
+        game_port: int = None
+        
+        if ':' in self.server.result['connect']:
+            elements = self.server.result['connect'].split(':')
+            
+            if len(elements) == 2 and elements[1].isdigit():
+                game_port = int(elements[1])
 
+        if game_port is None or game_port == self.server.query_port:
+            embed.add_field(name='Address:Port', value=f'`{self.server.address}:{self.server.query_port}`', inline=True)
+        else:
+            embed.add_field(name='Address:Port (Query)', value=f'`{self.server.address}:{game_port} ({self.server.query_port})`', inline=True)
+        
         flag_emoji = ('country' in self.server.style_data) and (':flag_' + self.server.style_data['country'].lower() + f': {self.server.style_data["country"]}') or ':united_nations: Unknown'
         embed.add_field(name='Country', value=flag_emoji, inline=True)
 

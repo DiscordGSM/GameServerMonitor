@@ -28,7 +28,8 @@
     ],
     "addons": [
         {
-          "plan": "heroku-postgresql"
+            "plan": "heroku-postgresql"
         }
-    ]
+    ],
+    "success_url": "/"
 }

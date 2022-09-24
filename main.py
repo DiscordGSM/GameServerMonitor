@@ -164,7 +164,7 @@ def modal(game_id: str, is_add_server: bool):
         try:
             result = gamedig.run(query_param | query_extra)
         except Exception as e:
-            await interaction.response.send_message(content=f"Fail to query {game_id} server `{query_param['host']}:{query_param['port']}`. Please try again.", ephemeral=True)
+            await interaction.response.send_message(content=f"Fail to query `{game_id}` server `{query_param['host']}:{query_param['port']}`. Please try again.", ephemeral=True)
             return
 
         server = Server.new(interaction.guild_id, interaction.channel_id, game_id, str(query_param['host']), str(query_param['port']), query_extra, result)

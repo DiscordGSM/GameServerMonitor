@@ -35,6 +35,10 @@ class GamedigResult(TypedDict):
     raw: dict
 
 
+class InvalidGameException(Exception):
+    pass
+
+
 class Gamedig:
     def __init__(self, file: str = 'data/games.txt'):
         self.games: dict[str, GamedigGame] = {}
@@ -92,16 +96,22 @@ class Gamedig:
                 
         return game_port
 
-    @staticmethod
-    def query(server: Server):
-        return Gamedig.run({
+    def query(self, server: Server):
+        return self.run({
             'type': server.game_id,
             'host': server.address,
             'port': server.query_port,
         } | server.query_extra)
 
+    def run(self, kv: dict):
+        try:
+            return Gamedig.__run(kv)
+        except InvalidGameException:
+            kv['type'] = f"protocol-{self.games[kv['type']]['protocol']}"
+            return Gamedig.__run(kv)
+
     @staticmethod
-    def run(kv: dict):
+    def __run(kv: dict):
         if kv['type'] == 'terraria':
             return query_terraria(kv['host'], kv['port'], kv['_token'])
         
@@ -115,7 +125,10 @@ class Gamedig:
         result: GamedigResult = json.loads(output)
         
         if 'error' in result:
-            raise Exception(result['error'])
+            if 'Invalid game:' in result['error']:
+                raise InvalidGameException()
+            else:
+                raise Exception(result['error'])
 
         return result
     
@@ -157,7 +170,7 @@ def query_terraria(host: str, port: int, token: str):
     return result
     
 if __name__ == '__main__':
-    r = Gamedig.run({
+    r = Gamedig().run({
         'type': 'tf2',
         'host': '104.238.229.98',
         'port': '27015'

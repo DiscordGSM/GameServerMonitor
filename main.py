@@ -29,6 +29,10 @@ styles = {style.__name__: style for style in Style.__subclasses__()}
 # Discord messages cache
 messages: dict[int, Message] = {}
 
+def cache_message(message: Message):
+    messages[message.id] = message
+    return messages[message.id]
+
 # Client setup
 intents = discord.Intents.default()
 shard_ids = [int(shard_id) for shard_id in os.getenv('APP_SHARD_IDS').replace(';', ',').split(',') if shard_id] if len(os.getenv('APP_SHARD_IDS', '')) > 0 else None
@@ -394,8 +398,8 @@ async def fetch_message(server: Server):
         return None
     
     try:
-        messages[server.message_id] = await channel.fetch_message(server.message_id)
-        return messages[server.message_id]
+        message = await channel.fetch_message(server.message_id)
+        return cache_message(message)
     except discord.NotFound as e:
         # The specified message was not found.
         Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] fetch_message discord.NotFound {e}')
@@ -436,7 +440,7 @@ async def refresh_channel_messages(channel_id: int, resend: bool):
         for server in chunks:
             server.message_id = message.id
         
-        messages[message.id] = message
+        cache_message(message)
     
     database.update_servers_message_id(servers)
 
@@ -493,6 +497,25 @@ async def edit_messages():
     failed = len(results) - success
     Logger.info(f'Edit messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
     
+@edit_messages.before_loop
+async def before_edit_messages():
+    """Cache messages before edit_messages() task"""
+    messages_servers = database.all_messages_servers()
+    tasks = []
+    
+    async def cache(channel: discord.guild.GuildChannel, message_id: int):
+        if message := await channel.fetch_message(message_id):
+            cache_message(message)
+        
+    for message_id in [*messages_servers]:
+        if channel := client.get_channel(messages_servers[message_id][0].channel_id):
+            tasks.append(cache(channel, message_id))
+            
+    # Rate limit: 50 requests per second
+    for chunks in to_chunks(tasks, 50):
+        await asyncio.gather(*chunks)
+        await asyncio.sleep(1)
+
 async def edit_message(servers: list[Server]):
     if len(servers) <= 0:
         return True
@@ -518,7 +541,7 @@ async def edit_message(servers: list[Server]):
             Logger.error(f'Send messages: discord.HTTPException {e}')
             return False
         
-        messages[message.id] = message
+        cache_message(message)
         database.update_servers_message_id(servers)
         return True
     

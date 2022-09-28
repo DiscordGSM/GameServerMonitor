@@ -503,7 +503,7 @@ async def before_edit_messages():
     messages_servers = database.all_messages_servers()
     tasks = []
     
-    async def cache(channel: discord.guild.GuildChannel, message_id: int):
+    async def cache(channel: discord.TextChannel, message_id: int):
         if message := await channel.fetch_message(message_id):
             cache_message(message)
         

@@ -484,18 +484,24 @@ async def edit_messages():
     """Edit messages (Scheduled)"""
     messages_servers = database.all_messages_servers()
     message_ids = [*messages_servers]
-    Logger.debug(f'Edit messages: Tasks = {len(message_ids)} messages')
+    task_action = 'Fetch' if edit_messages.current_loop == 0 else 'Edit'
+    Logger.debug(f'{task_action} messages: Tasks = {len(message_ids)} messages')
+    
+    if edit_messages.current_loop == 0:
+        tasks = [fetch_message(messages_servers[message_id][0]) for message_id in message_ids]
+    else:
+        tasks = [edit_message(messages_servers[message_id]) for message_id in message_ids]
     
     results = []
     
     # Rate limit: 50 requests per second
-    for chunks in to_chunks(message_ids, 50):
-        results += await asyncio.gather(*[edit_message(messages_servers[message_id]) for message_id in chunks])
+    for chunks in to_chunks(tasks, 50):
+        results += await asyncio.gather(*chunks)
         await asyncio.sleep(1)
     
-    success = sum(result == True for result in results)
+    success = sum(result != False for result in results)
     failed = len(results) - success
-    Logger.info(f'Edit messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
+    Logger.info(f'{task_action} messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
 
 async def edit_message(servers: list[Server]):
     if len(servers) <= 0:

@@ -497,16 +497,16 @@ async def edit_messages():
     failed = len(results) - success
     Logger.info(f'Edit messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
     
+async def cache(channel: discord.TextChannel, message_id: int):
+    if message := await channel.fetch_message(message_id):
+        cache_message(message)
+    
 @edit_messages.before_loop
 async def before_edit_messages():
     """Cache messages before edit_messages() task"""
     messages_servers = database.all_messages_servers()
     tasks = []
-    
-    async def cache(channel: discord.TextChannel, message_id: int):
-        if message := await channel.fetch_message(message_id):
-            cache_message(message)
-        
+
     for message_id in [*messages_servers]:
         if channel := client.get_channel(messages_servers[message_id][0].channel_id):
             tasks.append(cache(channel, message_id))

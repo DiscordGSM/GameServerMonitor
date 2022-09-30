@@ -15,12 +15,12 @@ services:
     networks:
       - intranet
 
-  main:
-    container_name: main
+  discordgsm:
+    container_name: discordgsm
     build:
       context: .
       dockerfile: Dockerfile
-    image: discordgsm:2.0.0
+    image: discordgsm:dev
     command: /bin/sh -c "gunicorn --bind 0.0.0.0:8000 --workers=2 --worker-class=gthread app:app --timeout 90 & python3 -u main.py"
     ports:
       - 8000:8000

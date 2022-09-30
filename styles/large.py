@@ -22,7 +22,7 @@ class Large(Medium, Style):
     def embed(self) -> Embed:
         embed = super().embed()
         empty_value = '*​*'
-        field_names = ['Player List', empty_value, empty_value]
+        field_names = ['Members' if self.server.game_id == 'discord' else 'Player List', empty_value, empty_value]
         players = [player for player in self.server.result['players'] if player['name']]
         values = ['', '', '']
         

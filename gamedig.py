@@ -3,6 +3,7 @@ import json
 import platform
 import re
 import subprocess
+import time
 from typing import TypedDict
 
 import requests
@@ -88,7 +89,7 @@ class Gamedig:
         """Attempt to get the game port from GamedigResult, return None if failure."""
         game_port: int = None
         
-        if ':' in result['connect']:
+        if result['connect'] and ':' in result['connect']:
             elements = result['connect'].split(':')
             
             if len(elements) == 2 and elements[1].isdigit():
@@ -114,6 +115,8 @@ class Gamedig:
     def __run(kv: dict):
         if kv['type'] == 'terraria':
             return query_terraria(kv['host'], kv['port'], kv['_token'])
+        elif kv['type'] == 'discord':
+            return query_discord(kv['host'])
         
         args = ['cmd.exe', '/c', 'gamedig'] if platform.system() == 'Windows' else ['gamedig']
         
@@ -155,16 +158,39 @@ def query_terraria(host: str, port: int, token: str):
         raise Exception('Fail to query terraria server')
     
     data = response.json()
-    players: list[GamedigPlayer] = [{'name': player['nickname'], 'raw': player} for player in data['players']]
     result: GamedigResult = {
         'name': data['name'],
         'map': data['world'],
         'password': data['serverpassword'],
         'maxplayers': data['maxplayers'],
-        'players': players,
+        'players': [{'name': player['nickname'], 'raw': player} for player in data['players']],
         'bots': [],
         'connect': f"{host}:{data['port']}",
         'ping': response.elapsed.microseconds,
+    }
+    
+    return result
+
+def query_discord(guild_id: str):
+    url = f'https://discord.com/api/guilds/{guild_id}/widget.json?v={int(time.time())}'
+    response = requests.get(url)
+    
+    if response.status_code != 200:
+        raise Exception('Fail to query discord server')
+    
+    data = response.json()
+    result: GamedigResult = {
+        'name': data['name'],
+        'map': '',
+        'password': False,
+        'maxplayers': -1,
+        'players': [{'name': player['username'], 'raw': player} for player in data['members']],
+        'bots': [],
+        'connect': data['instant_invite'],
+        'ping': response.elapsed.microseconds,
+        'raw': {
+            'numplayers': data['presence_count'],
+        }
     }
     
     return result

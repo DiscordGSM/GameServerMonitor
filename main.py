@@ -155,6 +155,11 @@ def modal(game_id: str, is_add_server: bool):
     elif game_id == 'terraria':
         query_extra['_token'] = TextInput(label='REST user token')
         modal.add_item(query_extra['_token'])
+        
+    if game_id == 'discord':
+        query_param['host'].label = 'Guild ID'
+        modal.remove_item(query_param['port'])
+        query_param['port']._value = '0'
     
     async def modal_on_submit(interaction: Interaction):
         if is_add_server:

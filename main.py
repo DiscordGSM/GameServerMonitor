@@ -499,8 +499,8 @@ async def edit_messages():
     
     results = []
     
-    # Rate limit: 50 requests per second
-    for chunks in to_chunks(tasks, 50):
+    # Discord Rate limit: 50 requests per second
+    for chunks in to_chunks(tasks, 45):
         results += await asyncio.gather(*chunks)
         await asyncio.sleep(1)
     

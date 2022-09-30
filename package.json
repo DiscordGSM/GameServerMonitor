@@ -7,7 +7,7 @@
     },
     "scripts": {
         "build": "npm install -g gamedig",
-        "start": "gunicorn app:app & python3 main.py"
+        "start": "/bin/sh -c \"gunicorn --bind 0.0.0.0:8000 --workers=2 --worker-class=gthread app:app --timeout 90 & python3 -u main.py\""
     },
     "license": "MIT"
 }

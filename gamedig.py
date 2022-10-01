@@ -41,7 +41,7 @@ class InvalidGameException(Exception):
 
 
 class Gamedig:
-    def __init__(self, file: str = 'data/games.txt'):
+    def __init__(self, file: str = 'games.txt'):
         self.games: dict[str, GamedigGame] = {}
         
         def row_to_dict(row: str):

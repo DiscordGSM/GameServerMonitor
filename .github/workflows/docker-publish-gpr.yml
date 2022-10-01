@@ -10,8 +10,8 @@
 name: Publish Docker Image (GPR)
 
 on:
-  push:
-    branches: ['release']
+  release:
+    types: [published]
 
 env:
   REGISTRY: ghcr.io

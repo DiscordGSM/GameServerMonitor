@@ -38,3 +38,5 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+      env:
+        APP_TOKEN: ${{ secrets.APP_TOKEN }}

@@ -162,9 +162,13 @@ def modal(game_id: str, is_add_server: bool):
         query_param['port']._value = '0'
     
     async def modal_on_submit(interaction: Interaction):
+        query_param['host']._value = str(query_param['host']._value).strip()
+        host = str(query_param['host']).strip()
+        port = str(query_param['port']).strip()
+        
         if is_add_server:
             try:
-                database.find_server(interaction.channel.id, str(query_param['host']), str(query_param['port']))
+                database.find_server(interaction.channel.id, host, port)
                 await interaction.response.send_message('The server already exists in the channel', ephemeral=True)
                 return
             except Exception as e:
@@ -173,10 +177,10 @@ def modal(game_id: str, is_add_server: bool):
         try:
             result = gamedig.run(query_param | query_extra)
         except Exception as e:
-            await interaction.response.send_message(content=f"Fail to query `{game_id}` server `{query_param['host']}:{query_param['port']}`. Please try again.", ephemeral=True)
+            await interaction.response.send_message(content=f'Fail to query `{game_id}` server `{host}:{port}`. Please try again.', ephemeral=True)
             return
 
-        server = Server.new(interaction.guild_id, interaction.channel_id, game_id, str(query_param['host']), str(query_param['port']), query_extra, result)
+        server = Server.new(interaction.guild_id, interaction.channel_id, game_id, host, port, query_extra, result)
         style = styles['Medium'](server)
         server.style_id = style.id
         server.style_data = style.default_style_data()
@@ -192,8 +196,8 @@ def modal(game_id: str, is_add_server: bool):
             try:
                 server = database.add_server(server)
             except Exception as e:
-                await interaction.response.send_message(f"Fail to add the server `{query_param['host']}:{query_param['port']}`. Please try again.")
-                Logger.error(f"Fail to add the server {query_param['host']}:{query_param['port']} {e}")
+                await interaction.response.send_message(f'Fail to add the server `{host}:{port}`. Please try again.')
+                Logger.error(f'Fail to add the server {host}:{port} {e}')
                 return
 
             await refresh_channel_messages(interaction.channel.id, resend=True)

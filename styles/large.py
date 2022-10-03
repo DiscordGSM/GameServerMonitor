@@ -23,7 +23,7 @@ class Large(Medium, Style):
         embed = super().embed()
         empty_value = '*​*'
         field_names = ['Members' if self.server.game_id == 'discord' else 'Player List', empty_value, empty_value]
-        players = [player for player in self.server.result['players'] if player['name']]
+        players = [player for player in self.server.result['players'] if player['name'].strip()]
         values = ['', '', '']
         
         for i, player in enumerate(sorted(players, key=lambda player: player['name'])):

@@ -182,6 +182,8 @@ def modal(game_id: str, is_add_server: bool):
         server.style_data = style.default_style_data()
         
         if is_add_server:
+            await interaction.response.defer()
+            
             if public:
                 content = f'Server was added by <@{interaction.user.id}> on #{interaction.channel.name}({interaction.channel.id}) {interaction.guild.name}({interaction.guild.id})'
                 webhook = SyncWebhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'))
@@ -193,8 +195,7 @@ def modal(game_id: str, is_add_server: bool):
                 await interaction.response.send_message(f"Fail to add the server `{query_param['host']}:{query_param['port']}`. Please try again.")
                 Logger.error(f"Fail to add the server {query_param['host']}:{query_param['port']} {e}")
                 return
-            
-            await interaction.response.defer()
+
             await refresh_channel_messages(interaction.channel.id, resend=True)
         else:
             await interaction.response.send_message(content='Query successfully!', embed=style.embed())

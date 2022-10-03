@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 from discord import Embed, Emoji, PartialEmoji
 from discord.ui import TextInput
@@ -34,7 +34,7 @@ class Style(ABC):
     
     @property
     @abstractmethod
-    def default_edit_fields(self) -> dict[str, TextInput]:
+    def default_edit_fields(self) -> Dict[str, TextInput]:
         raise NotImplementedError()
     
     @abstractmethod

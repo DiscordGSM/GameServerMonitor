@@ -3,6 +3,7 @@ import os
 import sqlite3
 import sys
 from argparse import ArgumentParser
+from typing import Dict, List
 
 import psycopg2
 from dotenv import load_dotenv
@@ -122,10 +123,10 @@ class Database:
         
         return servers
 
-    def all_channels_servers(self, servers: list[Server] = None):
+    def all_channels_servers(self, servers: List[Server] = None):
         """Convert or get servers to dict grouped by channel id"""
         all_servers = servers if servers is not None else self.all_servers()
-        channels_servers: dict[int, list[Server]] = {}
+        channels_servers: Dict[int, List[Server]] = {}
     
         for server in all_servers:
             if server.channel_id in channels_servers:
@@ -135,10 +136,10 @@ class Database:
             
         return channels_servers
     
-    def all_messages_servers(self, servers: list[Server] = None):
+    def all_messages_servers(self, servers: List[Server] = None):
         """Convert or get servers to dict grouped by message id"""
         all_servers = servers if servers is not None else self.all_servers()
-        messages_servers: dict[int, list[Server]] = {}
+        messages_servers: Dict[int, List[Server]] = {}
     
         for server in all_servers:
             if server.message_id:
@@ -176,7 +177,7 @@ class Database:
         except:
             raise Exception('Fail to add the server')
         
-    def update_servers_message_id(self, servers: list[Server]):
+    def update_servers_message_id(self, servers: List[Server]):
         sql = 'UPDATE servers SET message_id = ? WHERE id = ?'
         parameters = [(server.message_id, server.id) for server in servers]
         cursor = self.conn.cursor()
@@ -184,7 +185,7 @@ class Database:
         self.conn.commit()
         cursor.close()
     
-    def update_servers(self, servers: list[Server]):
+    def update_servers(self, servers: List[Server]):
         """Update servers status and result, the result will only be updated if status is True"""
         parameters = [(server.status, server.status, stringify(server.result), server.game_id, server.address, server.query_port, stringify(server.query_extra)) for server in servers]
         sql = 'UPDATE servers SET status = ?, result = case when ? then ? else result end WHERE game_id = ? AND address = ? AND query_port = ? AND query_extra = ?'

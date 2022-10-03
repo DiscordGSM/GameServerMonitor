@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 from discord import Color, Embed, Emoji, PartialEmoji, TextStyle
 from discord.ui import TextInput
@@ -28,7 +28,7 @@ class Small(Style):
         return '🔘'
     
     @property
-    def default_edit_fields(self) -> dict[str, TextInput]:
+    def default_edit_fields(self) -> Dict[str, TextInput]:
         return {
             'description': TextInput(label='Description', default=self.server.style_data.get('description', ''), required=False, style=TextStyle.long, placeholder='The description of the embed.'),
             'fullname': TextInput(label='Full Name', default=self.server.style_data.get('fullname', ''), placeholder='The display name of the game.'),

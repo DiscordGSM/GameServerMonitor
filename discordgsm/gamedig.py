@@ -5,7 +5,7 @@ import platform
 import re
 import subprocess
 import time
-from typing import TypedDict
+from typing import List, TypedDict
 
 import requests
 
@@ -30,8 +30,8 @@ class GamedigResult(TypedDict):
     map: str
     password: bool
     maxplayers: int
-    players: list[GamedigPlayer]
-    bots: list[GamedigPlayer]
+    players: List[GamedigPlayer]
+    bots: List[GamedigPlayer]
     connect: str
     ping: int
     raw: dict

@@ -2,7 +2,7 @@ import asyncio
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
-from typing import Optional
+from typing import Dict, List, Optional
 
 import discord
 import requests
@@ -27,7 +27,7 @@ database.create_table_if_not_exists()
 styles = {style.__name__: style for style in Style.__subclasses__()}
 
 # Discord messages cache
-messages: dict[int, Message] = {}
+messages: Dict[int, Message] = {}
 
 def cache_message(message: Message):
     messages[message.id] = message
@@ -84,7 +84,7 @@ async def on_guild_channel_delete(channel: discord.abc.GuildChannel):
     database.delete_servers(channel_id=channel.id)
     Logger.info(f'Channel #{channel.name}({channel.id}) deleted, associated servers were deleted.')
     
-async def sync_commands(guilds: list[discord.Object]):
+async def sync_commands(guilds: List[discord.Object]):
     """Syncs the application commands to Discord.""" 
     if not public:
         for guild in guilds:
@@ -513,7 +513,7 @@ async def edit_messages():
     failed = len(results) - success
     Logger.info(f'{task_action} messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
 
-async def edit_message(servers: list[Server]):
+async def edit_message(servers: List[Server]):
     if len(servers) <= 0:
         return True
     
@@ -567,10 +567,10 @@ async def query_servers():
     database.update_servers(servers) 
     Logger.info(f'Query servers: Total = {len(servers)}, Success = {success}, Failed = {failed} ({len(servers) > 0 and int(failed / len(servers) * 100) or 0}% fail)')
     
-def query_servers_func(distinct_servers: list[Server]):
+def query_servers_func(distinct_servers: List[Server]):
     """Query servers with ThreadPoolExecutor"""
     with ThreadPoolExecutor() as executor:
-        servers: list[Server] = []
+        servers: List[Server] = []
         success = 0
         
         for i, server in enumerate(executor.map(query_server, distinct_servers)):

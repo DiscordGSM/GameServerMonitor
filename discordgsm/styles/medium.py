@@ -1,6 +1,6 @@
 import socket
 from datetime import date, datetime
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 import requests
 from discord import Color, Embed, Emoji, PartialEmoji, TextStyle
@@ -30,7 +30,7 @@ class Medium(Style):
         return '🔘'
     
     @property
-    def default_edit_fields(self) -> dict[str, TextInput]:
+    def default_edit_fields(self) -> Dict[str, TextInput]:
         return {
             'description': TextInput(label='Description', default=self.server.style_data.get('description', ''), required=False, style=TextStyle.long, placeholder='The description of the embed.'),
             'country': TextInput(label='Country', default=self.server.style_data.get('country', ''), placeholder='The country alpha-2 code.'),

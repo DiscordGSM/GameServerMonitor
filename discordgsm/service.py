@@ -1,12 +1,12 @@
 import base64
 import os
 
+import discord
+from discord.utils import MISSING
 from dotenv import load_dotenv
 
-import discord
-from database import Database
-from discord.utils import MISSING
-from gamedig import Gamedig
+from discordgsm.database import Database
+from discordgsm.gamedig import Gamedig
 
 load_dotenv()
 

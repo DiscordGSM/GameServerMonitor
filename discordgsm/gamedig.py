@@ -1,5 +1,6 @@
 import csv
 import json
+import os
 import platform
 import re
 import subprocess
@@ -8,7 +9,7 @@ from typing import TypedDict
 
 import requests
 
-from server import Server
+from discordgsm.server import Server
 
 
 class GamedigGame(TypedDict):
@@ -54,7 +55,7 @@ class Gamedig:
                 
             return d
         
-        with open(file, 'r', encoding='utf8') as f:
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), file), 'r', encoding='utf8') as f:
             reader = csv.reader(f, delimiter='|')
             next(reader, None)
             

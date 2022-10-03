@@ -5,11 +5,10 @@ from typing import Optional, Union
 import requests
 from discord import Color, Embed, Emoji, PartialEmoji, TextStyle
 from discord.ui import TextInput
-from server import Server
-from service import gamedig
-from version import __version__
-
-from styles.style import Style
+from discordgsm.server import Server
+from discordgsm.service import gamedig
+from discordgsm.styles.style import Style
+from discordgsm.version import __version__
 
 
 class Medium(Style):

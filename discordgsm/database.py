@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 import psycopg2
 from dotenv import load_dotenv
 
-from server import Server
+from discordgsm.server import Server
 
 load_dotenv()
 
@@ -30,7 +30,7 @@ class Database:
             self.conn = psycopg2.connect(DATABASE_URL, sslmode=os.getenv('POSTGRES_SSL_MODE', 'require'))
         else:
             self.type = 'sqlite'
-            self.conn = sqlite3.connect(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'servers.db'))
+            self.conn = sqlite3.connect(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'data', 'servers.db'))
             
     def create_table_if_not_exists(self):
         cursor = self.conn.cursor()

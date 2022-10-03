@@ -4,9 +4,8 @@ import json
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
-
 if TYPE_CHECKING:
-    from gamedig import GamedigResult
+    from discordgsm.gamedig import GamedigResult
 
 @dataclass
 class Server:

@@ -1,8 +1,7 @@
 from discord import Embed
-from server import Server
-
-from styles.medium import Medium
-from styles.style import Style
+from discordgsm.server import Server
+from discordgsm.styles.medium import Medium
+from discordgsm.styles.style import Style
 
 
 class Large(Medium, Style):

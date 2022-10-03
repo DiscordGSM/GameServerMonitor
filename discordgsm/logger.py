@@ -11,7 +11,7 @@ load_dotenv()
 
 class Logger:
     """Custom Logger"""
-    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'logs')
+    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'data', 'logs')
     
     @staticmethod
     def command(interaction: Interaction, *args, **kwargs):

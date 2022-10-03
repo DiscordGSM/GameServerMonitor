@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 from discord import Embed, Emoji, PartialEmoji
 from discord.ui import TextInput
-from server import Server
+from discordgsm.server import Server
 
 
 class Style(ABC):

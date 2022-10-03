@@ -4,9 +4,9 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template
 
-from database import Database
-from service import gamedig, invite_link
-from version import __version__
+from discordgsm.database import Database
+from discordgsm.service import gamedig, invite_link
+from discordgsm.version import __version__
 
 load_dotenv()
 

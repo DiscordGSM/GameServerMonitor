@@ -85,7 +85,7 @@ class Database:
     def statistics(self):
         sql = '''
         SELECT DISTINCT
-            (SELECT COUNT(*) FROM servers) as messages, 
+            (SELECT COUNT(DISTINCT message_id) FROM servers) as messages, 
             (SELECT COUNT(DISTINCT channel_id) FROM servers) as channels,
             (SELECT COUNT(DISTINCT guild_id) FROM servers) as guilds,
             (SELECT COUNT(*) FROM (SELECT DISTINCT game_id, address, query_port, query_extra FROM servers) x) as unique_servers

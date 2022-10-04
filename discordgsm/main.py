@@ -29,16 +29,19 @@ styles = {style.__name__: style for style in Style.__subclasses__()}
 # Discord messages cache
 messages: Dict[int, Message] = {}
 
+
 def cache_message(message: Message):
     """Cache the discord.Message"""
     messages[message.id] = message
     return messages[message.id]
+
 
 # Client setup
 intents = discord.Intents.default()
 shard_ids = [int(shard_id) for shard_id in os.getenv('APP_SHARD_IDS').replace(';', ',').split(',') if shard_id] if len(os.getenv('APP_SHARD_IDS', '')) > 0 else None
 shard_count = int(os.getenv('APP_SHARD_COUNT', '1'))
 client = Client(intents=intents) if not public else AutoShardedClient(intents=intents, shard_ids=shard_ids, shard_count=shard_count)
+
 
 # region Application event
 @client.event
@@ -148,6 +151,7 @@ def cooldown_for_everyone_except_administrator(interaction: discord.Interaction)
     return app_commands.Cooldown(1, float(os.getenv('COMMAND_QUERY_COOLDOWN', '5')))
 # endregion
 
+
 # region Application commands
 tree = app_commands.CommandTree(client)
 
@@ -157,7 +161,7 @@ def modal(game_id: str, is_add_server: bool):
     game = gamedig.find(game_id)
     default_port = gamedig.default_port(game_id)
     query_param = {'type': game_id, 'host': TextInput(label='Address'), 'port': TextInput(label='Query Port', max_length='5', default=default_port)}
-    
+
     modal = Modal(title=game['fullname'])
     modal.add_item(query_param['host'])
     modal.add_item(query_param['port'])
@@ -193,7 +197,7 @@ def modal(game_id: str, is_add_server: bool):
 
         try:
             result = gamedig.run(query_param | query_extra)
-        except Exception as e:
+        except Exception:
             await interaction.response.send_message(content=f'Fail to query `{game_id}` server `{host}:{port}`. Please try again.', ephemeral=True)
             return
 
@@ -339,7 +343,7 @@ async def command_change_style(interaction: discord.Interaction, address: str, q
 
         for style_id in styles:
             style = styles[style_id](server)
-            options.append(SelectOption(label=style.display_name, value=style_id, description=style.description, emoji=style.emoji, default=style_id==current_style.id))
+            options.append(SelectOption(label=style.display_name, value=style_id, description=style.description, emoji=style.emoji, default=style_id == current_style.id))
 
         select = Select(options=options)
 
@@ -465,7 +469,7 @@ async def refresh_channel_messages(channel_id: int, resend: bool):
         return
 
     channel = client.get_channel(channel_id)
-    await channel.purge(check=lambda m: m.author==client.user)
+    await channel.purge(check=lambda m: m.author == client.user)
 
     for chunks in to_chunks(servers, 10):
         try:
@@ -602,7 +606,7 @@ async def query_servers():
     with ThreadPoolExecutor() as executor:
         servers, success, failed = await asyncio.get_event_loop().run_in_executor(executor, query_servers_func, distinct_servers)
 
-    database.update_servers(servers) 
+    database.update_servers(servers)
     Logger.info(f'Query servers: Total = {len(servers)}, Success = {success}, Failed = {failed} ({len(servers) > 0 and int(failed / len(servers) * 100) or 0}% fail)')
 
 
@@ -625,7 +629,7 @@ def query_server(server: Server):
     try:
         server.result = gamedig.query(server)
         server.status = True
-    except:
+    except Exception:
         server.status = False
 
     return server

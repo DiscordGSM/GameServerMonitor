@@ -6,4 +6,3 @@ def test_import():
     import discordgsm.main
     import discordgsm.server
     import discordgsm.service
-    import discordgsm.version

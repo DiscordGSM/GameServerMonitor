@@ -12,6 +12,7 @@ from discordgsm.server import Server
 
 load_dotenv()
 
+
 def stringify(data: dict):
     """Dictionary to json string"""
     return json.dumps(data, ensure_ascii=False, separators=(',', ':'))
@@ -106,7 +107,7 @@ class Database:
             'unique_servers': row[3],
         }
 
-    def all_servers(self, channel_id: int = None, guild_id: int = None, message_id: int = None, filter_secret = False):
+    def all_servers(self, channel_id: int=None, guild_id: int=None, message_id: int=None, filter_secret=False):
         """Get all servers"""
         cursor = self.conn.cursor()
 
@@ -124,7 +125,7 @@ class Database:
 
         return servers
 
-    def all_channels_servers(self, servers: List[Server] = None):
+    def all_channels_servers(self, servers: List[Server]=None):
         """Convert or get servers to dict grouped by channel id"""
         all_servers = servers if servers is not None else self.all_servers()
         channels_servers: Dict[int, List[Server]] = {}
@@ -137,7 +138,7 @@ class Database:
 
         return channels_servers
 
-    def all_messages_servers(self, servers: List[Server] = None):
+    def all_messages_servers(self, servers: List[Server]=None):
         """Convert or get servers to dict grouped by message id"""
         all_servers = servers if servers is not None else self.all_servers()
         messages_servers: Dict[int, List[Server]] = {}
@@ -214,7 +215,7 @@ class Database:
         self.conn.commit()
         cursor.close()
 
-    def find_server(self, channel_id: int, address: str = None, query_port: str = None, message_id: int = None):
+    def find_server(self, channel_id: int, address: str=None, query_port: str=None, message_id: int=None):
         cursor = self.conn.cursor()
 
         if message_id is not None:
@@ -231,25 +232,25 @@ class Database:
             raise self.ServerNotFoundError()
 
         return Server.from_list(row)
-    
+
     def modify_server_position(self, server: Server, direction: bool):
         servers = self.all_servers(channel_id=server.channel_id)
 
         for i, s in enumerate(servers):
             if s.id == server.id:
-                if direction: # Move Up
+                if direction:  # Move Up
                     if i == 0:
                         break
 
                     return self.swap_servers_positon(s, servers[i - 1])
-                else: # Move Down
+                else:  # Move Down
                     if i == len(servers) - 1:
                         break
 
                     return self.swap_servers_positon(s, servers[i + 1])
 
         return []
-            
+
     def swap_servers_positon(self, server1: Server, server2: Server):
         sql = 'UPDATE servers SET position = case when position = ? then ? else ? end, message_id = case when message_id = ? then ? else ? end WHERE id IN (?, ?)'
         cursor = self.conn.cursor()

@@ -183,8 +183,7 @@ def modal(game_id: str, is_add_server: bool):
         query_param['port']._value = '0'
 
     async def modal_on_submit(interaction: Interaction):
-        query_param['host']._value = str(query_param['host']._value).strip()
-        host = str(query_param['host']).strip()
+        host = query_param['host']._value = str(query_param['host']._value).strip()
         port = str(query_param['port']).strip()
 
         if is_add_server:
@@ -231,6 +230,7 @@ def modal(game_id: str, is_add_server: bool):
 
 
 @tree.command(name='queryserver', description='Query server', guilds=whitelist_guilds)
+@app_commands.describe(game_id='Game ID. See more: https://discordgsm.com/guide/supported-games')
 @app_commands.check(custom_command_query_check)
 @app_commands.checks.dynamic_cooldown(cooldown_for_everyone_except_administrator)
 async def command_query(interaction: Interaction, game_id: str):
@@ -242,6 +242,7 @@ async def command_query(interaction: Interaction, game_id: str):
 
 
 @tree.command(name='addserver', description='Add server in current channel', guilds=whitelist_guilds)
+@app_commands.describe(game_id='Game ID. See more: https://discordgsm.com/guide/supported-games')
 @app_commands.check(is_administrator)
 async def command_addserver(interaction: Interaction, game_id: str):
     """Add server in current channel"""
@@ -263,6 +264,8 @@ async def command_addserver(interaction: Interaction, game_id: str):
 
 
 @tree.command(name='delserver', description='Delete server in current channel', guilds=whitelist_guilds)
+@app_commands.describe(address='IP Address or Domain Name')
+@app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
 async def command_delserver(interaction: Interaction, address: str, query_port: int):
     """Delete server in current channel"""
@@ -306,6 +309,8 @@ async def command_factoryreset(interaction: Interaction):
 
 
 @tree.command(name='moveup', description='Move the server message upward', guilds=whitelist_guilds)
+@app_commands.describe(address='IP Address or Domain Name')
+@app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
 async def command_move_up(interaction: discord.Interaction, address: str, query_port: int):
     """Move the server message upward"""
@@ -319,6 +324,8 @@ async def command_move_up(interaction: discord.Interaction, address: str, query_
 
 
 @tree.command(name='movedown', description='Move the server message downward', guilds=whitelist_guilds)
+@app_commands.describe(address='IP Address or Domain Name')
+@app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
 async def command_move_down(interaction: discord.Interaction, address: str, query_port: int):
     """Move the server message downward"""
@@ -332,6 +339,8 @@ async def command_move_down(interaction: discord.Interaction, address: str, quer
 
 
 @tree.command(name='changestyle', description='Change server message style', guilds=whitelist_guilds)
+@app_commands.describe(address='IP Address or Domain Name')
+@app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
 async def command_change_style(interaction: discord.Interaction, address: str, query_port: int):
     """Change server message style"""
@@ -365,6 +374,8 @@ async def command_change_style(interaction: discord.Interaction, address: str, q
 
 
 @tree.command(name='editstyledata', description='Edit server message style data', guilds=whitelist_guilds)
+@app_commands.describe(address='IP Address or Domain Name')
+@app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
 async def command_edit_style_data(interaction: discord.Interaction, address: str, query_port: int):
     """Edit server message style data"""

@@ -60,7 +60,7 @@ class Small(Style):
         if self.server.status:
             color = Color.from_rgb(88, 101, 242)
         else:
-            color = Color.from_rgb(32, 34, 37) # dark
+            color = Color.from_rgb(32, 34, 37)  # dark
 
         title = (self.server.result['password'] and ':lock: ' or '') + self.server.result['name']
         description = self.server.style_data.get('description', '').strip()
@@ -78,12 +78,12 @@ class Small(Style):
             embed.add_field(name='Address:Port (Query)', value=f'`{self.server.address}:{game_port} ({self.server.query_port})`', inline=True)
 
         if self.server.status:
-            players_string = str(players) # example: 20
+            players_string = str(players)  # example: 20
 
             if bots > 0:
-                players_string += f' ({bots})' # example: 20 (2)
+                players_string += f' ({bots})'  # example: 20 (2)
         else:
-            players_string = '0' # example: 0
+            players_string = '0'  # example: 0
 
         maxplayers = int(self.server.result['maxplayers'])
 
@@ -99,7 +99,7 @@ class Small(Style):
         advertisement = '📺 Game Servers Monitor'
 
         # Easter Egg
-        today = str(date.today()) # 2020-12-23
+        today = str(date.today())  # 2020-12-23
         if '-12-25' in today:
             advertisement = '🎅 Merry Christmas!'
         elif '-01-01' in today:

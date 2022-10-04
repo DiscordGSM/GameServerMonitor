@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
+
 @dataclass
 class Server:
     id: int
@@ -40,6 +41,7 @@ class Server:
             style_id=None,
             style_data={}
         )
+
     @staticmethod
     def from_distinct_query(row: tuple) -> Server:
         return Server(

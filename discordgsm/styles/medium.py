@@ -39,13 +39,10 @@ class Medium(Style):
         game = gamedig.find(self.server.game_id)
         style_data = {'fullname': game['fullname']}
 
-        try:
-            if self.server.game_id == 'discord' and self.server.result['connect']:
-                style_data['description'] = f'Instant Invite: {self.server.result["connect"]}'
-            elif gamedig.default_port(self.server.game_id) == 27015 and gamedig.game_port(self.server.result) == int(self.server.query_port):
-                style_data['description'] = f'Connect: steam://connect/{self.server.address}:{self.server.query_port}'
-        except:
-            pass
+        if self.server.game_id == 'discord' and self.server.result['connect']:
+            style_data['description'] = f'Instant Invite: {self.server.result["connect"]}'
+        elif gamedig.default_port(self.server.game_id) == 27015 and gamedig.game_port(self.server.result) == int(self.server.query_port):
+            style_data['description'] = f'Connect: steam://connect/{self.server.address}:{self.server.query_port}'
 
         try:
             response = requests.get(f'https://ipinfo.io/{socket.gethostbyname(self.server.address)}/country')
@@ -72,7 +69,7 @@ class Medium(Style):
         if self.server.status:
             color = Color.from_rgb(88, 101, 242)
         else:
-            color = Color.from_rgb(32, 34, 37) # dark
+            color = Color.from_rgb(32, 34, 37)  # dark
 
         title = (self.server.result['password'] and ':lock: ' or '') + self.server.result['name']
         description = self.server.style_data.get('description', '').strip()
@@ -98,12 +95,12 @@ class Medium(Style):
         embed.add_field(name='Current Map', value=maps, inline=True)
 
         if self.server.status:
-            players_string = str(players) # example: 20
+            players_string = str(players)  # example: 20
 
             if bots > 0:
-                players_string += f' ({bots})' # example: 20 (2)
+                players_string += f' ({bots})'  # example: 20 (2)
         else:
-            players_string = '0' # example: 0
+            players_string = '0'  # example: 0
 
         maxplayers = int(self.server.result['maxplayers'])
 
@@ -119,7 +116,7 @@ class Medium(Style):
         advertisement = '📺 Game Servers Monitor'
 
         # Easter Egg
-        today = str(date.today()) # 2020-12-23
+        today = str(date.today())  # 2020-12-23
         if '-12-25' in today:
             advertisement = '🎅 Merry Christmas!'
         elif '-01-01' in today:

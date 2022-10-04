@@ -40,7 +40,7 @@ shard_ids = [int(shard_id) for shard_id in os.getenv('APP_SHARD_IDS').replace(';
 shard_count = int(os.getenv('APP_SHARD_COUNT', '1'))
 client = Client(intents=intents) if not public else AutoShardedClient(intents=intents, shard_ids=shard_ids, shard_count=shard_count)
 
-#region Application event
+# region Application event
 @client.event
 async def on_ready():
     """Called when the client is done preparing the data received from Discord."""
@@ -61,6 +61,7 @@ async def on_ready():
     if os.getenv('HEROKU_APP_NAME') is not None:
         heroku_query.start()
 
+
 @client.event
 async def on_guild_join(guild: discord.Guild):
     """Called when a Guild is either created by the Client or when the Client joins a guild."""
@@ -75,17 +76,20 @@ async def on_guild_join(guild: discord.Guild):
     if guild.id in [guild.id for guild in whitelist_guilds]:
         await sync_commands([discord.Object(id=guild.id)])
 
+
 @client.event
 async def on_guild_remove(guild: discord.Guild):
     """Remove all associated servers in database when discordgsm leaves"""
     database.factory_reset(guild.id)
     Logger.info(f'{client.user} left {guild.name}({guild.id}), associated servers were deleted.')
 
+
 @client.event
 async def on_guild_channel_delete(channel: discord.abc.GuildChannel):
     """Remove all associated servers in database when channel deletes"""
     database.delete_servers(channel_id=channel.id)
     Logger.info(f'Channel #{channel.name}({channel.id}) deleted, associated servers were deleted.')
+
 
 async def sync_commands(guilds: List[discord.Object]):
     """Syncs the application commands to Discord."""
@@ -97,6 +101,7 @@ async def sync_commands(guilds: List[discord.Object]):
         tree.clear_commands(guild=None)
 
     await tree_sync()
+
 
 async def tree_sync(guild: discord.Object = None):
     """Syncs the application commands to Discord."""
@@ -113,16 +118,19 @@ async def tree_sync(guild: discord.Object = None):
         Logger.error(f'The client does not have the applications.commands scope in the guild. {e} {guild.id if guild else ""}')
     except discord.HTTPException as e:
         Logger.error(f'Syncing the commands failed. {e} {guild.id if guild else ""}')
-#endregion
+# endregion
 
-#region Application checks
+
+# region Application checks
 def is_owner(interaction: Interaction) -> bool:
     """Check is owner"""
     return interaction.user.id == interaction.guild.owner.id
 
+
 def is_administrator(interaction: Interaction) -> bool:
     """Check is administrator"""
     return interaction.user.guild_permissions.administrator
+
 
 def custom_command_query_check(interaction: Interaction) -> bool:
     """Query command check"""
@@ -131,16 +139,18 @@ def custom_command_query_check(interaction: Interaction) -> bool:
 
     return is_administrator(interaction)
 
+
 def cooldown_for_everyone_except_administrator(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
     """Cooldown for everyone except administrator"""
     if is_administrator(interaction):
         return None
 
     return app_commands.Cooldown(1, float(os.getenv('COMMAND_QUERY_COOLDOWN', '5')))
-#endregion
+# endregion
 
-#region Application commands
+# region Application commands
 tree = app_commands.CommandTree(client)
+
 
 def modal(game_id: str, is_add_server: bool):
     """Query server modal"""
@@ -178,7 +188,7 @@ def modal(game_id: str, is_add_server: bool):
                 database.find_server(interaction.channel.id, host, port)
                 await interaction.response.send_message('The server already exists in the channel', ephemeral=True)
                 return
-            except Exception as e:
+            except database.ServerNotFoundError:
                 pass
 
         try:
@@ -202,7 +212,7 @@ def modal(game_id: str, is_add_server: bool):
 
             try:
                 server = database.add_server(server)
-            except Exception as e:
+            except database.ServerNotFoundError as e:
                 await interaction.response.send_message(f'Fail to add the server `{host}:{port}`. Please try again.')
                 Logger.error(f'Fail to add the server {host}:{port} {e}')
                 return
@@ -215,6 +225,7 @@ def modal(game_id: str, is_add_server: bool):
 
     return modal
 
+
 @tree.command(name='queryserver', description='Query server', guilds=whitelist_guilds)
 @app_commands.check(custom_command_query_check)
 @app_commands.checks.dynamic_cooldown(cooldown_for_everyone_except_administrator)
@@ -224,6 +235,7 @@ async def command_query(interaction: Interaction, game_id: str):
 
     if game := await find_game(interaction, game_id):
         await interaction.response.send_modal(modal(game['id'], False))
+
 
 @tree.command(name='addserver', description='Add server in current channel', guilds=whitelist_guilds)
 @app_commands.check(is_administrator)
@@ -245,6 +257,7 @@ async def command_addserver(interaction: Interaction, game_id: str):
 
         await interaction.response.send_modal(modal(game['id'], True))
 
+
 @tree.command(name='delserver', description='Delete server in current channel', guilds=whitelist_guilds)
 @app_commands.check(is_administrator)
 async def command_delserver(interaction: Interaction, address: str, query_port: int):
@@ -256,6 +269,7 @@ async def command_delserver(interaction: Interaction, address: str, query_port: 
         database.delete_server(server)
         await refresh_channel_messages(interaction.channel.id, resend=True)
 
+
 @tree.command(name='refresh', description='Refresh servers\' messages in current channel', guilds=whitelist_guilds)
 @app_commands.check(is_administrator)
 async def command_refresh(interaction: Interaction):
@@ -264,7 +278,8 @@ async def command_refresh(interaction: Interaction):
 
     await interaction.response.defer(thinking=True)
     await refresh_channel_messages(interaction.channel.id, resend=True)
-    
+
+
 @tree.command(name='factoryreset', description='Delete all servers in current guild', guilds=whitelist_guilds)
 @app_commands.check(is_administrator)
 async def command_factoryreset(interaction: Interaction):
@@ -285,6 +300,7 @@ async def command_factoryreset(interaction: Interaction):
 
     await interaction.response.send_message(content='Are you sure you want to delete all servers in current guild? This cannot be undone.', view=view, ephemeral=True)
 
+
 @tree.command(name='moveup', description='Move the server message upward', guilds=whitelist_guilds)
 @app_commands.check(is_administrator)
 async def command_move_up(interaction: discord.Interaction, address: str, query_port: int):
@@ -296,7 +312,8 @@ async def command_move_up(interaction: discord.Interaction, address: str, query_
         database.modify_server_position(server, True)
         await refresh_channel_messages(interaction.channel.id, resend=False)
         await interaction.delete_original_response()
-    
+
+
 @tree.command(name='movedown', description='Move the server message downward', guilds=whitelist_guilds)
 @app_commands.check(is_administrator)
 async def command_move_down(interaction: discord.Interaction, address: str, query_port: int):
@@ -308,6 +325,7 @@ async def command_move_down(interaction: discord.Interaction, address: str, quer
         database.modify_server_position(server, False)
         await refresh_channel_messages(interaction.channel.id, resend=False)
         await interaction.delete_original_response()
+
 
 @tree.command(name='changestyle', description='Change server message style', guilds=whitelist_guilds)
 @app_commands.check(is_administrator)
@@ -341,6 +359,7 @@ async def command_change_style(interaction: discord.Interaction, address: str, q
 
         await interaction.response.send_message(content=f'`{server.address}:{server.query_port}` Current style:', view=view, ephemeral=True)
 
+
 @tree.command(name='editstyledata', description='Edit server message style data', guilds=whitelist_guilds)
 @app_commands.check(is_administrator)
 async def command_edit_style_data(interaction: discord.Interaction, address: str, query_port: int):
@@ -365,6 +384,7 @@ async def command_edit_style_data(interaction: discord.Interaction, address: str
 
         await interaction.response.send_modal(modal)
 
+
 @command_query.error
 @command_addserver.error
 @command_delserver.error
@@ -381,9 +401,10 @@ async def command_error_handler(interaction: Interaction, error: app_commands.Ap
         await interaction.response.send_message('You don\'t have sufficient privileges to use this command', ephemeral=True)
     else:
         Logger.error(str(error))
-#endregion
+# endregion
 
-#region Application functions
+
+# region Application functions
 async def find_game(interaction: Interaction, game_id: str):
     """Find game by game_id, return """
     try:
@@ -393,6 +414,7 @@ async def find_game(interaction: Interaction, game_id: str):
         await interaction.response.send_message(f'{game_id} is not a valid game id', ephemeral=True)
         return None
 
+
 async def find_server(interaction: Interaction, address: str, query_port: int):
     """Find server by channel id, and return server"""
     try:
@@ -401,6 +423,7 @@ async def find_server(interaction: Interaction, address: str, query_port: int):
     except database.ServerNotFoundError:
         await interaction.response.send_message('The server does not exist in the channel', ephemeral=True)
         return None
+
 
 async def fetch_message(server: Server):
     """Fetch message with local cache"""
@@ -432,6 +455,7 @@ async def fetch_message(server: Server):
 
     return None
 
+
 async def refresh_channel_messages(channel_id: int, resend: bool):
     """When resend=True, no need to await interaction.delete_original_response()"""
     servers = database.all_servers(channel_id=channel_id)
@@ -462,6 +486,7 @@ async def refresh_channel_messages(channel_id: int, resend: bool):
 
     database.update_servers_message_id(servers)
 
+
 async def delete_message(server: Server, update_message_id: bool = False):
     """Delete message"""
     message = await fetch_message(server)
@@ -489,14 +514,16 @@ async def delete_message(server: Server, update_message_id: bool = False):
     if update_message_id:
         database.update_servers_message_id([server])
 
+
 # Credits: https://stackoverflow.com/questions/312443/how-do-i-split-a-list-into-equally-sized-chunks
 def to_chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
-#endregion
+# endregion
 
-#region Application tasks
+
+# region Application tasks
 @tasks.loop(seconds=float(os.getenv('TASK_EDIT_MESSAGE', '60')))
 async def edit_messages():
     """Edit messages (Scheduled)"""
@@ -520,6 +547,7 @@ async def edit_messages():
     success = sum(result is not False for result in results)
     failed = len(results) - success
     Logger.info(f'{task_action} messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
+
 
 async def edit_message(servers: List[Server]):
     """Edit message"""
@@ -564,6 +592,7 @@ async def edit_message(servers: List[Server]):
         Logger.debug(f'Edit messages: {message.id} edit_messages discord.HTTPException {e}')
         return False
 
+
 @tasks.loop(seconds=float(os.getenv('TASK_QUERY_SERVER', '60')))
 async def query_servers():
     """Query servers (Scheduled)"""
@@ -575,6 +604,7 @@ async def query_servers():
 
     database.update_servers(servers) 
     Logger.info(f'Query servers: Total = {len(servers)}, Success = {success}, Failed = {failed} ({len(servers) > 0 and int(failed / len(servers) * 100) or 0}% fail)')
+
 
 def query_servers_func(distinct_servers: List[Server]):
     """Query servers with ThreadPoolExecutor"""
@@ -589,6 +619,7 @@ def query_servers_func(distinct_servers: List[Server]):
 
     return servers, success, len(servers) - success
 
+
 def query_server(server: Server):
     """Query server"""
     try:
@@ -599,12 +630,14 @@ def query_server(server: Server):
 
     return server
 
+
 @tasks.loop(minutes=5)
 async def presence_update():
     """Changes the client's presence."""
     number_of_servers = int(database.statistics()['unique_servers'])
     activity = discord.Activity(name=f'{number_of_servers} servers', type=ActivityType.watching)
     await client.change_presence(status=discord.Status.online, activity=activity)
+
 
 @tasks.loop(minutes=30)
 async def cache_guilds():
@@ -621,6 +654,7 @@ async def cache_guilds():
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'public', 'static', 'guilds.json'), 'w', encoding='utf-8') as f:
         json.dump(guilds, f, ensure_ascii=False)
 
+
 @tasks.loop(minutes=5)
 async def heroku_query():
     """Heroku - Prevent a web dyno from sleeping"""
@@ -632,7 +666,7 @@ async def heroku_query():
         Logger.debug(f'Sends a GET request to {url}')
     except Exception as e:
         Logger.error(f'Sends a GET request to {url}, {e}')
-#endregion
+# endregion
 
 if __name__ == '__main__':
     client.run(os.environ['APP_TOKEN'])

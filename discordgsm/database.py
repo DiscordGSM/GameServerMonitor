@@ -83,12 +83,12 @@ class Database:
         if self.type == 'pgsql':
             return sql.replace('?', '%s')
 
-        return sql # sqlite
+        return sql  # sqlite
 
     def statistics(self):
         sql = '''
         SELECT DISTINCT
-            (SELECT COUNT(DISTINCT message_id) FROM servers) as messages, 
+            (SELECT COUNT(DISTINCT message_id) FROM servers) as messages,
             (SELECT COUNT(DISTINCT channel_id) FROM servers) as channels,
             (SELECT COUNT(DISTINCT guild_id) FROM servers) as guilds,
             (SELECT COUNT(*) FROM (SELECT DISTINCT game_id, address, query_port, query_extra FROM servers) x) as unique_servers
@@ -107,7 +107,7 @@ class Database:
             'unique_servers': row[3],
         }
 
-    def all_servers(self, channel_id: int=None, guild_id: int=None, message_id: int=None, filter_secret=False):
+    def all_servers(self, channel_id: int = None, guild_id: int = None, message_id: int = None, filter_secret: bool = False):
         """Get all servers"""
         cursor = self.conn.cursor()
 
@@ -125,7 +125,7 @@ class Database:
 
         return servers
 
-    def all_channels_servers(self, servers: List[Server]=None):
+    def all_channels_servers(self, servers: List[Server] = None):
         """Convert or get servers to dict grouped by channel id"""
         all_servers = servers if servers is not None else self.all_servers()
         channels_servers: Dict[int, List[Server]] = {}
@@ -138,7 +138,7 @@ class Database:
 
         return channels_servers
 
-    def all_messages_servers(self, servers: List[Server]=None):
+    def all_messages_servers(self, servers: List[Server] = None):
         """Convert or get servers to dict grouped by message id"""
         all_servers = servers if servers is not None else self.all_servers()
         messages_servers: Dict[int, List[Server]] = {}
@@ -215,7 +215,7 @@ class Database:
         self.conn.commit()
         cursor.close()
 
-    def find_server(self, channel_id: int, address: str=None, query_port: str=None, message_id: int=None):
+    def find_server(self, channel_id: int, address: str = None, query_port: str = None, message_id: int = None):
         cursor = self.conn.cursor()
 
         if message_id is not None:

@@ -41,7 +41,7 @@ class Small(Style):
                 style_data['description'] = f'Instant Invite: {self.server.result["connect"]}'
             elif gamedig.default_port(self.server.game_id) == 27015 and gamedig.game_port(self.server.result) == int(self.server.query_port):
                 style_data['description'] = f'Connect: steam://connect/{self.server.address}:{self.server.query_port}'
-        except:
+        except Exception:
             pass
 
         return style_data

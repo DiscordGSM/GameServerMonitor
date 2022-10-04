@@ -13,6 +13,7 @@ except ImportError:
 
 load_dotenv()
 
+
 class Logger:
     """Custom Logger"""
     path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'data', 'logs')

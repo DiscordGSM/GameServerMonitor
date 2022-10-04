@@ -61,7 +61,7 @@ class Server:
         )
 
     @staticmethod
-    def from_list(row: tuple, filter_secret = False) -> Server:
+    def from_list(row: tuple, filter_secret=False) -> Server:
         query_extra: dict = json.loads(row[8])
 
         if filter_secret:

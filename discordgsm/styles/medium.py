@@ -49,7 +49,7 @@ class Medium(Style):
 
             if '{' not in response.text:
                 style_data['country'] = response.text.replace('\n', '').strip()
-        except:
+        except Exception:
             pass
 
         return style_data

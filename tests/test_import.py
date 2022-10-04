@@ -1,3 +1,4 @@
+# flake8: noqa
 def test_import():
     import discordgsm.styles
     import discordgsm.database

@@ -16,9 +16,10 @@ def stringify(data: dict):
     """Dictionary to json string"""
     return json.dumps(data, ensure_ascii=False, separators=(',', ':'))
 
+
 class Database:
     """Database with connection and cursor prepared"""
-    
+
     def __init__(self):
         self.connect()
 
@@ -46,7 +47,7 @@ class Database:
                 message_id BIGINT,
                 game_id TEXT NOT NULL,
                 address TEXT NOT NULL,
-                query_port INT NOT NULL, 
+                query_port INT NOT NULL,
                 query_extra TEXT NOT NULL,
                 status BOOLEAN NOT NULL,
                 result TEXT NOT NULL,
@@ -58,7 +59,7 @@ class Database:
             CREATE TABLE IF NOT EXISTS servers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 position INT NOT NULL,
-                guild_id BIGINT NOT NULL, 
+                guild_id BIGINT NOT NULL,
                 channel_id BIGINT NOT NULL,
                 message_id BIGINT,
                 game_id TEXT NOT NULL,
@@ -91,13 +92,13 @@ class Database:
             (SELECT COUNT(DISTINCT guild_id) FROM servers) as guilds,
             (SELECT COUNT(*) FROM (SELECT DISTINCT game_id, address, query_port, query_extra FROM servers) x) as unique_servers
         FROM servers'''
-        
+
         cursor = self.conn.cursor()
         cursor.execute(self.transform(sql))
         row = cursor.fetchone()
         cursor.close()
         row = [0, 0, 0, 0] if row is None else row
-        
+
         return {
             'messages': row[0],
             'channels': row[1],
@@ -172,11 +173,8 @@ class Database:
         self.conn.commit()
         cursor.close()
 
-        try:
-            return self.find_server(s.channel_id, s.address, s.query_port)
-        except:
-            raise Exception('Fail to add the server')
-        
+        return self.find_server(s.channel_id, s.address, s.query_port)
+
     def update_servers_message_id(self, servers: List[Server]):
         sql = 'UPDATE servers SET message_id = ? WHERE id = ?'
         parameters = [(server.message_id, server.id) for server in servers]

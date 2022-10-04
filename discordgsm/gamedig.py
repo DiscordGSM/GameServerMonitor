@@ -13,6 +13,7 @@ from discordgsm.server import Server
 
 
 class GamedigGame(TypedDict):
+    """Gamedig Game"""
     id: str
     fullname: str
     protocol: str
@@ -21,11 +22,13 @@ class GamedigGame(TypedDict):
 
 
 class GamedigPlayer(TypedDict):
+    """Gamedig Player"""
     name: str
     raw: dict
 
 
 class GamedigResult(TypedDict):
+    """Gamedig Result"""
     name: str
     map: str
     password: bool
@@ -38,27 +41,27 @@ class GamedigResult(TypedDict):
 
 
 class InvalidGameException(Exception):
-    pass
+    """Invalid Game Exception"""
 
 
 class Gamedig:
     def __init__(self, file: str = 'games.txt'):
         self.games: dict[str, GamedigGame] = {}
-        
+
         def row_to_dict(row: str):
-            d = {}
-            
+            data = {}
+
             if len(row) > 0:
-                for x in row.split(','):
-                    y = x.split('=')
-                    d[y[0]] = y[1]
-                
-            return d
-        
+                for item in row.split(','):
+                    results = item.split('=')
+                    data[results[0]] = results[1]
+
+            return data
+
         with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), file), 'r', encoding='utf8') as f:
             reader = csv.reader(f, delimiter='|')
             next(reader, None)
-            
+
             for row in reader:
                 if len(row) > 0: 
                     id = row[0].split(',')[0]
@@ -69,7 +72,7 @@ class Gamedig:
     def find(self, game_id: str):
         if game_id in self.games:
             return self.games[game_id]
-        
+
         raise LookupError()
 
     def default_port(self, game_id: str):
@@ -89,13 +92,13 @@ class Gamedig:
     def game_port(result: GamedigResult):
         """Attempt to get the game port from GamedigResult, return None if failure."""
         game_port: int = None
-        
+
         if result['connect'] and ':' in result['connect']:
             elements = result['connect'].split(':')
-            
+
             if len(elements) == 2 and elements[1].isdigit():
                 game_port = int(elements[1])
-                
+
         return game_port
 
     def query(self, server: Server):
@@ -118,16 +121,16 @@ class Gamedig:
             return query_terraria(kv['host'], kv['port'], kv['_token'])
         elif kv['type'] == 'discord':
             return query_discord(kv['host'])
-        
+
         args = ['cmd.exe', '/c', 'gamedig'] if platform.system() == 'Windows' else ['gamedig']
-        
+
         for option, value in kv.items():
             args.extend([f'--{str(option).lstrip("_")}', Gamedig.__escape_argument(str(value)) if platform.system() == 'Windows' else str(value)])
-        
+
         process = subprocess.run(args, stdout=subprocess.PIPE)
         output = process.stdout.decode('utf8')
         result: GamedigResult = json.loads(output)
-        
+
         if 'error' in result:
             if 'Invalid game:' in result['error']:
                 raise InvalidGameException()
@@ -135,15 +138,15 @@ class Gamedig:
                 raise Exception(result['error'])
 
         return result
-    
+
     # Credits: https://stackoverflow.com/questions/29213106/how-to-securely-escape-command-line-arguments-for-the-cmd-exe-shell-on-windows
     @staticmethod
     def __escape_argument(arg: str):
         if not arg or re.search(r'(["\s])', arg):
             arg = '"' + arg.replace('"', r'\"') + '"'
-    
+
         return Gamedig.__escape_for_cmd_exe(arg)
-    
+
     # Credits: https://stackoverflow.com/questions/29213106/how-to-securely-escape-command-line-arguments-for-the-cmd-exe-shell-on-windows
     @staticmethod
     def __escape_for_cmd_exe(arg: str):
@@ -154,10 +157,10 @@ class Gamedig:
 def query_terraria(host: str, port: int, token: str):
     url = f'http://{host}:{port}/v2/server/status?players=true&rules=false&token={token}'
     response = requests.get(url)
-    
+
     if response.status_code != 200:
         raise Exception('Fail to query terraria server')
-    
+
     data = response.json()
     result: GamedigResult = {
         'name': data['name'],
@@ -169,16 +172,16 @@ def query_terraria(host: str, port: int, token: str):
         'connect': f"{host}:{data['port']}",
         'ping': response.elapsed.microseconds,
     }
-    
+
     return result
 
 def query_discord(guild_id: str):
     url = f'https://discord.com/api/guilds/{guild_id}/widget.json?v={int(time.time())}'
     response = requests.get(url)
-    
+
     if response.status_code != 200:
         raise Exception('Fail to query discord server')
-    
+
     data = response.json()
     result: GamedigResult = {
         'name': data['name'],
@@ -193,14 +196,14 @@ def query_discord(guild_id: str):
             'numplayers': data['presence_count'],
         }
     }
-    
+
     return result
-    
+
 if __name__ == '__main__':
     r = Gamedig().run({
         'type': 'tf2',
         'host': '104.238.229.98',
         'port': '27015'
     })
-    
+
     print(r['players'])

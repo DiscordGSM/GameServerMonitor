@@ -18,4 +18,4 @@ permissions = '137439225936' # Manage Channels, Send Messages, Manage Messages, 
 invite_link = f'https://discord.com/api/oauth2/authorize?client_id={client_id}&permissions={permissions}&scope=applications.commands%20bot'
 
 public = os.getenv('APP_PUBLIC', '').lower() == 'true'
-guilds = public and MISSING or [discord.Object(id=int(guild)) for guild in os.getenv('WHITELIST_GUILDS', '').replace(';', ',').split(',') if guild]
+guilds = MISSING if public else [discord.Object(id=int(guild)) for guild in os.getenv('WHITELIST_GUILDS', '').replace(';', ',').split(',') if guild]

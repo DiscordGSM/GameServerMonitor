@@ -1,5 +1,3 @@
-import pytest
-
 def test_import():
     import discordgsm.styles
     import discordgsm.database

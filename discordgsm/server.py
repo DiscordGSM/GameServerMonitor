@@ -22,7 +22,7 @@ class Server:
     result: GamedigResult
     style_id: str
     style_data: dict
-    
+
     @staticmethod
     def new(guild_id: int, channel_id: int, game_id: str, address: str, query_port: str, query_extra: dict, result: GamedigResult) -> Server:
         return Server(
@@ -40,7 +40,6 @@ class Server:
             style_id=None,
             style_data={}
         )
-
     @staticmethod
     def from_distinct_query(row: tuple) -> Server:
         return Server(
@@ -58,14 +57,14 @@ class Server:
             style_id=None,
             style_data=None,
         )
-    
+
     @staticmethod
     def from_list(row: tuple, filter_secret = False) -> Server:
         query_extra: dict = json.loads(row[8])
-        
+
         if filter_secret:
             query_extra = {k: v for k, v in query_extra.items() if not str(k).startswith('_')}
-        
+
         return Server(
             id=row[0],
             position=row[1],

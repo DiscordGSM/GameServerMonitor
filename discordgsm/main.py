@@ -299,6 +299,7 @@ async def command_factoryreset(interaction: Interaction):
         servers = database.all_servers(guild_id=interaction.guild.id)
         database.factory_reset(interaction.guild.id)
         await asyncio.gather(*[delete_message(server) for server in servers])
+        await interaction.response.send_message(content='Factory reset successfully.', ephemeral=True)
 
     button.callback = button_callback
 

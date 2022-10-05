@@ -15,7 +15,8 @@ from dotenv import load_dotenv
 
 from discordgsm.logger import Logger
 from discordgsm.server import Server
-from discordgsm.service import database, gamedig, whitelist_guilds, invite_link, public
+from discordgsm.service import (database, gamedig, invite_link, public,
+                                timezones, whitelist_guilds)
 from discordgsm.styles.style import Style
 
 load_dotenv()
@@ -143,7 +144,7 @@ def custom_command_query_check(interaction: Interaction) -> bool:
     return is_administrator(interaction)
 
 
-def cooldown_for_everyone_except_administrator(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
+def cooldown_for_everyone_except_administrator(interaction: Interaction) -> Optional[app_commands.Cooldown]:
     """Cooldown for everyone except administrator"""
     if is_administrator(interaction):
         return None
@@ -206,8 +207,6 @@ def modal(game_id: str, is_add_server: bool):
         server.style_data = style.default_style_data()
 
         if is_add_server:
-            await interaction.response.defer()
-
             if public:
                 content = f'Server was added by <@{interaction.user.id}> on #{interaction.channel.name}({interaction.channel.id}) {interaction.guild.name}({interaction.guild.id})'
                 webhook = SyncWebhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'))
@@ -220,6 +219,7 @@ def modal(game_id: str, is_add_server: bool):
                 Logger.error(f'Fail to add the server {host}:{port} {e}')
                 return
 
+            await interaction.response.defer()
             await refresh_channel_messages(interaction.channel.id, resend=True)
         else:
             await interaction.response.send_message(content='Query successfully!', embed=style.embed())
@@ -272,18 +272,18 @@ async def command_delserver(interaction: Interaction, address: str, query_port: 
     Logger.command(interaction, address, query_port)
 
     if server := await find_server(interaction, address, query_port):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer()
         database.delete_server(server)
         await refresh_channel_messages(interaction.channel.id, resend=True)
 
 
-@tree.command(name='refresh', description='Refresh servers\' messages in current channel', guilds=whitelist_guilds)
+@tree.command(name='refresh', description='Refresh servers\' messages manually in current channel', guilds=whitelist_guilds)
 @app_commands.check(is_administrator)
 async def command_refresh(interaction: Interaction):
     """Refresh servers\' messages in current channel"""
     Logger.command(interaction)
 
-    await interaction.response.defer(thinking=True)
+    await interaction.response.defer()
     await refresh_channel_messages(interaction.channel.id, resend=True)
 
 
@@ -312,28 +312,27 @@ async def command_factoryreset(interaction: Interaction):
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
-async def command_move_up(interaction: discord.Interaction, address: str, query_port: int):
+async def command_moveup(interaction: Interaction, address: str, query_port: int):
     """Move the server message upward"""
-    Logger.command(interaction, address, query_port)
-
-    if server := await find_server(interaction, address, query_port):
-        await interaction.response.defer(thinking=True)
-        database.modify_server_position(server, True)
-        await refresh_channel_messages(interaction.channel.id, resend=False)
-        await interaction.delete_original_response()
+    await action_move(interaction, address, query_port, True)
 
 
 @tree.command(name='movedown', description='Move the server message downward', guilds=whitelist_guilds)
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
-async def command_move_down(interaction: discord.Interaction, address: str, query_port: int):
+async def command_movedown(interaction: Interaction, address: str, query_port: int):
     """Move the server message downward"""
+    await action_move(interaction, address, query_port, False)
+
+
+async def action_move(interaction: Interaction, address: str, query_port: int, direction: bool):
+    """True if move up, otherwise move down"""
     Logger.command(interaction, address, query_port)
 
     if server := await find_server(interaction, address, query_port):
-        await interaction.response.defer(thinking=True)
-        database.modify_server_position(server, False)
+        await interaction.response.defer()
+        database.modify_server_position(server, direction)
         await refresh_channel_messages(interaction.channel.id, resend=False)
         await interaction.delete_original_response()
 
@@ -342,7 +341,7 @@ async def command_move_down(interaction: discord.Interaction, address: str, quer
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
-async def command_change_style(interaction: discord.Interaction, address: str, query_port: int):
+async def command_changestyle(interaction: Interaction, address: str, query_port: int):
     """Change server message style"""
     Logger.command(interaction, address, query_port)
 
@@ -360,11 +359,10 @@ async def command_change_style(interaction: discord.Interaction, address: str, q
             if select.values[0] not in styles:
                 return
 
-            await interaction.response.defer(thinking=True)
+            await interaction.response.defer()
             server.style_id = select.values[0]
             database.update_server_style_id(server)
             await refresh_channel_messages(interaction.channel.id, resend=False)
-            await interaction.delete_original_response()
 
         select.callback = select_callback
         view = View()
@@ -377,7 +375,7 @@ async def command_change_style(interaction: discord.Interaction, address: str, q
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
-async def command_edit_style_data(interaction: discord.Interaction, address: str, query_port: int):
+async def command_editstyledata(interaction: Interaction, address: str, query_port: int):
     """Edit server message style data"""
     Logger.command(interaction, address, query_port)
 
@@ -391,7 +389,7 @@ async def command_edit_style_data(interaction: discord.Interaction, address: str
 
         async def modal_on_submit(interaction: Interaction):
             await interaction.response.defer()
-            server.style_data = {k: str(v) for k, v in edit_fields.items()}
+            server.style_data.update({k: str(v) for k, v in edit_fields.items()})
             database.update_server_style_data(server)
             await refresh_channel_messages(interaction.channel.id, resend=False)
 
@@ -400,14 +398,35 @@ async def command_edit_style_data(interaction: discord.Interaction, address: str
         await interaction.response.send_modal(modal)
 
 
+@tree.command(name='settimezone', description='Set server message time zone', guilds=whitelist_guilds)
+@app_commands.describe(address='IP Address or Domain Name')
+@app_commands.describe(query_port='Query Port')
+@app_commands.describe(timezone='TZ database name. See more: https://discordgsm.com/guide/timezones')
+@app_commands.check(is_administrator)
+async def command_settimezone(interaction: Interaction, address: str, query_port: int, timezone: str):
+    """Set server message time zone"""
+    Logger.command(interaction, address, query_port)
+
+    if server := await find_server(interaction, address, query_port):
+        if timezone not in timezones:
+            await interaction.response.send_message(f'`{timezone}` is not a valid time zone', ephemeral=True)
+            return
+
+        await interaction.response.defer()
+        server.style_data.update({'timezone': timezone})
+        database.update_server_style_data(server)
+        await refresh_channel_messages(interaction.channel.id, resend=False)
+        await interaction.delete_original_response()
+
 @command_query.error
 @command_addserver.error
 @command_delserver.error
 @command_refresh.error
-@command_move_up.error
-@command_move_down.error
-@command_change_style.error
-@command_edit_style_data.error
+@command_moveup.error
+@command_movedown.error
+@command_changestyle.error
+@command_editstyledata.error
+@command_settimezone.error
 async def command_error_handler(interaction: Interaction, error: app_commands.AppCommandError):
     """The default error handler provided by the client."""
     if isinstance(error, app_commands.CommandOnCooldown):
@@ -426,7 +445,7 @@ async def find_game(interaction: Interaction, game_id: str):
         game = gamedig.find(game_id)
         return game
     except LookupError:
-        await interaction.response.send_message(f'{game_id} is not a valid game id', ephemeral=True)
+        await interaction.response.send_message(f'`{game_id}` is not a valid game id', ephemeral=True)
         return None
 
 
@@ -436,7 +455,7 @@ async def find_server(interaction: Interaction, address: str, query_port: int):
         server = database.find_server(interaction.channel.id, address, query_port)
         return server
     except database.ServerNotFoundError:
-        await interaction.response.send_message('The server does not exist in the channel', ephemeral=True)
+        await interaction.response.send_message(f'The server `{address}:{query_port}` does not exist in the channel', ephemeral=True)
         return None
 
 

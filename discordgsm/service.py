@@ -8,6 +8,13 @@ from dotenv import load_dotenv
 from discordgsm.database import Database
 from discordgsm.gamedig import Gamedig
 
+try:
+    import zoneinfo
+    from zoneinfo import ZoneInfo
+except ImportError:
+    import backports.zoneinfo as zoneinfo
+    from backports.zoneinfo import ZoneInfo
+
 load_dotenv()
 
 database = Database()
@@ -19,3 +26,5 @@ invite_link = f'https://discord.com/api/oauth2/authorize?client_id={client_id}&p
 
 public = os.getenv('APP_PUBLIC', '').lower() == 'true'
 whitelist_guilds = MISSING if public else [discord.Object(id=int(guild)) for guild in os.getenv('WHITELIST_GUILDS', '').replace(';', ',').split(',') if guild]
+
+timezones: set[str] = zoneinfo.available_timezones()

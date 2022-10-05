@@ -3,7 +3,7 @@ from typing import Dict, Optional, Union
 
 from discord import Color, Embed, Emoji, PartialEmoji, TextStyle
 from discord.ui import TextInput
-from discordgsm.service import gamedig
+from discordgsm.service import ZoneInfo, gamedig
 from discordgsm.styles.style import Style
 from discordgsm.version import __version__
 
@@ -36,13 +36,10 @@ class Small(Style):
         game = gamedig.find(self.server.game_id)
         style_data = {'fullname': game['fullname']}
 
-        try:
-            if self.server.game_id == 'discord' and self.server.result['connect']:
-                style_data['description'] = f'Instant Invite: {self.server.result["connect"]}'
-            elif gamedig.default_port(self.server.game_id) == 27015 and gamedig.game_port(self.server.result) == int(self.server.query_port):
-                style_data['description'] = f'Connect: steam://connect/{self.server.address}:{self.server.query_port}'
-        except Exception:
-            pass
+        if self.server.game_id == 'discord' and self.server.result['connect']:
+            style_data['description'] = f'Instant Invite: {self.server.result["connect"]}'
+        elif gamedig.default_port(self.server.game_id) == 27015 and gamedig.game_port(self.server.result) == int(self.server.query_port):
+            style_data['description'] = f'Connect: steam://connect/{self.server.address}:{self.server.query_port}'
 
         return style_data
 
@@ -105,7 +102,7 @@ class Small(Style):
         elif '-01-01' in today:
             advertisement = '🎉 Happy New Year!'
 
-        last_update = datetime.now().strftime('%Y-%m-%d %I:%M:%S%p')
+        last_update = datetime.now(tz=ZoneInfo(self.server.style_data.get('timezone', 'Etc/UTC'))).strftime('%Y-%m-%d %I:%M:%S%p')
         icon_url = 'https://avatars.githubusercontent.com/u/61296017'
         embed.set_footer(text=f'DiscordGSM {__version__} | {advertisement} | Last update: {last_update}', icon_url=icon_url)
 

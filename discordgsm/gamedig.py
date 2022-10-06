@@ -102,11 +102,11 @@ class Gamedig:
         return game_port
 
     def query(self, server: Server):
-        return self.run({
+        return self.run({**{
             'type': server.game_id,
             'host': server.address,
             'port': server.query_port,
-        } | server.query_extra)
+        }, **server.query_extra})
 
     def run(self, kv: dict):
         try:

@@ -196,7 +196,7 @@ def modal(game_id: str, is_add_server: bool):
                 pass
 
         try:
-            result = gamedig.run(query_param | query_extra)
+            result = gamedig.run({**query_param, **query_extra})
         except Exception:
             await interaction.response.send_message(content=f'Fail to query `{game_id}` server `{host}:{port}`. Please try again.', ephemeral=True)
             return

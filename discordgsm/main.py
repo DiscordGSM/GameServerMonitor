@@ -634,8 +634,18 @@ async def query_servers():
     distinct_servers = database.distinct_servers()
     Logger.debug(f'Query servers: Tasks = {len(distinct_servers)} unique servers')
 
-    with ThreadPoolExecutor() as executor:
-        servers, success, failed = await asyncio.get_event_loop().run_in_executor(executor, query_servers_func, distinct_servers)
+    servers: List[Server] = []
+    success = 0
+    failed = 0
+
+    for chunks in to_chunks(distinct_servers, 45):
+        with ThreadPoolExecutor() as executor:
+            result = await asyncio.get_event_loop().run_in_executor(executor, query_servers_func, chunks)
+        
+        servers.extend(result[0])
+        success += result[1]
+        failed += result[2]
+        await asyncio.sleep(1)
 
     database.update_servers(servers)
     Logger.info(f'Query servers: Total = {len(servers)}, Success = {success}, Failed = {failed} ({len(servers) > 0 and int(failed / len(servers) * 100) or 0}% fail)')

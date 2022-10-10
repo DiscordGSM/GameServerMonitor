@@ -73,7 +73,7 @@ async def on_guild_join(guild: discord.Guild):
 
     if public:
         webhook = SyncWebhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'))
-        webhook.send(content=f'<@{client.user.id}> joined {guild.name}({guild.id}) 🎉.')
+        webhook.send(f'<@{client.user.id}> joined {guild.name}({guild.id}) 🎉.')
         return
 
     # Sync the commands to guild when discordgsm joins a guild.
@@ -187,10 +187,12 @@ def modal(game_id: str, is_add_server: bool):
         host = query_param['host']._value = str(query_param['host']._value).strip()
         port = str(query_param['port']).strip()
 
+        await interaction.response.defer()
+
         if is_add_server:
             try:
                 database.find_server(interaction.channel.id, host, port)
-                await interaction.response.send_message('The server already exists in the channel', ephemeral=True)
+                await interaction.followup.send('The server already exists in the channel', ephemeral=True)
                 return
             except database.ServerNotFoundError:
                 pass
@@ -198,7 +200,7 @@ def modal(game_id: str, is_add_server: bool):
         try:
             result = gamedig.run({**query_param, **query_extra})
         except Exception:
-            await interaction.response.send_message(content=f'Fail to query `{game_id}` server `{host}:{port}`. Please try again.', ephemeral=True)
+            await interaction.followup.send(f'Fail to query `{game_id}` server `{host}:{port}`. Please try again.', ephemeral=True)
             return
 
         server = Server.new(interaction.guild_id, interaction.channel_id, game_id, host, port, query_extra, result)
@@ -210,19 +212,18 @@ def modal(game_id: str, is_add_server: bool):
             if public:
                 content = f'Server was added by <@{interaction.user.id}> on #{interaction.channel.name}({interaction.channel.id}) {interaction.guild.name}({interaction.guild.id})'
                 webhook = SyncWebhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'))
-                webhook.send(content=content, embed=style.embed())
+                webhook.send(content, embed=style.embed())
 
             try:
                 server = database.add_server(server)
             except database.ServerNotFoundError as e:
-                await interaction.response.send_message(f'Fail to add the server `{host}:{port}`. Please try again.')
+                await interaction.followup.send(f'Fail to add the server `{host}:{port}`. Please try again.')
                 Logger.error(f'Fail to add the server {host}:{port} {e}')
                 return
 
-            await interaction.response.defer()
-            await refresh_channel_messages(interaction.channel.id, resend=True)
+            await refresh_channel_messages(interaction, resend=True)
         else:
-            await interaction.response.send_message(content='Query successfully!', embed=style.embed())
+            await interaction.followup.send('Query successfully!', embed=style.embed())
 
     modal.on_submit = modal_on_submit
 
@@ -274,7 +275,7 @@ async def command_delserver(interaction: Interaction, address: str, query_port: 
     if server := await find_server(interaction, address, query_port):
         await interaction.response.defer()
         database.delete_server(server)
-        await refresh_channel_messages(interaction.channel.id, resend=True)
+        await refresh_channel_messages(interaction, resend=True)
 
 
 @tree.command(name='refresh', description='Refresh servers\' messages manually in current channel', guilds=whitelist_guilds)
@@ -284,7 +285,7 @@ async def command_refresh(interaction: Interaction):
     Logger.command(interaction)
 
     await interaction.response.defer()
-    await refresh_channel_messages(interaction.channel.id, resend=True)
+    await refresh_channel_messages(interaction, resend=True)
 
 
 @tree.command(name='factoryreset', description='Delete all servers in current guild', guilds=whitelist_guilds)
@@ -296,17 +297,18 @@ async def command_factoryreset(interaction: Interaction):
     button = Button(style=ButtonStyle.red, label='Delete all servers')
 
     async def button_callback(interaction: Interaction):
+        await interaction.response.defer()
         servers = database.all_servers(guild_id=interaction.guild.id)
         database.factory_reset(interaction.guild.id)
         await asyncio.gather(*[delete_message(server) for server in servers])
-        await interaction.response.send_message(content='Factory reset successfully.', ephemeral=True)
+        await interaction.followup.send('Factory reset successfully.', ephemeral=True)
 
     button.callback = button_callback
 
     view = View()
     view.add_item(button)
 
-    await interaction.response.send_message(content='Are you sure you want to delete all servers in current guild? This cannot be undone.', view=view, ephemeral=True)
+    await interaction.response.send_message('Are you sure you want to delete all servers in current guild? This cannot be undone.', view=view, ephemeral=True)
 
 
 @tree.command(name='moveup', description='Move the server message upward', guilds=whitelist_guilds)
@@ -334,7 +336,7 @@ async def action_move(interaction: Interaction, address: str, query_port: int, d
     if server := await find_server(interaction, address, query_port):
         await interaction.response.defer()
         database.modify_server_position(server, direction)
-        await refresh_channel_messages(interaction.channel.id, resend=False)
+        await refresh_channel_messages(interaction, resend=False)
         await interaction.delete_original_response()
 
 
@@ -363,13 +365,13 @@ async def command_changestyle(interaction: Interaction, address: str, query_port
             await interaction.response.defer()
             server.style_id = select.values[0]
             database.update_server_style_id(server)
-            await refresh_channel_messages(interaction.channel.id, resend=False)
+            await refresh_channel_messages(interaction, resend=False)
 
         select.callback = select_callback
         view = View()
         view.add_item(select)
 
-        await interaction.response.send_message(content=f'`{server.address}:{server.query_port}` Current style:', view=view, ephemeral=True)
+        await interaction.response.send_message(f'`{server.address}:{server.query_port}` Current style:', view=view, ephemeral=True)
 
 
 @tree.command(name='editstyledata', description='Edit server message style data', guilds=whitelist_guilds)
@@ -392,7 +394,7 @@ async def command_editstyledata(interaction: Interaction, address: str, query_po
             await interaction.response.defer()
             server.style_data.update({k: str(v) for k, v in edit_fields.items()})
             database.update_server_style_data(server)
-            await refresh_channel_messages(interaction.channel.id, resend=False)
+            await refresh_channel_messages(interaction, resend=False)
 
         modal.on_submit = modal_on_submit
 
@@ -416,8 +418,9 @@ async def command_settimezone(interaction: Interaction, address: str, query_port
         await interaction.response.defer()
         server.style_data.update({'timezone': timezone})
         database.update_server_style_data(server)
-        await refresh_channel_messages(interaction.channel.id, resend=False)
+        await refresh_channel_messages(interaction, resend=False)
         await interaction.delete_original_response()
+
 
 @command_query.error
 @command_addserver.error
@@ -484,6 +487,8 @@ async def fetch_message(server: Server):
     except discord.Forbidden as e:
         # You do not have the permissions required to get a message.
         Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] fetch_message discord.Forbidden {e}')
+        server.message_id = None
+        database.update_servers_message_id([server])
     except discord.HTTPException as e:
         # Retrieving the message failed.
         Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] fetch_message discord.HTTPException {e}')
@@ -491,28 +496,42 @@ async def fetch_message(server: Server):
     return None
 
 
-async def refresh_channel_messages(channel_id: int, resend: bool):
+async def refresh_channel_messages(interaction: Interaction, resend: bool):
     """When resend=True, no need to await interaction.delete_original_response()"""
-    servers = database.all_servers(channel_id=channel_id)
+    servers = database.all_servers(channel_id=interaction.channel.id)
 
     if not resend:
         await asyncio.gather(*[edit_message(chunks) for chunks in database.all_channels_servers(servers).values()])
-        return
+        return True
 
-    channel = client.get_channel(channel_id)
-    await channel.purge(check=lambda m: m.author == client.user)
+    channel = client.get_channel(interaction.channel.id)
+
+    try:
+        await channel.purge(check=lambda m: m.author == client.user)
+    except discord.Forbidden as e:
+        # You do not have proper permissions to do the actions required.
+        Logger.error(f'Channel {interaction.channel.id} channel.purge discord.Forbidden {e}')
+        await interaction.followup.send('Missing Permission: `Manage Messages`')
+        return False
+    except discord.HTTPException as e:
+        # Purging the messages failed.
+        Logger.error(f'Channel {interaction.channel.id} channel.purge discord.HTTPException {e}')
+        await interaction.followup.send('Purging the messages failed. Please try again later.')
+        return False
 
     for chunks in to_chunks(servers, 10):
         try:
             message = await channel.send(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in chunks])
         except discord.Forbidden as e:
             # You do not have the proper permissions to send the message.
-            Logger.error(f'Channel {channel_id} send_message discord.Forbidden {e}')
-            break
+            Logger.error(f'Channel {interaction.channel.id} send_message discord.Forbidden {e}')
+            await interaction.followup.send('Missing Permission: `Send Messages`')
+            return False
         except discord.HTTPException as e:
             # Sending the message failed.
-            Logger.error(f'Channel {channel_id} send_message discord.HTTPException {e}')
-            break
+            Logger.error(f'Channel {interaction.channel.id} send_message discord.HTTPException {e}')
+            await interaction.followup.send('Sending the message failed. Please try again later.')
+            return False
 
         for server in chunks:
             server.message_id = message.id
@@ -520,6 +539,8 @@ async def refresh_channel_messages(channel_id: int, resend: bool):
         cache_message(message)
 
     database.update_servers_message_id(servers)
+
+    return True
 
 
 async def delete_message(server: Server, update_message_id: bool = False):
@@ -589,43 +610,19 @@ async def edit_message(servers: List[Server]):
     if len(servers) <= 0:
         return True
 
-    message = await fetch_message(servers[0])
-
-    if message is None:
-        channel = client.get_channel(servers[0].channel_id)
-
-        if channel is None:
-            Logger.error(f'Send messages: discord.Forbidden channel not found ({servers[0].channel_id})')
-            return False
-
+    if message := await fetch_message(servers[0]):
         try:
-            message = await channel.send(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in servers])
-            Logger.debug(f'Send messages: {message}')
+            message = await message.edit(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in servers])
+            Logger.debug(f'Edit messages: {message.id} success')
+            return True
         except discord.Forbidden as e:
-            # You do not have the proper permissions to send the message.
-            Logger.error(f'Send messages: discord.Forbidden {e}')
+            # Tried to suppress a message without permissions or edited a message's content or embed that isn't yours.
+            Logger.debug(f'Edit messages: {message.id} edit_messages discord.Forbidden {e}')
             return False
         except discord.HTTPException as e:
-            # Sending the message failed.
-            Logger.error(f'Send messages: discord.HTTPException {e}')
+            # Editing the message failed.
+            Logger.debug(f'Edit messages: {message.id} edit_messages discord.HTTPException {e}')
             return False
-
-        cache_message(message)
-        database.update_servers_message_id(servers)
-        return True
-
-    try:
-        message = await message.edit(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in servers])
-        Logger.debug(f'Edit messages: {message.id} success')
-        return True
-    except discord.Forbidden as e:
-        # Tried to suppress a message without permissions or edited a message's content or embed that isn't yours.
-        Logger.debug(f'Edit messages: {message.id} edit_messages discord.Forbidden {e}')
-        return False
-    except discord.HTTPException as e:
-        # Editing the message failed.
-        Logger.debug(f'Edit messages: {message.id} edit_messages discord.HTTPException {e}')
-        return False
 
 
 @tasks.loop(seconds=float(os.getenv('TASK_QUERY_SERVER', '60')))

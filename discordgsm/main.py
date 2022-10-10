@@ -217,8 +217,8 @@ def modal(game_id: str, is_add_server: bool):
             try:
                 server = database.add_server(server)
             except database.ServerNotFoundError as e:
-                await interaction.followup.send(f'Fail to add the server `{host}:{port}`. Please try again.')
                 Logger.error(f'Fail to add the server {host}:{port} {e}')
+                await interaction.followup.send(f'Fail to add the server `{host}:{port}`. Please try again later.')
                 return
 
             await refresh_channel_messages(interaction, resend=True)
@@ -638,7 +638,7 @@ async def query_servers():
     for chunks in to_chunks(distinct_servers, 45):
         with ThreadPoolExecutor() as executor:
             result = await asyncio.get_event_loop().run_in_executor(executor, query_servers_func, chunks)
-        
+
         servers.extend(result[0])
         success += result[1]
         failed += result[2]

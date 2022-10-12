@@ -6,8 +6,10 @@
         "node": "16.x"
     },
     "scripts": {
-        "build": "npm install -g gamedig",
         "start": "/bin/sh -c \"gunicorn --bind 0.0.0.0:8000 --workers=2 --worker-class=gthread app:app --timeout 90 & python3 -u main.py\""
     },
-    "license": "MIT"
+    "license": "MIT",
+    "dependencies": {
+        "gamedig": "^4.0.5"
+    }
 }

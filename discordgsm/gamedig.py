@@ -126,7 +126,7 @@ class Gamedig:
             return query_discord(kv['host'])
 
         args = ['cmd.exe', '/c'] if platform.system() == 'Windows' else []
-        args.extend(['node', os.path.join(os.path.dirname(os.path.realpath(__file__)), '../node_modules/gamedig/bin/gamedig.js')])
+        args.extend(['node', os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../node_modules/gamedig/bin/gamedig.js'))])
 
         for option, value in kv.items():
             args.extend([f'--{str(option).lstrip("_")}', Gamedig.__escape_argument(str(value)) if platform.system() == 'Windows' else str(value)])

@@ -294,8 +294,22 @@ class Database:
         cursor.execute('SELECT * FROM servers')
         file = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'data', 'servers.sql')
 
+        def values_builder(row: Tuple):
+            values = []
+
+            for value in row:
+                if value is None:
+                    values.append('NULL')
+                elif isinstance(value, str):
+                    value = str(value).replace("'", "''")
+                    values.append(f"'{value}'")
+                else:
+                    values.append(str(value))
+
+            return ', '.join(values)
+
         with open(file, 'w', encoding='utf-8') as f:
-            f.writelines([f'INSERT INTO servers VALUES {row};\n'.replace("\\'", "''") for row in cursor])
+            f.writelines([f'INSERT INTO servers VALUES ({values_builder(row)});\n' for row in cursor])
 
         print(f'Exported to {os.path.abspath(file)}')
 

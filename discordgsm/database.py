@@ -3,12 +3,15 @@ import os
 import sqlite3
 import sys
 from argparse import ArgumentParser
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import psycopg2
 from dotenv import load_dotenv
 
-from discordgsm.server import Server
+if __name__ == '__main__':
+    from server import Server
+else:
+    from discordgsm.server import Server
 
 load_dotenv()
 
@@ -286,6 +289,16 @@ class Database:
         self.conn.commit()
         cursor.close()
 
+    def export(self):
+        cursor = self.conn.cursor()
+        cursor.execute('SELECT * FROM servers')
+        file = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'data', 'servers.sql')
+
+        with open(file, 'w', encoding='utf-8') as f:
+            f.writelines([f'INSERT INTO servers VALUES {row};\n'.replace("\\'", "''") for row in cursor])
+
+        print(f'Exported to {os.path.abspath(file)}')
+
     class ServerNotFoundError(Exception):
         pass
 
@@ -294,6 +307,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     subparsers = parser.add_subparsers(dest='subparser_name')
     subparsers.add_parser('all')
+    subparsers.add_parser('export')
 
     args = parser.parse_args()
 
@@ -306,3 +320,5 @@ if __name__ == '__main__':
     if args.subparser_name == 'all':
         for server in database.all_servers():
             print(server)
+    elif args.subparser_name == 'export':
+        database.export()

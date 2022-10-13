@@ -9,7 +9,10 @@ from typing import List, TypedDict
 
 import requests
 
-from discordgsm.server import Server
+if __name__ == '__main__':
+    from server import Server
+else:
+    from discordgsm.server import Server
 
 
 class GamedigGame(TypedDict):

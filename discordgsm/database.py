@@ -172,10 +172,15 @@ class Database:
         if self.type == 'pgsql':
             sql = sql.replace('IFNULL', 'COALESCE')
 
-        cursor = self.conn.cursor()
-        cursor.execute(self.transform(sql), (s.channel_id, s.guild_id, s.channel_id, s.game_id, s.address, s.query_port, stringify(s.query_extra), s.status, stringify(s.result), s.style_id, stringify(s.style_data)))
-        self.conn.commit()
-        cursor.close()
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(self.transform(sql), (s.channel_id, s.guild_id, s.channel_id, s.game_id, s.address, s.query_port, stringify(s.query_extra), s.status, stringify(s.result), s.style_id, stringify(s.style_data)))
+            self.conn.commit()
+        except psycopg2.Error as e:
+            self.conn.rollback()
+            raise e
+        finally:
+            cursor.close()
 
         return self.find_server(s.channel_id, s.address, s.query_port)
 

@@ -216,7 +216,7 @@ def modal(game_id: str, is_add_server: bool):
 
             try:
                 server = database.add_server(server)
-            except database.ServerNotFoundError as e:
+            except Exception as e:
                 Logger.error(f'Fail to add the server {host}:{port} {e}')
                 await interaction.followup.send(f'Fail to add the server `{host}:{port}`. Please try again later.')
                 return

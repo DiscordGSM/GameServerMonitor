@@ -316,6 +316,10 @@ class Database:
         with open(file, 'w', encoding='utf-8') as f:
             f.writelines([f'INSERT INTO servers VALUES ({values_builder(row)});\n' for row in cursor])
 
+            if self.type == 'pgsql':
+                # Sync the id sequence, fix postgresql duplicate key violates unique constraint
+                f.write("SELECT SETVAL((SELECT PG_GET_SERIAL_SEQUENCE('\"servers\"', 'id')), (SELECT (MAX('id') + 1) FROM 'servers'), FALSE);\n")
+
         print(f'Exported to {os.path.abspath(file)}')
 
     class ServerNotFoundError(Exception):

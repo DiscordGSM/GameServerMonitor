@@ -600,8 +600,8 @@ async def edit_messages():
         results += await asyncio.gather(*chunks)
         await asyncio.sleep(1)
 
-    success = sum(result is not False for result in results)
-    failed = len(results) - success
+    failed = sum(result == False or result is None for result in results)
+    success = len(results) - failed
     Logger.info(f'{task_action} messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
 
 

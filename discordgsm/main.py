@@ -612,17 +612,20 @@ async def edit_message(servers: List[Server]):
 
     if message := await fetch_message(servers[0]):
         try:
-            message = await message.edit(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in servers])
+            message = await asyncio.wait_for(message.edit(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in servers]), timeout=2.0)
             Logger.debug(f'Edit messages: {message.id} success')
             return True
         except discord.Forbidden as e:
             # Tried to suppress a message without permissions or edited a message's content or embed that isn't yours.
             Logger.debug(f'Edit messages: {message.id} edit_messages discord.Forbidden {e}')
-            return False
         except discord.HTTPException as e:
             # Editing the message failed.
             Logger.debug(f'Edit messages: {message.id} edit_messages discord.HTTPException {e}')
-            return False
+        except asyncio.TimeoutError:
+            # Possible: discord.http: We are being rate limited. 
+            Logger.debug(f'Edit messages: {message.id} edit_messages asyncio.TimeoutError')
+
+    return False
 
 
 @tasks.loop(seconds=float(os.getenv('TASK_QUERY_SERVER', '60')))

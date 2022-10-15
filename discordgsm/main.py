@@ -218,7 +218,7 @@ def modal(game_id: str, is_add_server: bool):
                 server = database.add_server(server)
             except Exception as e:
                 Logger.error(f'Fail to add the server {host}:{port} {e}')
-                await interaction.followup.send(f'Fail to add the server `{host}:{port}`. Please try again later.')
+                await interaction.followup.send(f'Fail to add the `{game_id}` server `{host}:{port}`. Please try again later.')
                 return
 
             await refresh_channel_messages(interaction, resend=True)
@@ -231,7 +231,7 @@ def modal(game_id: str, is_add_server: bool):
 
 
 @tree.command(name='queryserver', description='Query server', guilds=whitelist_guilds)
-@app_commands.describe(game_id='Game ID. See more: https://discordgsm.com/guide/supported-games')
+@app_commands.describe(game_id='Game ID. Learn more: https://discordgsm.com/guide/supported-games')
 @app_commands.check(custom_command_query_check)
 @app_commands.checks.dynamic_cooldown(cooldown_for_everyone_except_administrator)
 async def command_query(interaction: Interaction, game_id: str):
@@ -243,7 +243,7 @@ async def command_query(interaction: Interaction, game_id: str):
 
 
 @tree.command(name='addserver', description='Add server in current channel', guilds=whitelist_guilds)
-@app_commands.describe(game_id='Game ID. See more: https://discordgsm.com/guide/supported-games')
+@app_commands.describe(game_id='Game ID. Learn more: https://discordgsm.com/guide/supported-games')
 @app_commands.check(is_administrator)
 async def command_addserver(interaction: Interaction, game_id: str):
     """Add server in current channel"""
@@ -404,7 +404,7 @@ async def command_editstyledata(interaction: Interaction, address: str, query_po
 @tree.command(name='settimezone', description='Set server message time zone', guilds=whitelist_guilds)
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
-@app_commands.describe(timezone='TZ database name. See more: https://discordgsm.com/guide/timezones')
+@app_commands.describe(timezone='TZ database name. Learn more: https://discordgsm.com/guide/timezones')
 @app_commands.check(is_administrator)
 async def command_settimezone(interaction: Interaction, address: str, query_port: int, timezone: str):
     """Set server message time zone"""
@@ -412,7 +412,7 @@ async def command_settimezone(interaction: Interaction, address: str, query_port
 
     if server := await find_server(interaction, address, query_port):
         if timezone not in timezones:
-            await interaction.response.send_message(f'`{timezone}` is not a valid time zone', ephemeral=True)
+            await interaction.response.send_message(f'`{timezone}` is not a valid time zone. Learn more: https://discordgsm.com/guide/timezones', ephemeral=True)
             return
 
         await interaction.response.defer()
@@ -449,7 +449,7 @@ async def find_game(interaction: Interaction, game_id: str):
         game = gamedig.find(game_id)
         return game
     except LookupError:
-        await interaction.response.send_message(f'`{game_id}` is not a valid game id', ephemeral=True)
+        await interaction.response.send_message(f'`{game_id}` is not a valid game id. Learn more: https://discordgsm.com/guide/supported-games', ephemeral=True)
         return None
 
 

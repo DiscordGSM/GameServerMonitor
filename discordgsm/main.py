@@ -758,7 +758,6 @@ async def query_servers():
         servers.extend(result[0])
         success += result[1]
         failed += result[2]
-        await asyncio.sleep(1)
 
     database.update_servers(servers)
     Logger.info(f'Query servers: Total = {len(servers)}, Success = {success}, Failed = {failed} ({len(servers) > 0 and int(failed / len(servers) * 100) or 0}% fail)')

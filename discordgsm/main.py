@@ -751,7 +751,7 @@ async def query_servers():
     success = 0
     failed = 0
 
-    for chunks in to_chunks(distinct_servers, 25):
+    for chunks in to_chunks(distinct_servers, 100):
         with ThreadPoolExecutor() as executor:
             result = await asyncio.get_event_loop().run_in_executor(executor, query_servers_func, chunks)
 

@@ -156,9 +156,9 @@ class Database:
         return messages_servers
 
     def distinct_servers(self):
-        """Get distinct servers (Query server purpose) (Only fetch game_id, address, query_port, query_extra)"""
+        """Get distinct servers (Query server purpose) (Only fetch game_id, address, query_port, query_extra, status, result, style_data)"""
         cursor = self.conn.cursor()
-        cursor.execute('SELECT DISTINCT game_id, address, query_port, query_extra FROM servers')
+        cursor.execute('SELECT DISTINCT game_id, address, query_port, query_extra, status, result, style_data FROM servers')
         servers = [Server.from_distinct_query(row) for row in cursor.fetchall()]
         cursor.close()
 

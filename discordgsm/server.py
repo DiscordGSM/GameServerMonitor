@@ -54,10 +54,10 @@ class Server:
             address=row[1],
             query_port=row[2],
             query_extra=json.loads(row[3]),
-            status=None,
-            result=None,
+            status=row[4] == 1,
+            result=json.loads(row[5]),
             style_id=None,
-            style_data=None,
+            style_data=json.loads(row[6]),
         )
 
     @staticmethod

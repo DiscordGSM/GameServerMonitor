@@ -1,13 +1,16 @@
 import asyncio
 import json
 import os
+import re
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from enum import Enum
 from typing import Dict, List, Optional
 
 import discord
 import requests
 from discord import (ActivityType, AutoShardedClient, ButtonStyle, Client,
-                     Interaction, Message, SelectOption, SyncWebhook,
+                     Embed, Interaction, Message, SelectOption, SyncWebhook,
                      app_commands)
 from discord.ext import tasks
 from discord.ui import Button, Modal, Select, TextInput, View
@@ -15,8 +18,8 @@ from dotenv import load_dotenv
 
 from discordgsm.logger import Logger
 from discordgsm.server import Server
-from discordgsm.service import (database, gamedig, invite_link, public,
-                                timezones, whitelist_guilds)
+from discordgsm.service import (ZoneInfo, database, gamedig, invite_link,
+                                public, timezones, whitelist_guilds)
 from discordgsm.styles.style import Style
 
 load_dotenv()
@@ -157,15 +160,51 @@ def cooldown_for_everyone_except_administrator(interaction: Interaction) -> Opti
 tree = app_commands.CommandTree(client)
 
 
+class Alert(Enum):
+    TEST = 1
+    ONLINE = 2
+    OFFLINE = 3
+
+
+def alert_embed(server: Server, alert: Alert):
+    title = (server.result['password'] and ':lock: ' or '') + server.result['name']
+
+    if alert == Alert.TEST:
+        description = '🧪 This is a test alert!'
+        color = discord.Color.from_rgb(48, 49, 54)
+    elif alert == Alert.ONLINE:
+        description = '✅ Your server is back online!'
+        color = discord.Color.from_rgb(87, 242, 135)
+    elif alert == Alert.OFFLINE:
+        description = '🚨 Your server seems to be down!'
+        color = discord.Color.from_rgb(237, 66, 69)
+
+    embed = Embed(title=title, description=description, color=color)
+    embed.add_field(name='Game', value=server.style_data.get('fullname', server.game_id), inline=True)
+
+    game_port = gamedig.game_port(server.result)
+
+    if server.game_id == 'discord':
+        embed.add_field(name='Guild ID', value=f'`{server.address}`', inline=True)
+    elif game_port is None or game_port == int(server.query_port):
+        embed.add_field(name='Address:Port', value=f'`{server.address}:{server.query_port}`', inline=True)
+    else:
+        embed.add_field(name='Address:Port (Query)', value=f'`{server.address}:{game_port} ({server.query_port})`', inline=True)
+
+    last_update = datetime.now(tz=ZoneInfo(server.style_data.get('timezone', 'Etc/UTC'))).strftime('%Y-%m-%d %I:%M:%S%p')
+    icon_url = 'https://avatars.githubusercontent.com/u/61296017'
+    embed.set_footer(text=f'Discord Game Server Monitor | Query Time: {last_update}', icon_url=icon_url)
+
+    return embed
+
+
 def modal(game_id: str, is_add_server: bool):
     """Query server modal"""
     game = gamedig.find(game_id)
     default_port = gamedig.default_port(game_id)
     query_param = {'type': game_id, 'host': TextInput(label='Address'), 'port': TextInput(label='Query Port', max_length='5', default=default_port)}
 
-    modal = Modal(title=game['fullname'])
-    modal.add_item(query_param['host'])
-    modal.add_item(query_param['port'])
+    modal = Modal(title=game['fullname']).add_item(query_param['host']).add_item(query_param['port'])
     query_extra = {}
 
     if game_id == 'teamspeak2':
@@ -216,9 +255,10 @@ def modal(game_id: str, is_add_server: bool):
 
             try:
                 server = database.add_server(server)
+                Logger.info(f'Successfully added {game_id} server {host}:{port} to #{interaction.channel.name}({interaction.channel.id}).')
             except Exception as e:
-                Logger.error(f'Fail to add the server {host}:{port} {e}')
-                await interaction.followup.send(f'Fail to add the `{game_id}` server `{host}:{port}`. Please try again later.')
+                Logger.error(f'Fail to add {game_id} server {host}:{port} {e}')
+                await interaction.followup.send(f'Fail to add `{game_id}` server `{host}:{port}`. Please try again later.')
                 return
 
             await refresh_channel_messages(interaction, resend=True)
@@ -371,7 +411,9 @@ async def command_changestyle(interaction: Interaction, address: str, query_port
         view = View()
         view.add_item(select)
 
-        await interaction.response.send_message(f'`{server.address}:{server.query_port}` Current style:', view=view, ephemeral=True)
+        embed = Embed(title='Select the message style', description=f'Server: `{server.address}:{server.query_port}`', color=discord.Color.from_rgb(235, 69, 158))
+
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 
 @tree.command(name='editstyledata', description='Edit server message style data', guilds=whitelist_guilds)
@@ -420,6 +462,77 @@ async def command_settimezone(interaction: Interaction, address: str, query_port
         database.update_server_style_data(server)
         await refresh_channel_messages(interaction, resend=False)
         await interaction.delete_original_response()
+
+
+@tree.command(name='setalert', description='Set server status alert settings', guilds=whitelist_guilds)
+@app_commands.describe(address='IP Address or Domain Name')
+@app_commands.describe(query_port='Query Port')
+@app_commands.check(is_administrator)
+async def command_setalert(interaction: Interaction, address: str, query_port: int):
+    """Set server status alert settings"""
+    Logger.command(interaction, address, query_port)
+
+    if server := await find_server(interaction, address, query_port):
+        # Set up button 1
+        button1 = Button(style=ButtonStyle.primary, label='Alert Settings')
+
+        async def button1_callback(interaction: Interaction):
+            text_input_webhook_url = TextInput(label='Webhook URL', placeholder='Discord Webhook URL', default=server.style_data.get('alert_webhook_url', ''))
+            text_input_webhook_content = TextInput(label='Webhook Content', placeholder='Content', default=server.style_data.get('alert_content', ''), required=False, max_length=4000)
+            modal = Modal(title='Alert Settings').add_item(text_input_webhook_url).add_item(text_input_webhook_content)
+
+            async def modal_on_submit(interaction: Interaction):
+                await interaction.response.defer()
+                webhook_url = str(text_input_webhook_url).strip()
+                custom_message = str(text_input_webhook_content).strip()
+                server.style_data.update({'alert_webhook_url': webhook_url, 'alert_content': custom_message})
+                database.update_server_style_data(server)
+
+                if re.search(r'discord(?:app)?.com/api/webhooks/(?P<id>[0-9]{17,20})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', webhook_url) is None:
+                    await interaction.followup.send(f'`{webhook_url}` is not a valid Webhook URL.', ephemeral=True)
+                else:
+                    await interaction.followup.send('Alert settings set successfully.', ephemeral=True)
+
+            modal.on_submit = modal_on_submit
+            await interaction.response.send_modal(modal)
+
+        button1.callback = button1_callback
+
+        # Set up button 2
+        button2 = Button(style=ButtonStyle.secondary, label='Send Test Alert')
+
+        async def button2_callback(interaction: Interaction):
+            if webhook_url := server.style_data.get('alert_webhook_url'):
+                try:
+                    webhook = SyncWebhook.from_url(webhook_url)
+                    content = server.style_data.get('alert_content', '').strip()
+                    webhook.send(content=None if not content else content, embed=alert_embed(server, Alert.TEST))
+                    await interaction.response.send_message('Test webhook sent.', ephemeral=True)
+                    Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert Test successfully.')
+                except ValueError:
+                    # The URL is invalid.
+                    await interaction.response.send_message('The Webhook URL is invalid.', ephemeral=True)
+                except discord.NotFound:
+                    # This webhook was not found.
+                    await interaction.response.send_message('This webhook was not found.', ephemeral=True)
+                except discord.HTTPException:
+                    # Sending the message failed.
+                    await interaction.response.send_message('Sending the message failed.', ephemeral=True)
+                except Exception as e:
+                    Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] send_alert_webhook Exception {e}')
+                    await interaction.response.send_message('Fail to send webhook. Please try again later.', ephemeral=True)
+            else:
+                await interaction.response.send_message('The Webhook URL is empty.', ephemeral=True)
+
+        button2.callback = button2_callback
+
+        view = View()
+        view.add_item(button1)
+        view.add_item(button2)
+
+        embed = Embed(title='Set Alert', description=f'Server: `{server.address}:{server.query_port}`', color=discord.Color.from_rgb(235, 69, 158))
+
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 
 @command_query.error
@@ -596,11 +709,11 @@ async def edit_messages():
     results = []
 
     # Discord Rate limit: 50 requests per second
-    for chunks in to_chunks(tasks, 45):
+    for chunks in to_chunks(tasks, 25):
         results += await asyncio.gather(*chunks)
         await asyncio.sleep(1)
 
-    failed = sum(result == False or result is None for result in results)
+    failed = sum(result is False or result is None for result in results)
     success = len(results) - failed
     Logger.info(f'{task_action} messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
 
@@ -622,7 +735,7 @@ async def edit_message(servers: List[Server]):
             # Editing the message failed.
             Logger.debug(f'Edit messages: {message.id} edit_messages discord.HTTPException {e}')
         except asyncio.TimeoutError:
-            # Possible: discord.http: We are being rate limited. 
+            # Possible: discord.http: We are being rate limited.
             Logger.debug(f'Edit messages: {message.id} edit_messages asyncio.TimeoutError')
 
     return False
@@ -638,7 +751,7 @@ async def query_servers():
     success = 0
     failed = 0
 
-    for chunks in to_chunks(distinct_servers, 45):
+    for chunks in to_chunks(distinct_servers, 25):
         with ThreadPoolExecutor() as executor:
             result = await asyncio.get_event_loop().run_in_executor(executor, query_servers_func, chunks)
 
@@ -667,11 +780,24 @@ def query_servers_func(distinct_servers: List[Server]):
 
 def query_server(server: Server):
     """Query server"""
+    status = server.status
+
     try:
         server.result = gamedig.query(server)
         server.status = True
     except Exception:
         server.status = False
+
+    # Send alert when status changes
+    if status != server.status:
+        if webhook_url := server.style_data.get('alert_webhook_url'):
+            try:
+                webhook = SyncWebhook.from_url(webhook_url)
+                content = server.style_data.get('alert_content', '').strip()
+                webhook.send(content=None if not content else content, embed=alert_embed(server, Alert.ONLINE if server.status else Alert.OFFLINE))
+                Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert {"Online" if server.status else "Offline"} successfully.')
+            except Exception as e:
+                Logger.debug(f'({server.game_id})[{server.address}:{server.query_port}] send_alert_webhook Exception {e}')
 
     return server
 

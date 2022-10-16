@@ -746,7 +746,6 @@ async def query_servers():
 
     for chunks in to_chunks(tasks, 25):
         servers += await asyncio.gather(*chunks)
-        await asyncio.sleep(1)
 
     database.update_servers(servers)
 

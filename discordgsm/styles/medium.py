@@ -108,7 +108,7 @@ class Medium(Style):
         embed.set_image(url=self.server.style_data.get('image_url'))
         embed.set_thumbnail(url=self.server.style_data.get('thumbnail_url'))
 
-        advertisement = '📺 Game Servers Monitor'
+        advertisement = '📺 Game Server Monitor'
 
         # Easter Egg
         today = str(date.today())  # 2020-12-23

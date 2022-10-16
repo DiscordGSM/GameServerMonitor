@@ -76,7 +76,7 @@ class Server:
             game_id=row[5],
             address=row[6],
             query_port=row[7],
-            query_extra=json.loads(row[8]),
+            query_extra=query_extra,
             status=row[9] == 1,
             result=json.loads(row[10]),
             style_id=row[11],

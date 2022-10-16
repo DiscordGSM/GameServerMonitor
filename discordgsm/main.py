@@ -2,7 +2,6 @@ import asyncio
 import json
 import os
 import re
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
@@ -237,7 +236,7 @@ def modal(game_id: str, is_add_server: bool):
                 pass
 
         try:
-            result = gamedig.run({**query_param, **query_extra})
+            result = await gamedig.run({**query_param, **query_extra})
         except Exception:
             await interaction.followup.send(f'Fail to query `{game_id}` server `{host}:{port}`. Please try again.', ephemeral=True)
             return
@@ -747,45 +746,31 @@ async def query_servers():
     distinct_servers = database.distinct_servers()
     Logger.debug(f'Query servers: Tasks = {len(distinct_servers)} unique servers')
 
+    tasks = [query_server(server) for server in distinct_servers]
     servers: List[Server] = []
-    success = 0
-    failed = 0
 
-    for chunks in to_chunks(distinct_servers, 100):
-        with ThreadPoolExecutor() as executor:
-            result = await asyncio.get_event_loop().run_in_executor(executor, query_servers_func, chunks)
-
-        servers.extend(result[0])
-        success += result[1]
-        failed += result[2]
+    for chunks in to_chunks(tasks, 25):
+        servers += await asyncio.gather(*chunks)
+        await asyncio.sleep(1)
 
     database.update_servers(servers)
+
+    failed = sum(server.status is False for server in servers)
+    success = len(servers) - failed
     Logger.info(f'Query servers: Total = {len(servers)}, Success = {success}, Failed = {failed} ({len(servers) > 0 and int(failed / len(servers) * 100) or 0}% fail)')
 
 
-def query_servers_func(distinct_servers: List[Server]):
-    """Query servers with ThreadPoolExecutor"""
-    with ThreadPoolExecutor() as executor:
-        servers: List[Server] = []
-        success = 0
-
-        for i, server in enumerate(executor.map(query_server, distinct_servers)):
-            Logger.debug(f'Query servers: {i + 1}/{len(distinct_servers)} ({server.game_id})[{server.address}:{server.query_port}] success: {server.status}')
-            servers.append(server)
-            success += 0 if not server.status else 1
-
-    return servers, success, len(servers) - success
-
-
-def query_server(server: Server):
+async def query_server(server: Server):
     """Query server"""
     status = server.status
 
     try:
-        server.result = gamedig.query(server)
+        server.result = await gamedig.query(server)
         server.status = True
-    except Exception:
+        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] success: {server.status}')
+    except Exception as e:
         server.status = False
+        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] success: {server.status}, {e}')
 
     # Send alert when status changes
     if status != server.status:

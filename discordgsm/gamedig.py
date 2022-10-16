@@ -1,9 +1,9 @@
+import asyncio
 import csv
 import json
 import os
 import platform
 import re
-import subprocess
 import time
 from typing import List, TypedDict
 
@@ -48,8 +48,14 @@ class InvalidGameException(Exception):
 
 
 class Gamedig:
-    def __init__(self, file: str = 'games.txt'):
-        self.games: dict[str, GamedigGame] = {}
+    def __init__(self):
+        path = os.path.dirname(os.path.realpath(__file__))
+        self.games = Gamedig.__load_games(os.path.join(path, 'games.txt'))
+        self.default_games = Gamedig.__load_games(os.path.join(path, '..', 'node_modules', 'gamedig', 'games.txt'))
+
+    @staticmethod
+    def __load_games(path: str):
+        games: dict[str, GamedigGame] = {}
 
         def row_to_dict(row: str):
             data = {}
@@ -61,7 +67,7 @@ class Gamedig:
 
             return data
 
-        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), file), 'r', encoding='utf8') as f:
+        with open(path, 'r', encoding='utf8') as f:
             reader = csv.reader(f, delimiter='|')
             next(reader, None)
 
@@ -70,7 +76,9 @@ class Gamedig:
                     id = row[0].split(',')[0]
                     options = len(row) > 3 and row_to_dict(row[3]) or {}
                     extra = len(row) > 4 and row_to_dict(row[4]) or {}
-                    self.games[id] = GamedigGame(id=id, fullname=row[1], protocol=row[2], options=options, extra=extra)
+                    games[id] = GamedigGame(id=id, fullname=row[1], protocol=row[2], options=options, extra=extra)
+        
+        return games
 
     def find(self, game_id: str):
         if game_id in self.games:
@@ -104,22 +112,21 @@ class Gamedig:
 
         return game_port
 
-    def query(self, server: Server):
-        return self.run({**{
+    async def query(self, server: Server):
+        return await self.run({**{
             'type': server.game_id,
             'host': server.address,
             'port': server.query_port,
         }, **server.query_extra})
 
-    def run(self, kv: dict):
-        try:
-            return Gamedig.__run(kv)
-        except InvalidGameException:
+    async def run(self, kv: dict):
+        if kv['type'] not in self.default_games:
             kv['type'] = f"protocol-{self.games[kv['type']]['protocol']}"
-            return Gamedig.__run(kv)
+
+        return await Gamedig.__run(kv)
 
     @staticmethod
-    def __run(kv: dict):
+    async def __run(kv: dict):
         if kv['type'] == 'terraria':
             return query_terraria(kv['host'], kv['port'], kv['_token'])
         elif kv['type'] == 'discord':
@@ -131,9 +138,9 @@ class Gamedig:
         for option, value in kv.items():
             args.extend([f'--{str(option).lstrip("_")}', Gamedig.__escape_argument(str(value)) if platform.system() == 'Windows' else str(value)])
 
-        process = subprocess.run(args, stdout=subprocess.PIPE)
-        output = process.stdout.decode('utf8')
-        result: GamedigResult = json.loads(output)
+        process = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        stdout, _ = await process.communicate()
+        result: GamedigResult = json.loads(stdout)
 
         if 'error' in result:
             if 'Invalid game:' in result['error']:
@@ -206,10 +213,13 @@ def query_discord(guild_id: str):
 
 
 if __name__ == '__main__':
-    r = Gamedig().run({
-        'type': 'tf2',
-        'host': '104.238.229.98',
-        'port': '27015'
-    })
+    async def main():
+        r = await Gamedig().run({
+            'type': 'tf2',
+            'host': '104.238.229.98',
+            'port': '27015'
+        })
 
-    print(r['players'])
+        print(r)
+
+    asyncio.run(main())

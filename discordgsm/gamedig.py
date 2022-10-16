@@ -77,7 +77,7 @@ class Gamedig:
                     options = len(row) > 3 and row_to_dict(row[3]) or {}
                     extra = len(row) > 4 and row_to_dict(row[4]) or {}
                     games[id] = GamedigGame(id=id, fullname=row[1], protocol=row[2], options=options, extra=extra)
-        
+
         return games
 
     def find(self, game_id: str):

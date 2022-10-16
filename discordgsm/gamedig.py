@@ -180,7 +180,6 @@ async def query_terraria(host: str, port: int, token: str):
             data = await response.json()
             end = time.time()
 
-    data = response.json()
     result: GamedigResult = {
         'name': data['name'],
         'map': data['world'],

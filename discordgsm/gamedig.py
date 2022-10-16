@@ -148,6 +148,12 @@ class Gamedig:
             else:
                 raise Exception(result['error'])
 
+        if kv['type'] == 'mordhau':
+            for tag in result['raw'].get('tags', []):
+                if tag[:2] == 'B:':
+                    result['raw']['numplayers'] = int(tag[2:])
+                    break
+
         return result
 
     # Credits: https://stackoverflow.com/questions/29213106/how-to-securely-escape-command-line-arguments-for-the-cmd-exe-shell-on-windows

@@ -45,13 +45,6 @@ class Small(Style):
 
     def embed(self) -> Embed:
         players = self.server.result.get('raw', {}).get('numplayers', len(self.server.result['players']))
-
-        if self.server.game_id == 'mordhau':
-            for tag in self.server.result['raw'].get('tags', []):
-                if tag[:2] == 'B:':
-                    players = int(tag[2:])
-                    break
-
         bots = len(self.server.result['bots'])
 
         if self.server.status:

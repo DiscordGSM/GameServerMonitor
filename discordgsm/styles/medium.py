@@ -57,13 +57,6 @@ class Medium(Style):
     def embed(self) -> Embed:
         emoji = self.server.status and ':green_circle:' or ':red_circle:'
         players = self.server.result.get('raw', {}).get('numplayers', len(self.server.result['players']))
-
-        if self.server.game_id == 'mordhau':
-            for tag in self.server.result['raw'].get('tags', []):
-                if tag[:2] == 'B:':
-                    players = int(tag[2:])
-                    break
-
         bots = len(self.server.result['bots'])
 
         if self.server.status:

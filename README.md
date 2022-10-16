@@ -9,6 +9,10 @@
 
 ![DiscordGSM Thumbnail](https://discordgsm.com/thumbnail.jpg)
 
+🚨 Get alerted when your server is down!
+
+![DiscordGSM Alert](https://discordgsm.com/game-server-monitor-alert.jpg?v=2)
+
 ## Installation
 We provide a public discord bot service which allows to monitor 10 servers per discord guild.
 

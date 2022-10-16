@@ -245,7 +245,7 @@ def modal(game_id: str, is_add_server: bool):
         server = Server.new(interaction.guild_id, interaction.channel_id, game_id, host, port, query_extra, result)
         style = styles['Medium'](server)
         server.style_id = style.id
-        server.style_data = style.default_style_data()
+        server.style_data = await style.default_style_data()
 
         if is_add_server:
             if public:

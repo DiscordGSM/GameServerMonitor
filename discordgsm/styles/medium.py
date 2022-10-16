@@ -2,7 +2,7 @@ import socket
 from datetime import date, datetime
 from typing import Dict, Optional, Union
 
-import requests
+import aiohttp
 from discord import Color, Embed, Emoji, PartialEmoji, TextStyle
 from discord.ui import TextInput
 from discordgsm.service import ZoneInfo, gamedig
@@ -35,7 +35,7 @@ class Medium(Style):
             'thumbnail_url': TextInput(label='Thumbnail URL', default=self.server.style_data.get('thumbnail_url', ''), required=False, placeholder='The source URL for the thumbnail. Only HTTP(S) is supported.'),
         }
 
-    def default_style_data(self):
+    async def default_style_data(self):
         game = gamedig.find(self.server.game_id)
         style_data = {'fullname': game['fullname']}
 
@@ -45,10 +45,12 @@ class Medium(Style):
             style_data['description'] = f'Connect: steam://connect/{self.server.address}:{self.server.query_port}'
 
         try:
-            response = requests.get(f'https://ipinfo.io/{socket.gethostbyname(self.server.address)}/country')
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f'https://ipinfo.io/{socket.gethostbyname(self.server.address)}/country') as response:
+                    data = await response.text()
 
-            if '{' not in response.text:
-                style_data['country'] = response.text.replace('\n', '').strip()
+            if '{' not in data:
+                style_data['country'] = data.replace('\n', '').strip()
         except Exception:
             pass
 

@@ -7,7 +7,7 @@ import re
 import time
 from typing import List, TypedDict
 
-import requests
+import aiohttp
 
 if __name__ == '__main__':
     from server import Server
@@ -128,9 +128,9 @@ class Gamedig:
     @staticmethod
     async def __run(kv: dict):
         if kv['type'] == 'terraria':
-            return query_terraria(kv['host'], kv['port'], kv['_token'])
+            return await query_terraria(kv['host'], kv['port'], kv['_token'])
         elif kv['type'] == 'discord':
-            return query_discord(kv['host'])
+            return await query_discord(kv['host'])
 
         args = ['cmd.exe', '/c'] if platform.system() == 'Windows' else []
         args.extend(['node', os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../node_modules/gamedig/bin/gamedig.js'))])
@@ -171,12 +171,14 @@ class Gamedig:
         return meta_re.sub('^\1', arg)
 
 
-def query_terraria(host: str, port: int, token: str):
+async def query_terraria(host: str, port: int, token: str):
     url = f'http://{host}:{port}/v2/server/status?players=true&rules=false&token={token}'
-    response = requests.get(url)
+    start = time.time()
 
-    if response.status_code != 200:
-        raise Exception('Fail to query terraria server')
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            data = await response.json()
+            end = time.time()
 
     data = response.json()
     result: GamedigResult = {
@@ -187,20 +189,21 @@ def query_terraria(host: str, port: int, token: str):
         'players': [{'name': player['nickname'], 'raw': player} for player in data['players']],
         'bots': [],
         'connect': f"{host}:{data['port']}",
-        'ping': response.elapsed.microseconds,
+        'ping': end - start
     }
 
     return result
 
 
-def query_discord(guild_id: str):
+async def query_discord(guild_id: str):
     url = f'https://discord.com/api/guilds/{guild_id}/widget.json?v={int(time.time())}'
-    response = requests.get(url)
+    start = time.time()
 
-    if response.status_code != 200:
-        raise Exception('Fail to query discord server')
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            data = await response.json()
+            end = time.time()
 
-    data = response.json()
     result: GamedigResult = {
         'name': data['name'],
         'map': '',
@@ -209,7 +212,7 @@ def query_discord(guild_id: str):
         'players': [{'name': player['username'], 'raw': player} for player in data['members']],
         'bots': [],
         'connect': data['instant_invite'],
-        'ping': response.elapsed.microseconds,
+        'ping': end - start,
         'raw': {
             'numplayers': data['presence_count'],
         }

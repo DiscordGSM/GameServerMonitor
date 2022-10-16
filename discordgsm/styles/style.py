@@ -38,7 +38,7 @@ class Style(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def default_style_data(self):
+    async def default_style_data(self):
         raise NotImplementedError()
 
     @abstractmethod

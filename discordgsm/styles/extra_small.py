@@ -30,7 +30,7 @@ class ExtraSmall(Style):
             'thumbnail_url': TextInput(label='Thumbnail URL', default=self.server.style_data.get('thumbnail_url', ''), required=False, placeholder='The source URL for the thumbnail. Only HTTP(S) is supported.'),
         }
 
-    def default_style_data(self):
+    async def default_style_data(self):
         game = gamedig.find(self.server.game_id)
         style_data = {'fullname': game['fullname']}
 

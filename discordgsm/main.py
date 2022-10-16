@@ -8,7 +8,7 @@ from typing import Dict, List, Optional
 import aiohttp
 import discord
 from discord import (ActivityType, AutoShardedClient, ButtonStyle, Client,
-                     Embed, Interaction, Message, SelectOption, SyncWebhook,
+                     Embed, Interaction, Message, SelectOption, Webhook,
                      app_commands)
 from discord.ext import tasks
 from discord.ui import Button, Modal, Select, TextInput, View
@@ -73,9 +73,10 @@ async def on_guild_join(guild: discord.Guild):
     Logger.info(f'{client.user} joined {guild.name}({guild.id}) 🎉.')
 
     if public:
-        webhook = SyncWebhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'))
-        webhook.send(f'<@{client.user.id}> joined {guild.name}({guild.id}) 🎉.')
-        return
+        async with aiohttp.ClientSession() as session:
+            webhook = Webhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'), session=session)
+            await webhook.send(f'<@{client.user.id}> joined {guild.name}({guild.id}) 🎉.')
+            return
 
     # Sync the commands to guild when discordgsm joins a guild.
     if guild.id in [guild.id for guild in whitelist_guilds]:
@@ -249,8 +250,10 @@ def modal(game_id: str, is_add_server: bool):
         if is_add_server:
             if public:
                 content = f'Server was added by <@{interaction.user.id}> on #{interaction.channel.name}({interaction.channel.id}) {interaction.guild.name}({interaction.guild.id})'
-                webhook = SyncWebhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'))
-                webhook.send(content, embed=style.embed())
+
+                async with aiohttp.ClientSession() as session:
+                    webhook = Webhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'), session=session)
+                    await webhook.send(content, embed=style.embed())
 
             try:
                 server = database.add_server(server)
@@ -499,10 +502,13 @@ async def command_setalert(interaction: Interaction, address: str, query_port: i
         async def button2_callback(interaction: Interaction):
             if webhook_url := server.style_data.get('_alert_webhook_url'):
                 try:
-                    webhook = SyncWebhook.from_url(webhook_url)
                     content = server.style_data.get('_alert_content', '').strip()
                     avatar_url = 'https://avatars.githubusercontent.com/u/61296017'
-                    webhook.send(content=None if not content else content, username='Game Server Monitor Alert', avatar_url=avatar_url, embed=alert_embed(server, Alert.TEST))
+
+                    async with aiohttp.ClientSession() as session:
+                        webhook = Webhook.from_url(webhook_url, session=session)
+                        await webhook.send(content=None if not content else content, username='Game Server Monitor Alert', avatar_url=avatar_url, embed=alert_embed(server, Alert.TEST))
+
                     await interaction.response.send_message('Test webhook sent.', ephemeral=True)
                     Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert Test successfully.')
                 except ValueError:
@@ -774,10 +780,13 @@ async def query_server(server: Server):
     if status != server.status:
         if webhook_url := server.style_data.get('_alert_webhook_url'):
             try:
-                webhook = SyncWebhook.from_url(webhook_url)
                 content = server.style_data.get('_alert_content', '').strip()
                 avatar_url = 'https://avatars.githubusercontent.com/u/61296017'
-                webhook.send(content=None if not content else content, username='Game Server Monitor Alert', avatar_url=avatar_url, embed=alert_embed(server, Alert.ONLINE if server.status else Alert.OFFLINE))
+
+                async with aiohttp.ClientSession() as session:
+                    webhook = Webhook.from_url(webhook_url, session=session)
+                    await webhook.send(content=None if not content else content, username='Game Server Monitor Alert', avatar_url=avatar_url, embed=alert_embed(server, Alert.ONLINE if server.status else Alert.OFFLINE))
+
                 Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert {"Online" if server.status else "Offline"} successfully.')
             except Exception as e:
                 Logger.debug(f'({server.game_id})[{server.address}:{server.query_port}] send_alert_webhook Exception {e}')

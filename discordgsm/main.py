@@ -501,7 +501,8 @@ async def command_setalert(interaction: Interaction, address: str, query_port: i
                 try:
                     webhook = SyncWebhook.from_url(webhook_url)
                     content = server.style_data.get('_alert_content', '').strip()
-                    webhook.send(content=None if not content else content, embed=alert_embed(server, Alert.TEST))
+                    avatar_url = 'https://avatars.githubusercontent.com/u/61296017'
+                    webhook.send(content=None if not content else content, username='Game Server Monitor Alert', avatar_url=avatar_url, embed=alert_embed(server, Alert.TEST))
                     await interaction.response.send_message('Test webhook sent.', ephemeral=True)
                     Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert Test successfully.')
                 except ValueError:
@@ -775,7 +776,8 @@ async def query_server(server: Server):
             try:
                 webhook = SyncWebhook.from_url(webhook_url)
                 content = server.style_data.get('_alert_content', '').strip()
-                webhook.send(content=None if not content else content, embed=alert_embed(server, Alert.ONLINE if server.status else Alert.OFFLINE))
+                avatar_url = 'https://avatars.githubusercontent.com/u/61296017'
+                webhook.send(content=None if not content else content, username='Game Server Monitor Alert', avatar_url=avatar_url, embed=alert_embed(server, Alert.ONLINE if server.status else Alert.OFFLINE))
                 Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert {"Online" if server.status else "Offline"} successfully.')
             except Exception as e:
                 Logger.debug(f'({server.game_id})[{server.address}:{server.query_port}] send_alert_webhook Exception {e}')

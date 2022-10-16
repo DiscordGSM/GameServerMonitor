@@ -63,9 +63,11 @@ class Server:
     @staticmethod
     def from_list(row: tuple, filter_secret=False) -> Server:
         query_extra: dict = json.loads(row[8])
+        style_data: dict = json.loads(row[12])
 
         if filter_secret:
             query_extra = {k: v for k, v in query_extra.items() if not str(k).startswith('_')}
+            style_data = {k: v for k, v in style_data.items() if not str(k).startswith('_')}
 
         return Server(
             id=row[0],
@@ -80,5 +82,5 @@ class Server:
             status=row[9] == 1,
             result=json.loads(row[10]),
             style_id=row[11],
-            style_data=json.loads(row[12]),
+            style_data=style_data,
         )

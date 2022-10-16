@@ -476,21 +476,16 @@ async def command_setalert(interaction: Interaction, address: str, query_port: i
         button1 = Button(style=ButtonStyle.primary, label='Alert Settings')
 
         async def button1_callback(interaction: Interaction):
-            text_input_webhook_url = TextInput(label='Webhook URL', placeholder='Discord Webhook URL', default=server.style_data.get('alert_webhook_url', ''))
-            text_input_webhook_content = TextInput(label='Webhook Content', placeholder='Content', default=server.style_data.get('alert_content', ''), required=False, max_length=4000)
+            text_input_webhook_url = TextInput(label='Webhook URL', placeholder='Discord Webhook URL', default=server.style_data.get('_alert_webhook_url', ''), required=False)
+            text_input_webhook_content = TextInput(label='Webhook Content', placeholder='Alert Content', default=server.style_data.get('_alert_content', ''), required=False, max_length=4000)
             modal = Modal(title='Alert Settings').add_item(text_input_webhook_url).add_item(text_input_webhook_content)
 
             async def modal_on_submit(interaction: Interaction):
                 await interaction.response.defer()
                 webhook_url = str(text_input_webhook_url).strip()
-                custom_message = str(text_input_webhook_content).strip()
-                server.style_data.update({'alert_webhook_url': webhook_url, 'alert_content': custom_message})
+                content = str(text_input_webhook_content).strip()
+                server.style_data.update({'_alert_webhook_url': webhook_url, '_alert_content': content})
                 database.update_server_style_data(server)
-
-                if re.search(r'discord(?:app)?.com/api/webhooks/(?P<id>[0-9]{17,20})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', webhook_url) is None:
-                    await interaction.followup.send(f'`{webhook_url}` is not a valid Webhook URL.', ephemeral=True)
-                else:
-                    await interaction.followup.send('Alert settings set successfully.', ephemeral=True)
 
             modal.on_submit = modal_on_submit
             await interaction.response.send_modal(modal)
@@ -501,10 +496,10 @@ async def command_setalert(interaction: Interaction, address: str, query_port: i
         button2 = Button(style=ButtonStyle.secondary, label='Send Test Alert')
 
         async def button2_callback(interaction: Interaction):
-            if webhook_url := server.style_data.get('alert_webhook_url'):
+            if webhook_url := server.style_data.get('_alert_webhook_url'):
                 try:
                     webhook = SyncWebhook.from_url(webhook_url)
-                    content = server.style_data.get('alert_content', '').strip()
+                    content = server.style_data.get('_alert_content', '').strip()
                     webhook.send(content=None if not content else content, embed=alert_embed(server, Alert.TEST))
                     await interaction.response.send_message('Test webhook sent.', ephemeral=True)
                     Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert Test successfully.')
@@ -774,10 +769,10 @@ async def query_server(server: Server):
 
     # Send alert when status changes
     if status != server.status:
-        if webhook_url := server.style_data.get('alert_webhook_url'):
+        if webhook_url := server.style_data.get('_alert_webhook_url'):
             try:
                 webhook = SyncWebhook.from_url(webhook_url)
-                content = server.style_data.get('alert_content', '').strip()
+                content = server.style_data.get('_alert_content', '').strip()
                 webhook.send(content=None if not content else content, embed=alert_embed(server, Alert.ONLINE if server.status else Alert.OFFLINE))
                 Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert {"Online" if server.status else "Offline"} successfully.')
             except Exception as e:

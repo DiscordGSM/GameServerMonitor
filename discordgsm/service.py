@@ -12,10 +12,10 @@ from discordgsm.gamedig import Gamedig
 
 try:
     import zoneinfo
-    from zoneinfo import ZoneInfo  # flake8: noqa
+    from zoneinfo import ZoneInfo as ZoneInfo
 except ImportError:
     import backports.zoneinfo as zoneinfo
-    from backports.zoneinfo import ZoneInfo  # flake8: noqa
+    from backports.zoneinfo import ZoneInfo as ZoneInfo
 
 load_dotenv()
 

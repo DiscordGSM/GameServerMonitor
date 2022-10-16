@@ -13,6 +13,8 @@
 
 ![DiscordGSM Alert](https://discordgsm.com/game-server-monitor-alert.jpg?v=2)
 
+Learn more: https://discordgsm.com
+
 ## Installation
 We provide a public discord bot service which allows to monitor 10 servers per discord guild.
 

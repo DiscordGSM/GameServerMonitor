@@ -1,13 +1,12 @@
 import asyncio
 import json
 import os
-import re
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
 
+import aiohttp
 import discord
-import requests
 from discord import (ActivityType, AutoShardedClient, ButtonStyle, Client,
                      Embed, Interaction, Message, SelectOption, SyncWebhook,
                      app_commands)
@@ -814,9 +813,9 @@ async def heroku_query():
     url = f"https://{os.environ['HEROKU_APP_NAME']}.herokuapp.com"
 
     try:
-        response = requests.get(url)
-        response.raise_for_status()
-        Logger.debug(f'Sends a GET request to {url}')
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, raise_for_status=True) as _:
+                Logger.debug(f'Sends a GET request to {url}')
     except Exception as e:
         Logger.error(f'Sends a GET request to {url}, {e}')
 # endregion

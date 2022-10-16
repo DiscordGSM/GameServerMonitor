@@ -411,6 +411,7 @@ async def command_changestyle(interaction: Interaction, address: str, query_port
         view.add_item(select)
 
         embed = Embed(title='Select the message style', description=f'Server: `{server.address}:{server.query_port}`', color=discord.Color.from_rgb(235, 69, 158))
+        embed.set_author(name=server.result['name'])
 
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
@@ -524,7 +525,8 @@ async def command_setalert(interaction: Interaction, address: str, query_port: i
         view.add_item(button1)
         view.add_item(button2)
 
-        embed = Embed(title='Set Alert', description=f'Server: `{server.address}:{server.query_port}`', color=discord.Color.from_rgb(235, 69, 158))
+        embed = Embed(title='Set server status alert settings', description=f'Server: `{server.address}:{server.query_port}`', color=discord.Color.from_rgb(235, 69, 158))
+        embed.set_author(name=server.result['name'])
 
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 

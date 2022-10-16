@@ -178,7 +178,8 @@ def alert_embed(server: Server, alert: Alert):
         description = '🚨 Your server seems to be down!'
         color = discord.Color.from_rgb(237, 66, 69)
 
-    embed = Embed(title=title, description=description, color=color)
+    embed = Embed(description=description, color=color)
+    embed.set_author(name=title)
     embed.add_field(name='Game', value=server.style_data.get('fullname', server.game_id), inline=True)
 
     game_port = gamedig.game_port(server.result)
@@ -192,7 +193,7 @@ def alert_embed(server: Server, alert: Alert):
 
     last_update = datetime.now(tz=ZoneInfo(server.style_data.get('timezone', 'Etc/UTC'))).strftime('%Y-%m-%d %I:%M:%S%p')
     icon_url = 'https://avatars.githubusercontent.com/u/61296017'
-    embed.set_footer(text=f'Discord Game Server Monitor | Query Time: {last_update}', icon_url=icon_url)
+    embed.set_footer(text=f'Query Time: {last_update}', icon_url=icon_url)
 
     return embed
 

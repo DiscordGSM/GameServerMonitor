@@ -19,6 +19,7 @@ from discordgsm.server import Server
 from discordgsm.service import (ZoneInfo, database, gamedig, invite_link,
                                 public, timezones, whitelist_guilds)
 from discordgsm.styles.style import Style
+from discordgsm.version import __version__
 
 load_dotenv()
 
@@ -193,7 +194,7 @@ def alert_embed(server: Server, alert: Alert):
 
     last_update = datetime.now(tz=ZoneInfo(server.style_data.get('timezone', 'Etc/UTC'))).strftime('%Y-%m-%d %I:%M:%S%p')
     icon_url = 'https://avatars.githubusercontent.com/u/61296017'
-    embed.set_footer(text=f'Query Time: {last_update}', icon_url=icon_url)
+    embed.set_footer(text=f'DiscordGSM {__version__} | Query time: {last_update}', icon_url=icon_url)
 
     return embed
 

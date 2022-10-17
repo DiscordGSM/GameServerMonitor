@@ -20,7 +20,7 @@ We provide a public discord bot service which allows to monitor 10 servers per d
 
 [![DiscordGSM Thumbnail](https://discordgsm.com/add-to-server.png)](https://discordgsm.com/invite)
 
-For self hosting, please check https://discordgsm.com/guide.
+For self hosting, please check https://discordgsm.com/guide#installation.
 
 ## Commands
 See: https://discordgsm.com/guide/commands

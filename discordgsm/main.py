@@ -482,6 +482,24 @@ async def command_settimezone(interaction: Interaction, address: str, query_port
         await interaction.delete_original_response()
 
 
+@tree.command(name='setclock', description='Set server message clock format', guilds=whitelist_guilds)
+@app_commands.describe(address='IP Address or Domain Name')
+@app_commands.describe(query_port='Query Port')
+@app_commands.describe(format='Clock format')
+@app_commands.choices(format=[app_commands.Choice(name="12-hour clock", value=12), app_commands.Choice(name="24-hour clock", value=24)])
+@app_commands.check(is_administrator)
+async def command_setclock(interaction: Interaction, address: str, query_port: int, format: app_commands.Choice[int]):
+    """Set server message clock format"""
+    Logger.command(interaction, address, query_port)
+
+    if server := await find_server(interaction, address, query_port):
+        await interaction.response.defer()
+        server.style_data.update({'clock_format': format.value})
+        database.update_server_style_data(server)
+        await refresh_channel_messages(interaction, resend=False)
+        await interaction.delete_original_response()
+
+
 @tree.command(name='setalert', description='Set server status alert settings', guilds=whitelist_guilds)
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')

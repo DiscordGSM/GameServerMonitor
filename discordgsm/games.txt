@@ -112,6 +112,7 @@ flashpointresistance|Operation Flashpoint: Resistance (2002)|gamespy1|port=2302,
 ffow|Frontlines: Fuel of War (2008)|ffow|port=5476,port_query_offset=2
 fivem|Grand Theft Auto V - FiveM (2013)|fivem|port=30120
 forrest|The Forrest (2014)|valve|port=27015,port_query_offset=1
+fs22|Farming Simulator 22 (2021)|valve|port=27015
 garrysmod|Garry's Mod (2004)|valve|port=27015
 graw|Tom Clancy's Ghost Recon Advanced Warfighter (2006)|gamespy2|port_query=15250
 graw2|Tom Clancy's Ghost Recon Advanced Warfighter 2 (2007)|gamespy2|port_query=16250

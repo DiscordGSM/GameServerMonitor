@@ -117,7 +117,8 @@ class Medium(Style):
         elif '-01-01' in today:
             advertisement = '🎉 Happy New Year!'
 
-        last_update = datetime.now(tz=ZoneInfo(self.server.style_data.get('timezone', 'Etc/UTC'))).strftime('%Y-%m-%d %I:%M:%S%p')
+        time_format = '%Y-%m-%d %I:%M:%S%p' if int(self.server.style_data.get('clock_format', '12')) == 12 else '%Y-%m-%d %H:%M:%S'
+        last_update = datetime.now(tz=ZoneInfo(self.server.style_data.get('timezone', 'Etc/UTC'))).strftime(time_format)
         icon_url = 'https://avatars.githubusercontent.com/u/61296017'
         embed.set_footer(text=f'DiscordGSM {__version__} | {advertisement} | Last update: {last_update}', icon_url=icon_url)
 

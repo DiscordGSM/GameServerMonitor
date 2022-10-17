@@ -154,6 +154,8 @@ class Gamedig:
                     result['raw']['numplayers'] = int(tag[2:])
                     break
 
+        result['raw'] = result.get('raw', {})
+
         return result
 
     # Credits: https://stackoverflow.com/questions/29213106/how-to-securely-escape-command-line-arguments-for-the-cmd-exe-shell-on-windows
@@ -188,7 +190,8 @@ async def query_terraria(host: str, port: int, token: str):
         'players': [{'name': player['nickname'], 'raw': player} for player in data['players']],
         'bots': [],
         'connect': f"{host}:{data['port']}",
-        'ping': end - start
+        'ping': end - start,
+        'raw': {}
     }
 
     return result

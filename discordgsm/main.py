@@ -198,6 +198,20 @@ def alert_embed(server: Server, alert: Alert):
     return embed
 
 
+async def send_alert(server: Server, alert: Alert):
+    if webhook_url := server.style_data.get('_alert_webhook_url'):
+        content = server.style_data.get('_alert_content', '').strip()
+        content = None if not content else content
+        username = 'Game Server Monitor Alert'
+        avatar_url = 'https://avatars.githubusercontent.com/u/61296017'
+
+        async with aiohttp.ClientSession() as session:
+            webhook = Webhook.from_url(webhook_url, session=session)
+            await webhook.send(content, username=username, avatar_url=avatar_url, embed=alert_embed(server, alert))
+    else:
+        raise NameError('The Webhook URL is empty.')
+
+
 def modal(game_id: str, is_add_server: bool):
     """Query server modal"""
     game = gamedig.find(game_id)
@@ -500,31 +514,25 @@ async def command_setalert(interaction: Interaction, address: str, query_port: i
         button2 = Button(style=ButtonStyle.secondary, label='Send Test Alert')
 
         async def button2_callback(interaction: Interaction):
-            if webhook_url := server.style_data.get('_alert_webhook_url'):
-                try:
-                    content = server.style_data.get('_alert_content', '').strip()
-                    avatar_url = 'https://avatars.githubusercontent.com/u/61296017'
-
-                    async with aiohttp.ClientSession() as session:
-                        webhook = Webhook.from_url(webhook_url, session=session)
-                        await webhook.send(content=None if not content else content, username='Game Server Monitor Alert', avatar_url=avatar_url, embed=alert_embed(server, Alert.TEST))
-
-                    await interaction.response.send_message('Test webhook sent.', ephemeral=True)
-                    Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert Test successfully.')
-                except ValueError:
-                    # The URL is invalid.
-                    await interaction.response.send_message('The Webhook URL is invalid.', ephemeral=True)
-                except discord.NotFound:
-                    # This webhook was not found.
-                    await interaction.response.send_message('This webhook was not found.', ephemeral=True)
-                except discord.HTTPException:
-                    # Sending the message failed.
-                    await interaction.response.send_message('Sending the message failed.', ephemeral=True)
-                except Exception as e:
-                    Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] send_alert_webhook Exception {e}')
-                    await interaction.response.send_message('Fail to send webhook. Please try again later.', ephemeral=True)
-            else:
+            try:
+                await send_alert(server, Alert.TEST)
+                await interaction.response.send_message('Test webhook sent.', ephemeral=True)
+                Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert Test successfully.')
+            except NameError:
+                # The URL is empty.
                 await interaction.response.send_message('The Webhook URL is empty.', ephemeral=True)
+            except ValueError:
+                # The URL is invalid.
+                await interaction.response.send_message('The Webhook URL is invalid.', ephemeral=True)
+            except discord.NotFound:
+                # This webhook was not found.
+                await interaction.response.send_message('This webhook was not found.', ephemeral=True)
+            except discord.HTTPException:
+                # Sending the message failed.
+                await interaction.response.send_message('Sending the message failed.', ephemeral=True)
+            except Exception as e:
+                Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] send_alert Exception {e}')
+                await interaction.response.send_message('Fail to send webhook. Please try again later.', ephemeral=True)
 
         button2.callback = button2_callback
 
@@ -767,29 +775,28 @@ async def query_servers():
 async def query_server(server: Server):
     """Query server"""
     status = server.status
+    should_alert = False
 
     try:
         server.result = await gamedig.query(server)
         server.status = True
-        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] success: {server.status}')
+        server.result['raw'] = server.result.get('raw', {})
+        server.result['raw'].pop('__fail_query_count', None)
+        should_alert = status != server.status  # Send alert when status from offline to online
+        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Success')
     except Exception as e:
         server.status = False
-        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] success: {server.status}, {e}')
+        server.result['raw'] = server.result.get('raw', {})
+        fail_query_count = server.result['raw']['__fail_query_count'] = int(server.result['raw'].get('__fail_query_count', '0')) + 1
+        should_alert = fail_query_count == 2  # Send alert when query failed two times
+        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Fail count: {fail_query_count}, Error: {e}')
 
-    # Send alert when status changes
-    if status != server.status:
-        if webhook_url := server.style_data.get('_alert_webhook_url'):
-            try:
-                content = server.style_data.get('_alert_content', '').strip()
-                avatar_url = 'https://avatars.githubusercontent.com/u/61296017'
-
-                async with aiohttp.ClientSession() as session:
-                    webhook = Webhook.from_url(webhook_url, session=session)
-                    await webhook.send(content=None if not content else content, username='Game Server Monitor Alert', avatar_url=avatar_url, embed=alert_embed(server, Alert.ONLINE if server.status else Alert.OFFLINE))
-
-                Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert {"Online" if server.status else "Offline"} successfully.')
-            except Exception as e:
-                Logger.debug(f'({server.game_id})[{server.address}:{server.query_port}] send_alert_webhook Exception {e}')
+    if should_alert:
+        try:
+            await send_alert(server, Alert.ONLINE if server.status else Alert.OFFLINE)
+            Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert {"Online" if server.status else "Offline"} successfully.')
+        except Exception as e:
+            Logger.debug(f'({server.game_id})[{server.address}:{server.query_port}] send_alert Exception {e}')
 
     return server
 

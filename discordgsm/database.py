@@ -193,9 +193,9 @@ class Database:
         cursor.close()
 
     def update_servers(self, servers: List[Server]):
-        """Update servers status and result, the result will only be updated if status is True"""
-        parameters = [(server.status, server.status, stringify(server.result), server.game_id, server.address, server.query_port, stringify(server.query_extra)) for server in servers]
-        sql = 'UPDATE servers SET status = ?, result = case when ? then ? else result end WHERE game_id = ? AND address = ? AND query_port = ? AND query_extra = ?'
+        """Update servers status and result"""
+        parameters = [(server.status, stringify(server.result), server.game_id, server.address, server.query_port, stringify(server.query_extra)) for server in servers]
+        sql = 'UPDATE servers SET status = ?, result = ? WHERE game_id = ? AND address = ? AND query_port = ? AND query_extra = ?'
 
         cursor = self.conn.cursor()
         cursor.executemany(self.transform(sql), parameters)

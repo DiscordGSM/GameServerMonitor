@@ -793,27 +793,31 @@ async def query_servers():
 
 async def query_server(server: Server):
     """Query server"""
-    status = server.status
-    should_alert = False
-
     try:
+        server.result['raw'] = server.result.get('raw', {})
+        should_alert = bool(server.result['raw'].get('__sent_offline_alert', False))
         server.result = await gamedig.query(server)
         server.status = True
-        server.result['raw'] = server.result.get('raw', {})
-        server.result['raw'].pop('__fail_query_count', None)
-        should_alert = status != server.status  # Send alert when status from offline to online
-        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Success')
+        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Success. Ping: {server.result.get("ping", -1)}ms')
     except Exception as e:
         server.status = False
-        server.result['raw'] = server.result.get('raw', {})
-        fail_query_count = server.result['raw']['__fail_query_count'] = int(server.result['raw'].get('__fail_query_count', '0')) + 1
-        should_alert = fail_query_count == 2  # Send alert when query failed two times
-        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Fail count: {fail_query_count}, Error: {e}')
+
+        # Send offline alert if server offline time >= 55 seconds and never sent before
+        utcnow_timestamp = datetime.utcnow().timestamp()
+        fail_query_timestamp = server.result['raw']['__fail_query_timestamp'] = float(server.result['raw'].get('__fail_query_timestamp', utcnow_timestamp))
+        sent_offline_alert = bool(server.result['raw'].get('__sent_offline_alert', False))
+        should_alert = sent_offline_alert is False and (utcnow_timestamp - fail_query_timestamp) >= 55
+        server.result['raw']['__sent_offline_alert'] = sent_offline_alert or should_alert
+
+        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Error: {e} {utcnow_timestamp - fail_query_timestamp} {should_alert}')
 
     if should_alert:
         try:
             await send_alert(server, Alert.ONLINE if server.status else Alert.OFFLINE)
             Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert {"Online" if server.status else "Offline"} successfully.')
+        except NameError:
+            # The Webhook URL is empty.
+            pass
         except Exception as e:
             Logger.debug(f'({server.game_id})[{server.address}:{server.query_port}] send_alert Exception {e}')
 

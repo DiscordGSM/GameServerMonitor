@@ -190,7 +190,7 @@ async def query_terraria(host: str, port: int, token: str):
         'players': [{'name': player['nickname'], 'raw': player} for player in data['players']],
         'bots': [],
         'connect': f"{host}:{data['port']}",
-        'ping': end - start,
+        'ping': int((end - start) * 1000),
         'raw': {}
     }
 
@@ -214,7 +214,7 @@ async def query_discord(guild_id: str):
         'players': [{'name': player['username'], 'raw': player} for player in data['members']],
         'bots': [],
         'connect': data['instant_invite'],
-        'ping': end - start,
+        'ping': int((end - start) * 1000),
         'raw': {
             'numplayers': data['presence_count'],
         }

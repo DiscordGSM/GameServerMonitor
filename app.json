@@ -1,6 +1,6 @@
 {
     "name": "Discord Game Server Monitor",
-    "description": "Monitor your game servers on Discord",
+    "description": "📺 Monitor your game servers on Discord and tracks the live data of your game servers.",
     "repository": "https://github.com/DiscordGSM/GameServerMonitor",
     "logo": "https://discordgsm.com/android-chrome-192x192.png",
     "keywords": ["discordgsm", "query", "gameserver", "gameservers", "monitor", "dgsm", "game-servers", "discord", "gaming", "game"],

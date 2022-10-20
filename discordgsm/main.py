@@ -326,8 +326,8 @@ async def command_addserver(interaction: Interaction, game_id: str):
 
 @tree.command(name='delserver', description='Delete server in current channel', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(address='IP Address or Domain Name')
-@app_commands.describe(query_port='Query Port')
+@app_commands.describe(address='IP address or domain name')
+@app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
 async def command_delserver(interaction: Interaction, address: str, query_port: int):
     """Delete server in current channel"""
@@ -389,35 +389,11 @@ async def command_factoryreset(interaction: Interaction):
 
     await interaction.response.send_message('Are you sure you want to delete all servers in current guild? This cannot be undone.', view=view, ephemeral=True)
 
-@tree.command(name='switch', description='Switch the server message(s) to another channel', guilds=whitelist_guilds)
-@app_commands.guild_only()
-@app_commands.describe(address='IP Address or Domain Name')
-@app_commands.describe(query_port='Query Port')
-@app_commands.check(is_administrator)
-async def command_switch(interaction: Interaction, channel: discord.TextChannel, address: Optional[str], query_port: Optional[int]):
-    """Switch the server message(s) to another channel"""
-    if channel.id == interaction.channel.id:
-        await interaction.response.send_message('You cannot switch servers to the same channel.', ephemeral=True)
-        return
-
-    if servers := await find_servers(interaction, address, query_port):
-        await interaction.response.defer()
-
-        for server in servers:
-            server.channel_id = channel.id
-
-        database.update_servers_channel_id(servers)
-        await resend_channel_messages(interaction)
-        await resend_channel_messages(interaction, channel.id)
-        
-        if len(servers) >= 1:
-            await interaction.followup.send(f'Switched {len(servers)} servers from <#{interaction.channel.id}> to <#{channel.id}>', ephemeral=True)
-
 
 @tree.command(name='moveup', description='Move the server message upward', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(address='IP Address or Domain Name')
-@app_commands.describe(query_port='Query Port')
+@app_commands.describe(address='IP address or domain name')
+@app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
 async def command_moveup(interaction: Interaction, address: str, query_port: int):
     """Move the server message upward"""
@@ -426,8 +402,8 @@ async def command_moveup(interaction: Interaction, address: str, query_port: int
 
 @tree.command(name='movedown', description='Move the server message downward', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(address='IP Address or Domain Name')
-@app_commands.describe(query_port='Query Port')
+@app_commands.describe(address='IP address or domain name')
+@app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
 async def command_movedown(interaction: Interaction, address: str, query_port: int):
     """Move the server message downward"""
@@ -447,8 +423,8 @@ async def action_move(interaction: Interaction, address: str, query_port: int, d
 
 @tree.command(name='changestyle', description='Change server message style', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(address='IP Address or Domain Name')
-@app_commands.describe(query_port='Query Port')
+@app_commands.describe(address='IP address or domain name')
+@app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
 async def command_changestyle(interaction: Interaction, address: str, query_port: int):
     """Change server message style"""
@@ -485,8 +461,8 @@ async def command_changestyle(interaction: Interaction, address: str, query_port
 
 @tree.command(name='editstyledata', description='Edit server message style data', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(address='IP Address or Domain Name')
-@app_commands.describe(query_port='Query Port')
+@app_commands.describe(address='IP address or domain name')
+@app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
 async def command_editstyledata(interaction: Interaction, address: str, query_port: int):
     """Edit server message style data"""
@@ -511,11 +487,37 @@ async def command_editstyledata(interaction: Interaction, address: str, query_po
         await interaction.response.send_modal(modal)
 
 
+@tree.command(name='switch', description='Switch the server message(s) to another channel', guilds=whitelist_guilds)
+@app_commands.guild_only()
+@app_commands.describe(channel='Discord channel')
+@app_commands.describe(address='IP address or domain name')
+@app_commands.describe(query_port='Query port')
+@app_commands.check(is_administrator)
+async def command_switch(interaction: Interaction, channel: discord.TextChannel, address: Optional[str], query_port: Optional[int]):
+    """Switch the server message(s) to another channel"""
+    if channel.id == interaction.channel.id:
+        await interaction.response.send_message('You cannot switch servers to the same channel.', ephemeral=True)
+        return
+
+    if servers := await find_servers(interaction, address, query_port):
+        await interaction.response.defer()
+
+        for server in servers:
+            server.channel_id = channel.id
+
+        database.update_servers_channel_id(servers)
+        await resend_channel_messages(interaction)
+        await resend_channel_messages(interaction, channel.id)
+
+        if len(servers) >= 1:
+            await interaction.followup.send(f'Switched {len(servers)} servers from <#{interaction.channel.id}> to <#{channel.id}>', ephemeral=True)
+
+
 @tree.command(name='settimezone', description='Set server message time zone', guilds=whitelist_guilds)
 @app_commands.guild_only()
 @app_commands.describe(timezone='TZ database name. Learn more: https://discordgsm.com/guide/timezones')
-@app_commands.describe(address='IP Address or Domain Name')
-@app_commands.describe(query_port='Query Port')
+@app_commands.describe(address='IP address or domain name')
+@app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
 async def command_settimezone(interaction: Interaction, timezone: str, address: Optional[str], query_port: Optional[int]):
     """Set server message time zone"""
@@ -539,8 +541,8 @@ async def command_settimezone(interaction: Interaction, timezone: str, address: 
 @tree.command(name='setclock', description='Set server message clock format', guilds=whitelist_guilds)
 @app_commands.guild_only()
 @app_commands.describe(format='Clock format')
-@app_commands.describe(address='IP Address or Domain Name')
-@app_commands.describe(query_port='Query Port')
+@app_commands.describe(address='IP address or domain name')
+@app_commands.describe(query_port='Query port')
 @app_commands.choices(format=[app_commands.Choice(name="12-hour clock", value=12), app_commands.Choice(name="24-hour clock", value=24)])
 @app_commands.check(is_administrator)
 async def command_setclock(interaction: Interaction, format: app_commands.Choice[int], address: Optional[str], query_port: Optional[int]):
@@ -560,8 +562,8 @@ async def command_setclock(interaction: Interaction, format: app_commands.Choice
 
 @tree.command(name='setalert', description='Set server status alert settings', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(address='IP Address or Domain Name')
-@app_commands.describe(query_port='Query Port')
+@app_commands.describe(address='IP address or domain name')
+@app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
 async def command_setalert(interaction: Interaction, address: str, query_port: int):
     """Set server status alert settings"""

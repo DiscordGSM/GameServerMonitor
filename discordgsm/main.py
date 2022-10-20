@@ -242,7 +242,7 @@ def modal(game_id: str, is_add_server: bool):
         host = query_param['host']._value = str(query_param['host']._value).strip()
         port = str(query_param['port']).strip()
 
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
 
         if is_add_server:
             try:
@@ -335,7 +335,7 @@ async def command_delserver(interaction: Interaction, address: str, query_port: 
     Logger.command(interaction, address, query_port)
 
     if server := await find_server(interaction, address, query_port):
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
         database.delete_server(server)
         await resend_channel_messages(interaction)
         await interaction.delete_original_response()
@@ -348,7 +348,7 @@ async def command_refresh(interaction: Interaction):
     """Refresh servers\' messages in current channel"""
     Logger.command(interaction)
 
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral=True)
     await resend_channel_messages(interaction)
     await interaction.delete_original_response()
 
@@ -363,7 +363,7 @@ async def command_factoryreset(interaction: Interaction):
     button = Button(style=ButtonStyle.red, label='Delete all servers')
 
     async def button_callback(interaction: Interaction):
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
         servers = database.all_servers(guild_id=interaction.guild.id)
         database.factory_reset(interaction.guild.id)
 
@@ -416,7 +416,7 @@ async def action_move(interaction: Interaction, address: str, query_port: int, d
     Logger.command(interaction, address, query_port)
 
     if server := await find_server(interaction, address, query_port):
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
         database.modify_server_position(server, direction)
         await refresh_channel_messages(interaction)
         await interaction.delete_original_response()
@@ -445,7 +445,7 @@ async def command_changestyle(interaction: Interaction, address: str, query_port
             if select.values[0] not in styles:
                 return
 
-            await interaction.response.defer()
+            await interaction.response.defer(ephemeral=True)
             server.style_id = select.values[0]
             database.update_server_style_id(server)
             await refresh_channel_messages(interaction)
@@ -478,7 +478,7 @@ async def command_editstyledata(interaction: Interaction, address: str, query_po
             modal.add_item(item)
 
         async def modal_on_submit(interaction: Interaction):
-            await interaction.response.defer()
+            await interaction.response.defer(ephemeral=True)
             server.style_data.update({k: str(v) for k, v in edit_fields.items()})
             database.update_server_style_data(server)
             await refresh_channel_messages(interaction)
@@ -501,7 +501,7 @@ async def command_switch(interaction: Interaction, channel: discord.TextChannel,
         return
 
     if servers := await find_servers(interaction, address, query_port):
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
 
         for server in servers:
             server.channel_id = channel.id
@@ -510,7 +510,9 @@ async def command_switch(interaction: Interaction, channel: discord.TextChannel,
         await resend_channel_messages(interaction)
         await resend_channel_messages(interaction, channel.id)
 
-        if len(servers) >= 1:
+        if len(servers) <= 1:
+            await interaction.delete_original_response()
+        else:
             await interaction.followup.send(f'Switched {len(servers)} servers from <#{interaction.channel.id}> to <#{channel.id}>', ephemeral=True)
 
 
@@ -529,7 +531,7 @@ async def command_settimezone(interaction: Interaction, timezone: str, address: 
         return
 
     if servers := await find_servers(interaction, address, query_port):
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
 
         for server in servers:
             server.style_data.update({'timezone': timezone})
@@ -551,7 +553,7 @@ async def command_setclock(interaction: Interaction, format: app_commands.Choice
     Logger.command(interaction, format.value, address, query_port)
 
     if servers := await find_servers(interaction, address, query_port):
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
 
         for server in servers:
             server.style_data.update({'clock_format': format.value})
@@ -580,7 +582,7 @@ async def command_setalert(interaction: Interaction, address: str, query_port: a
             modal = Modal(title='Alert Settings').add_item(text_input_webhook_url).add_item(text_input_webhook_content)
 
             async def modal_on_submit(interaction: Interaction):
-                await interaction.response.defer()
+                await interaction.response.defer(ephemeral=True)
                 webhook_url = str(text_input_webhook_url).strip()
                 content = str(text_input_webhook_content).strip()
                 server.style_data.update({'_alert_webhook_url': webhook_url, '_alert_content': content})

@@ -288,7 +288,8 @@ def modal(game_id: str, is_add_server: bool):
     return modal
 
 
-@tree.command(name='queryserver', description='Query server', guilds=whitelist_guilds)
+@tree.command(name='queryserver', description='Query server (One time only)', guilds=whitelist_guilds)
+@app_commands.guild_only()
 @app_commands.describe(game_id='Game ID. Learn more: https://discordgsm.com/guide/supported-games')
 @app_commands.check(custom_command_query_check)
 @app_commands.checks.dynamic_cooldown(cooldown_for_everyone_except_administrator)
@@ -301,6 +302,7 @@ async def command_query(interaction: Interaction, game_id: str):
 
 
 @tree.command(name='addserver', description='Add server in current channel', guilds=whitelist_guilds)
+@app_commands.guild_only()
 @app_commands.describe(game_id='Game ID. Learn more: https://discordgsm.com/guide/supported-games')
 @app_commands.check(is_administrator)
 async def command_addserver(interaction: Interaction, game_id: str):
@@ -323,6 +325,7 @@ async def command_addserver(interaction: Interaction, game_id: str):
 
 
 @tree.command(name='delserver', description='Delete server in current channel', guilds=whitelist_guilds)
+@app_commands.guild_only()
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
@@ -338,6 +341,7 @@ async def command_delserver(interaction: Interaction, address: str, query_port: 
 
 
 @tree.command(name='refresh', description='Refresh servers\' messages manually in current channel', guilds=whitelist_guilds)
+@app_commands.guild_only()
 @app_commands.check(is_administrator)
 async def command_refresh(interaction: Interaction):
     """Refresh servers\' messages in current channel"""
@@ -349,6 +353,7 @@ async def command_refresh(interaction: Interaction):
 
 
 @tree.command(name='factoryreset', description='Delete all servers in current guild', guilds=whitelist_guilds)
+@app_commands.guild_only()
 @app_commands.check(is_administrator)
 async def command_factoryreset(interaction: Interaction):
     """Delete all servers in current guild"""
@@ -385,6 +390,7 @@ async def command_factoryreset(interaction: Interaction):
     await interaction.response.send_message('Are you sure you want to delete all servers in current guild? This cannot be undone.', view=view, ephemeral=True)
 
 @tree.command(name='switch', description='Switch the server message(s) to another channel', guilds=whitelist_guilds)
+@app_commands.guild_only()
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
@@ -409,6 +415,7 @@ async def command_switch(interaction: Interaction, channel: discord.TextChannel,
 
 
 @tree.command(name='moveup', description='Move the server message upward', guilds=whitelist_guilds)
+@app_commands.guild_only()
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
@@ -418,6 +425,7 @@ async def command_moveup(interaction: Interaction, address: str, query_port: int
 
 
 @tree.command(name='movedown', description='Move the server message downward', guilds=whitelist_guilds)
+@app_commands.guild_only()
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
@@ -438,6 +446,7 @@ async def action_move(interaction: Interaction, address: str, query_port: int, d
 
 
 @tree.command(name='changestyle', description='Change server message style', guilds=whitelist_guilds)
+@app_commands.guild_only()
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
@@ -475,6 +484,7 @@ async def command_changestyle(interaction: Interaction, address: str, query_port
 
 
 @tree.command(name='editstyledata', description='Edit server message style data', guilds=whitelist_guilds)
+@app_commands.guild_only()
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)
@@ -502,6 +512,7 @@ async def command_editstyledata(interaction: Interaction, address: str, query_po
 
 
 @tree.command(name='settimezone', description='Set server message time zone', guilds=whitelist_guilds)
+@app_commands.guild_only()
 @app_commands.describe(timezone='TZ database name. Learn more: https://discordgsm.com/guide/timezones')
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
@@ -526,6 +537,7 @@ async def command_settimezone(interaction: Interaction, timezone: str, address: 
 
 
 @tree.command(name='setclock', description='Set server message clock format', guilds=whitelist_guilds)
+@app_commands.guild_only()
 @app_commands.describe(format='Clock format')
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
@@ -547,6 +559,7 @@ async def command_setclock(interaction: Interaction, format: app_commands.Choice
 
 
 @tree.command(name='setalert', description='Set server status alert settings', guilds=whitelist_guilds)
+@app_commands.guild_only()
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
 @app_commands.check(is_administrator)

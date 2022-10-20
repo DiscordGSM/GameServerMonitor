@@ -4,8 +4,10 @@
 node_modules/
 tests/
 .dockerignore
+.env
 .env.example
 .gitignore
+app.json
 CODE_OF_CONDUCT.md
 docker-compose*
 Dockerfile*

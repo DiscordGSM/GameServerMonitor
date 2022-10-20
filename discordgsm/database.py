@@ -84,7 +84,7 @@ class Database:
 
     def transform(self, sql: str):
         if self.type == 'pgsql':
-            return sql.replace('?', '%s')
+            return sql.replace('?', '%s').replace('IFNULL', 'COALESCE')
 
         return sql  # sqlite
 
@@ -169,9 +169,6 @@ class Database:
         INSERT INTO servers (position, guild_id, channel_id, game_id, address, query_port, query_extra, status, result, style_id, style_data)
         VALUES ((SELECT IFNULL(MAX(position + 1), 0) FROM servers WHERE channel_id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        if self.type == 'pgsql':
-            sql = sql.replace('IFNULL', 'COALESCE')
-
         try:
             cursor = self.conn.cursor()
             cursor.execute(self.transform(sql), (s.channel_id, s.guild_id, s.channel_id, s.game_id, s.address, s.query_port, stringify(s.query_extra), s.status, stringify(s.result), s.style_id, stringify(s.style_data)))
@@ -243,21 +240,12 @@ class Database:
 
     def modify_server_position(self, server: Server, direction: bool):
         servers = self.all_servers(channel_id=server.channel_id)
+        indices = [i for i, s in enumerate(servers) if s.id == server.id]
 
-        for i, s in enumerate(servers):
-            if s.id == server.id:
-                if direction:  # Move Up
-                    if i == 0:
-                        break
+        if len(indices) <= 0 or (direction and indices[0] == 0) or (not direction and indices[0] == len(servers) - 1):
+            return []
 
-                    return self.swap_servers_positon(s, servers[i - 1])
-                else:  # Move Down
-                    if i == len(servers) - 1:
-                        break
-
-                    return self.swap_servers_positon(s, servers[i + 1])
-
-        return []
+        return self.swap_servers_positon(server, servers[indices[0] + 1 * (-1 if direction else 1)])
 
     def swap_servers_positon(self, server1: Server, server2: Server):
         sql = 'UPDATE servers SET position = case when position = ? then ? else ? end, message_id = case when message_id = ? then ? else ? end WHERE id IN (?, ?)'
@@ -291,6 +279,22 @@ class Database:
         sql = 'UPDATE servers SET style_data = ? WHERE id = ?'
         cursor = self.conn.cursor()
         cursor.execute(self.transform(sql), (stringify(server.style_data), server.id))
+        self.conn.commit()
+        cursor.close()
+
+    def update_servers_style_data(self, servers: List[Server]):
+        sql = 'UPDATE servers SET style_data = ? WHERE id = ?'
+        parameters = [(stringify(server.style_data), server.id) for server in servers]
+        cursor = self.conn.cursor()
+        cursor.executemany(self.transform(sql), parameters)
+        self.conn.commit()
+        cursor.close()
+
+    def update_servers_channel_id(self, servers: List[Server]):
+        sql = 'UPDATE servers SET channel_id = ?, position = (SELECT IFNULL(MAX(position + 1), 0) FROM servers WHERE channel_id = ?) WHERE id = ?'
+        parameters = [(server.channel_id, server.channel_id, server.id) for server in servers]
+        cursor = self.conn.cursor()
+        cursor.executemany(self.transform(sql), parameters)
         self.conn.commit()
         cursor.close()
 

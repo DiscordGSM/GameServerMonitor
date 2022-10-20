@@ -275,10 +275,11 @@ def modal(game_id: str, is_add_server: bool):
                 Logger.info(f'Successfully added {game_id} server {host}:{port} to #{interaction.channel.name}({interaction.channel.id}).')
             except Exception as e:
                 Logger.error(f'Fail to add {game_id} server {host}:{port} {e}')
-                await interaction.followup.send(f'Fail to add `{game_id}` server `{host}:{port}`. Please try again later.')
+                await interaction.followup.send(f'Fail to add `{game_id}` server `{host}:{port}`. Please try again later.', ephemeral=True)
                 return
 
-            await refresh_channel_messages(interaction, resend=True)
+            await resend_channel_messages(interaction)
+            await interaction.delete_original_response()
         else:
             await interaction.followup.send('Query successfully!', embed=style.embed())
 
@@ -332,7 +333,8 @@ async def command_delserver(interaction: Interaction, address: str, query_port: 
     if server := await find_server(interaction, address, query_port):
         await interaction.response.defer()
         database.delete_server(server)
-        await refresh_channel_messages(interaction, resend=True)
+        await resend_channel_messages(interaction)
+        await interaction.delete_original_response()
 
 
 @tree.command(name='refresh', description='Refresh servers\' messages manually in current channel', guilds=whitelist_guilds)
@@ -342,7 +344,8 @@ async def command_refresh(interaction: Interaction):
     Logger.command(interaction)
 
     await interaction.response.defer()
-    await refresh_channel_messages(interaction, resend=True)
+    await resend_channel_messages(interaction)
+    await interaction.delete_original_response()
 
 
 @tree.command(name='factoryreset', description='Delete all servers in current guild', guilds=whitelist_guilds)
@@ -357,7 +360,21 @@ async def command_factoryreset(interaction: Interaction):
         await interaction.response.defer()
         servers = database.all_servers(guild_id=interaction.guild.id)
         database.factory_reset(interaction.guild.id)
-        await asyncio.gather(*[delete_message(server) for server in servers])
+
+        async def purge_channel(channel_id: int):
+            channel = client.get_channel(channel_id)
+
+            try:
+                await channel.purge(check=lambda m: m.author == client.user, before=interaction.created_at)
+            except discord.Forbidden as e:
+                # You do not have proper permissions to do the actions required.
+                Logger.error(f'Channel {channel.id} channel.purge discord.Forbidden {e}')
+            except discord.HTTPException as e:
+                # Purging the messages failed.
+                Logger.error(f'Channel {channel.id} channel.purge discord.HTTPException {e}')
+
+        channel_ids = set(server.channel_id for server in servers if server.channel_id)
+        await asyncio.gather(*[purge_channel(channel_id) for channel_id in channel_ids])
         await interaction.followup.send('Factory reset successfully.', ephemeral=True)
 
     button.callback = button_callback
@@ -366,6 +383,29 @@ async def command_factoryreset(interaction: Interaction):
     view.add_item(button)
 
     await interaction.response.send_message('Are you sure you want to delete all servers in current guild? This cannot be undone.', view=view, ephemeral=True)
+
+@tree.command(name='switch', description='Switch the server message(s) to another channel', guilds=whitelist_guilds)
+@app_commands.describe(address='IP Address or Domain Name')
+@app_commands.describe(query_port='Query Port')
+@app_commands.check(is_administrator)
+async def command_switch(interaction: Interaction, channel: discord.TextChannel, address: Optional[str], query_port: Optional[int]):
+    """Switch the server message(s) to another channel"""
+    if channel.id == interaction.channel.id:
+        await interaction.response.send_message('You cannot switch servers to the same channel.', ephemeral=True)
+        return
+
+    if servers := await find_servers(interaction, address, query_port):
+        await interaction.response.defer()
+
+        for server in servers:
+            server.channel_id = channel.id
+
+        database.update_servers_channel_id(servers)
+        await resend_channel_messages(interaction)
+        await resend_channel_messages(interaction, channel.id)
+        
+        if len(servers) >= 1:
+            await interaction.followup.send(f'Switched {len(servers)} servers from <#{interaction.channel.id}> to <#{channel.id}>', ephemeral=True)
 
 
 @tree.command(name='moveup', description='Move the server message upward', guilds=whitelist_guilds)
@@ -393,7 +433,7 @@ async def action_move(interaction: Interaction, address: str, query_port: int, d
     if server := await find_server(interaction, address, query_port):
         await interaction.response.defer()
         database.modify_server_position(server, direction)
-        await refresh_channel_messages(interaction, resend=False)
+        await refresh_channel_messages(interaction)
         await interaction.delete_original_response()
 
 
@@ -422,7 +462,7 @@ async def command_changestyle(interaction: Interaction, address: str, query_port
             await interaction.response.defer()
             server.style_id = select.values[0]
             database.update_server_style_id(server)
-            await refresh_channel_messages(interaction, resend=False)
+            await refresh_channel_messages(interaction)
 
         select.callback = select_callback
         view = View()
@@ -454,7 +494,7 @@ async def command_editstyledata(interaction: Interaction, address: str, query_po
             await interaction.response.defer()
             server.style_data.update({k: str(v) for k, v in edit_fields.items()})
             database.update_server_style_data(server)
-            await refresh_channel_messages(interaction, resend=False)
+            await refresh_channel_messages(interaction)
 
         modal.on_submit = modal_on_submit
 
@@ -462,41 +502,47 @@ async def command_editstyledata(interaction: Interaction, address: str, query_po
 
 
 @tree.command(name='settimezone', description='Set server message time zone', guilds=whitelist_guilds)
+@app_commands.describe(timezone='TZ database name. Learn more: https://discordgsm.com/guide/timezones')
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
-@app_commands.describe(timezone='TZ database name. Learn more: https://discordgsm.com/guide/timezones')
 @app_commands.check(is_administrator)
-async def command_settimezone(interaction: Interaction, address: str, query_port: int, timezone: str):
+async def command_settimezone(interaction: Interaction, timezone: str, address: Optional[str], query_port: Optional[int]):
     """Set server message time zone"""
-    Logger.command(interaction, address, query_port)
+    Logger.command(interaction, timezone, address, query_port)
 
-    if server := await find_server(interaction, address, query_port):
-        if timezone not in timezones:
-            await interaction.response.send_message(f'`{timezone}` is not a valid time zone. Learn more: https://discordgsm.com/guide/timezones', ephemeral=True)
-            return
+    if timezone not in timezones:
+        await interaction.response.send_message(f'`{timezone}` is not a valid time zone. Learn more: https://discordgsm.com/guide/timezones', ephemeral=True)
+        return
 
+    if servers := await find_servers(interaction, address, query_port):
         await interaction.response.defer()
-        server.style_data.update({'timezone': timezone})
-        database.update_server_style_data(server)
-        await refresh_channel_messages(interaction, resend=False)
+
+        for server in servers:
+            server.style_data.update({'timezone': timezone})
+
+        database.update_servers_style_data(servers)
+        await refresh_channel_messages(interaction)
         await interaction.delete_original_response()
 
 
 @tree.command(name='setclock', description='Set server message clock format', guilds=whitelist_guilds)
+@app_commands.describe(format='Clock format')
 @app_commands.describe(address='IP Address or Domain Name')
 @app_commands.describe(query_port='Query Port')
-@app_commands.describe(format='Clock format')
 @app_commands.choices(format=[app_commands.Choice(name="12-hour clock", value=12), app_commands.Choice(name="24-hour clock", value=24)])
 @app_commands.check(is_administrator)
-async def command_setclock(interaction: Interaction, address: str, query_port: int, format: app_commands.Choice[int]):
+async def command_setclock(interaction: Interaction, format: app_commands.Choice[int], address: Optional[str], query_port: Optional[int]):
     """Set server message clock format"""
-    Logger.command(interaction, address, query_port)
+    Logger.command(interaction, format.value, address, query_port)
 
-    if server := await find_server(interaction, address, query_port):
+    if servers := await find_servers(interaction, address, query_port):
         await interaction.response.defer()
-        server.style_data.update({'clock_format': format.value})
-        database.update_server_style_data(server)
-        await refresh_channel_messages(interaction, resend=False)
+
+        for server in servers:
+            server.style_data.update({'clock_format': format.value})
+
+        database.update_servers_style_data(servers)
+        await refresh_channel_messages(interaction)
         await interaction.delete_original_response()
 
 
@@ -579,7 +625,7 @@ async def command_error_handler(interaction: Interaction, error: app_commands.Ap
     if isinstance(error, app_commands.CommandOnCooldown):
         await interaction.response.send_message(str(error), ephemeral=True)
     elif isinstance(error, app_commands.CheckFailure):
-        await interaction.response.send_message('You don\'t have sufficient privileges to use this command', ephemeral=True)
+        await interaction.response.send_message('You don\'t have sufficient privileges to use this command.', ephemeral=True)
     else:
         Logger.error(str(error))
 # endregion
@@ -602,9 +648,22 @@ async def find_server(interaction: Interaction, address: str, query_port: int):
         server = database.find_server(interaction.channel.id, address, query_port)
         return server
     except database.ServerNotFoundError:
-        await interaction.response.send_message(f'The server `{address}:{query_port}` does not exist in the channel', ephemeral=True)
+        await interaction.response.send_message(f'The server `{address}:{query_port}` does not exist in the channel.', ephemeral=True)
         return None
 
+async def find_servers(interaction: Interaction, address: Optional[str], query_port: Optional[int]):
+    if address is None and query_port is None:
+        if servers := database.all_servers(channel_id=interaction.channel.id):
+            return servers
+        else:
+            await interaction.response.send_message('There are no servers in this channel.', ephemeral=True)
+    elif address is not None and query_port is not None:
+        if server := await find_server(interaction, address, query_port):
+            return [server]
+    else:
+        await interaction.response.send_message('`address` and `query_port` must be given together.', ephemeral=True)
+
+    return None
 
 async def fetch_message(server: Server):
     """Fetch message with local cache"""
@@ -639,27 +698,21 @@ async def fetch_message(server: Server):
     return None
 
 
-async def refresh_channel_messages(interaction: Interaction, resend: bool):
-    """When resend=True, no need to await interaction.delete_original_response()"""
-    servers = database.all_servers(channel_id=interaction.channel.id)
-
-    if not resend:
-        await asyncio.gather(*[edit_message(chunks) for chunks in database.all_channels_servers(servers).values()])
-        return True
-
-    channel = client.get_channel(interaction.channel.id)
+async def resend_channel_messages(interaction: Interaction, channel_id: Optional[int] = None):
+    channel = client.get_channel(channel_id if channel_id else interaction.channel.id)
+    servers = database.all_servers(channel_id=channel.id)
 
     try:
-        await channel.purge(check=lambda m: m.author == client.user)
+        await channel.purge(check=lambda m: m.author == client.user, before=interaction.created_at)
     except discord.Forbidden as e:
         # You do not have proper permissions to do the actions required.
-        Logger.error(f'Channel {interaction.channel.id} channel.purge discord.Forbidden {e}')
-        await interaction.followup.send('Missing Permission: `Manage Messages`')
+        Logger.error(f'Channel {channel.id} channel.purge discord.Forbidden {e}')
+        await interaction.followup.send('Missing Permission: `Manage Messages`', ephemeral=True)
         return False
     except discord.HTTPException as e:
         # Purging the messages failed.
-        Logger.error(f'Channel {interaction.channel.id} channel.purge discord.HTTPException {e}')
-        await interaction.followup.send('Purging the messages failed. Please try again later.')
+        Logger.error(f'Channel {channel.id} channel.purge discord.HTTPException {e}')
+        await interaction.followup.send('Purging the messages failed. Please try again later.', ephemeral=True)
         return False
 
     for chunks in to_chunks(servers, 10):
@@ -667,13 +720,13 @@ async def refresh_channel_messages(interaction: Interaction, resend: bool):
             message = await channel.send(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in chunks])
         except discord.Forbidden as e:
             # You do not have the proper permissions to send the message.
-            Logger.error(f'Channel {interaction.channel.id} send_message discord.Forbidden {e}')
-            await interaction.followup.send('Missing Permission: `Send Messages`')
+            Logger.error(f'Channel {channel.id} send_message discord.Forbidden {e}')
+            await interaction.followup.send('Missing Permission: `Send Messages`', ephemeral=True)
             return False
         except discord.HTTPException as e:
             # Sending the message failed.
-            Logger.error(f'Channel {interaction.channel.id} send_message discord.HTTPException {e}')
-            await interaction.followup.send('Sending the message failed. Please try again later.')
+            Logger.error(f'Channel {channel.id} send_message discord.HTTPException {e}')
+            await interaction.followup.send('Sending the message failed. Please try again later.', ephemeral=True)
             return False
 
         for server in chunks:
@@ -684,6 +737,11 @@ async def refresh_channel_messages(interaction: Interaction, resend: bool):
     database.update_servers_message_id(servers)
 
     return True
+
+
+async def refresh_channel_messages(interaction: Interaction):
+    servers = database.all_servers(channel_id=interaction.channel.id)
+    await asyncio.gather(*[edit_message(chunks) for chunks in database.all_channels_servers(servers).values()])
 
 
 async def delete_message(server: Server, update_message_id: bool = False):

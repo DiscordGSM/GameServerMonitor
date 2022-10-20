@@ -52,6 +52,7 @@ async def on_ready():
     """Called when the client is done preparing the data received from Discord."""
     await client.wait_until_ready()
 
+    Logger.info(f'Starting Game Server Monitor {__version__}')
     Logger.info(f'Connected to {database.type} database')
     Logger.info(f'Logged on as {client.user}')
     Logger.info(f'Add to Server: {invite_link}')
@@ -666,6 +667,7 @@ async def find_server(interaction: Interaction, address: str, query_port: int):
         await interaction.response.send_message(f'The server `{address}:{query_port}` does not exist in the channel.', ephemeral=True)
         return None
 
+
 async def find_servers(interaction: Interaction, address: Optional[str], query_port: Optional[int]):
     if address is None and query_port is None:
         if servers := database.all_servers(channel_id=interaction.channel.id):
@@ -679,6 +681,7 @@ async def find_servers(interaction: Interaction, address: Optional[str], query_p
         await interaction.response.send_message('`address` and `query_port` must be given together.', ephemeral=True)
 
     return None
+
 
 async def fetch_message(server: Server):
     """Fetch message with local cache"""

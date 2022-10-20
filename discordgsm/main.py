@@ -330,7 +330,7 @@ async def command_addserver(interaction: Interaction, game_id: str):
 @app_commands.describe(address='IP address or domain name')
 @app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
-async def command_delserver(interaction: Interaction, address: str, query_port: int):
+async def command_delserver(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Delete server in current channel"""
     Logger.command(interaction, address, query_port)
 
@@ -396,7 +396,7 @@ async def command_factoryreset(interaction: Interaction):
 @app_commands.describe(address='IP address or domain name')
 @app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
-async def command_moveup(interaction: Interaction, address: str, query_port: int):
+async def command_moveup(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Move the server message upward"""
     await action_move(interaction, address, query_port, True)
 
@@ -406,7 +406,7 @@ async def command_moveup(interaction: Interaction, address: str, query_port: int
 @app_commands.describe(address='IP address or domain name')
 @app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
-async def command_movedown(interaction: Interaction, address: str, query_port: int):
+async def command_movedown(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Move the server message downward"""
     await action_move(interaction, address, query_port, False)
 
@@ -427,7 +427,7 @@ async def action_move(interaction: Interaction, address: str, query_port: int, d
 @app_commands.describe(address='IP address or domain name')
 @app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
-async def command_changestyle(interaction: Interaction, address: str, query_port: int):
+async def command_changestyle(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Change server message style"""
     Logger.command(interaction, address, query_port)
 
@@ -465,7 +465,7 @@ async def command_changestyle(interaction: Interaction, address: str, query_port
 @app_commands.describe(address='IP address or domain name')
 @app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
-async def command_editstyledata(interaction: Interaction, address: str, query_port: int):
+async def command_editstyledata(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Edit server message style data"""
     Logger.command(interaction, address, query_port)
 
@@ -494,7 +494,7 @@ async def command_editstyledata(interaction: Interaction, address: str, query_po
 @app_commands.describe(address='IP address or domain name')
 @app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
-async def command_switch(interaction: Interaction, channel: discord.TextChannel, address: Optional[str], query_port: Optional[int]):
+async def command_switch(interaction: Interaction, channel: discord.TextChannel, address: Optional[str], query_port: Optional[app_commands.Range[int, 0, 65535]]):
     """Switch the server message(s) to another channel"""
     if channel.id == interaction.channel.id:
         await interaction.response.send_message('You cannot switch servers to the same channel.', ephemeral=True)
@@ -520,7 +520,7 @@ async def command_switch(interaction: Interaction, channel: discord.TextChannel,
 @app_commands.describe(address='IP address or domain name')
 @app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
-async def command_settimezone(interaction: Interaction, timezone: str, address: Optional[str], query_port: Optional[int]):
+async def command_settimezone(interaction: Interaction, timezone: str, address: Optional[str], query_port: Optional[app_commands.Range[int, 0, 65535]]):
     """Set server message time zone"""
     Logger.command(interaction, timezone, address, query_port)
 
@@ -546,7 +546,7 @@ async def command_settimezone(interaction: Interaction, timezone: str, address: 
 @app_commands.describe(query_port='Query port')
 @app_commands.choices(format=[app_commands.Choice(name="12-hour clock", value=12), app_commands.Choice(name="24-hour clock", value=24)])
 @app_commands.check(is_administrator)
-async def command_setclock(interaction: Interaction, format: app_commands.Choice[int], address: Optional[str], query_port: Optional[int]):
+async def command_setclock(interaction: Interaction, format: app_commands.Choice[int], address: Optional[str], query_port: Optional[app_commands.Range[int, 0, 65535]]):
     """Set server message clock format"""
     Logger.command(interaction, format.value, address, query_port)
 
@@ -566,7 +566,7 @@ async def command_setclock(interaction: Interaction, format: app_commands.Choice
 @app_commands.describe(address='IP address or domain name')
 @app_commands.describe(query_port='Query port')
 @app_commands.check(is_administrator)
-async def command_setalert(interaction: Interaction, address: str, query_port: int):
+async def command_setalert(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Set server status alert settings"""
     Logger.command(interaction, address, query_port)
 

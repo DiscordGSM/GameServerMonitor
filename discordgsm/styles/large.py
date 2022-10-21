@@ -1,6 +1,7 @@
 from discord import Embed
 from discordgsm.styles.medium import Medium
 from discordgsm.styles.style import Style
+from discordgsm.translator import t
 
 
 class Large(Medium, Style):
@@ -8,23 +9,23 @@ class Large(Medium, Style):
 
     @property
     def display_name(self) -> str:
-        return 'Large'
+        return t('style.large.display_name', self.locale)
 
     @property
     def description(self) -> str:
-        return 'A large-sized style that shows server info and player list.'
+        return t('style.large.description', self.locale)
 
     def embed(self) -> Embed:
         embed = super().embed()
         empty_value = '*​*'
-        field_names = ['Members' if self.server.game_id == 'discord' else 'Player List', empty_value, empty_value]
+        field_name = t(f"embed.field.{'members' if self.server.game_id == 'discord' else 'player_list'}.name", self.locale)
         players = [player for player in self.server.result['players'] if player['name'].strip()]
         values = ['', '', '']
 
         for i, player in enumerate(sorted(players, key=lambda player: player['name'])):
             values[i % len(values)] += f"{player['name']}\n"
 
-        for i, name in enumerate(field_names):
+        for i, name in enumerate([field_name, empty_value, empty_value]):
             embed.add_field(name=name, value=values[i] if values[i] else empty_value)
 
         return embed

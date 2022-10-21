@@ -8,17 +8,19 @@ from typing import Dict, List, Optional
 import aiohttp
 import discord
 from discord import (ActivityType, AutoShardedClient, ButtonStyle, Client,
-                     Embed, Interaction, Message, SelectOption, Webhook,
-                     app_commands)
+                     Embed, Interaction, Locale, Message, SelectOption,
+                     Webhook, app_commands)
 from discord.ext import tasks
 from discord.ui import Button, Modal, Select, TextInput, View
 from dotenv import load_dotenv
 
+from discordgsm.gamedig import GamedigGame
 from discordgsm.logger import Logger
 from discordgsm.server import Server
 from discordgsm.service import (ZoneInfo, database, gamedig, invite_link,
                                 public, timezones, whitelist_guilds)
 from discordgsm.styles.style import Style
+from discordgsm.translator import Translator, t
 from discordgsm.version import __version__
 
 load_dotenv()
@@ -26,11 +28,11 @@ load_dotenv()
 # Create table here because it will cause thread issue on service.py
 database.create_table_if_not_exists()
 
-# DiscordGSM styles
 styles = {style.__name__: style for style in Style.__subclasses__()}
+"""DiscordGSM styles"""
 
-# Discord messages cache
 messages: Dict[int, Message] = {}
+"""DiscordGSM messages cache"""
 
 
 def cache_message(message: Message):
@@ -114,6 +116,7 @@ async def sync_commands(guilds: List[discord.Object]):
 async def tree_sync(guild: discord.Object = None):
     """Syncs the application commands to Discord."""
     try:
+        await tree.set_translator(Translator())
         await tree.sync(guild=guild)
 
         if public:
@@ -168,39 +171,37 @@ class Alert(Enum):
 
 
 def alert_embed(server: Server, alert: Alert):
+    """Returns alert embed"""
+    locale = str(server.style_data.get('locale', 'en-US'))
     title = (server.result['password'] and ':lock: ' or '') + server.result['name']
 
     if alert == Alert.TEST:
-        description = '🧪 This is a test alert!'
+        description = t('embed.alert.description.test', locale)
         color = discord.Color.from_rgb(48, 49, 54)
     elif alert == Alert.ONLINE:
-        description = '✅ Your server is back online!'
+        description = t('embed.alert.description.online', locale)
         color = discord.Color.from_rgb(87, 242, 135)
     elif alert == Alert.OFFLINE:
-        description = '🚨 Your server seems to be down!'
+        description = t('embed.alert.description.offline', locale)
         color = discord.Color.from_rgb(237, 66, 69)
 
     embed = Embed(description=description, color=color)
     embed.set_author(name=title)
-    embed.add_field(name='Game', value=server.style_data.get('fullname', server.game_id), inline=True)
+    
+    style = styles['Medium'](server)
+    style.add_game_field(embed)
+    style.add_address_field(embed)
 
-    game_port = gamedig.game_port(server.result)
-
-    if server.game_id == 'discord':
-        embed.add_field(name='Guild ID', value=f'`{server.address}`', inline=True)
-    elif game_port is None or game_port == int(server.query_port):
-        embed.add_field(name='Address:Port', value=f'`{server.address}:{server.query_port}`', inline=True)
-    else:
-        embed.add_field(name='Address:Port (Query)', value=f'`{server.address}:{game_port} ({server.query_port})`', inline=True)
-
-    last_update = datetime.now(tz=ZoneInfo(server.style_data.get('timezone', 'Etc/UTC'))).strftime('%Y-%m-%d %I:%M:%S%p')
+    query_time = datetime.now(tz=ZoneInfo(server.style_data.get('timezone', 'Etc/UTC'))).strftime('%Y-%m-%d %I:%M:%S%p')
+    query_time = t('embed.alert.footer.query_time', locale).format(query_time=query_time)
     icon_url = 'https://avatars.githubusercontent.com/u/61296017'
-    embed.set_footer(text=f'DiscordGSM {__version__} | Query time: {last_update}', icon_url=icon_url)
+    embed.set_footer(text=f'DiscordGSM {__version__} | {query_time}', icon_url=icon_url)
 
     return embed
 
 
 async def send_alert(server: Server, alert: Alert):
+    """Send alert to webhook"""
     if webhook_url := server.style_data.get('_alert_webhook_url'):
         content = server.style_data.get('_alert_content', '').strip()
         content = None if not content else content
@@ -211,43 +212,52 @@ async def send_alert(server: Server, alert: Alert):
             webhook = Webhook.from_url(webhook_url, session=session)
             await webhook.send(content, username=username, avatar_url=avatar_url, embed=alert_embed(server, alert))
     else:
-        raise NameError('The Webhook URL is empty.')
+        # The Webhook URL is empty.
+        raise NameError()
 
 
-def modal(game_id: str, is_add_server: bool):
+def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_server: bool):
     """Query server modal"""
-    game = gamedig.find(game_id)
-    default_port = gamedig.default_port(game_id)
-    query_param = {'type': game_id, 'host': TextInput(label='Address'), 'port': TextInput(label='Query Port', max_length='5', default=default_port)}
+    query_param = {
+        'type': game['id'],
+        'host': TextInput(label=t('modal.text_input.address.label', interaction.locale), placeholder=t('command.option.address', interaction.locale)),
+        'port': TextInput(
+            label=t('modal.text_input.query_port.label', interaction.locale),
+            placeholder=t('command.option.query_port', interaction.locale),
+            max_length='5',
+            default=gamedig.default_port(game['id'])
+        )
+    }
 
     modal = Modal(title=game['fullname']).add_item(query_param['host']).add_item(query_param['port'])
     query_extra = {}
 
-    if game_id == 'teamspeak2':
+    if game['id'] == 'teamspeak2':
         query_extra['teamspeakQueryPort'] = TextInput(label='TeamSpeak Query Port', max_length='5', default=51234)
         modal.add_item(query_extra['teamspeakQueryPort'])
-    elif game_id == 'teamspeak3':
+    elif game['id'] == 'teamspeak3':
         query_extra['teamspeakQueryPort'] = TextInput(label='TeamSpeak Query Port', max_length='5', default=10011)
         modal.add_item(query_extra['teamspeakQueryPort'])
-    elif game_id == 'terraria':
+    elif game['id'] == 'terraria':
         query_extra['_token'] = TextInput(label='REST user token')
         modal.add_item(query_extra['_token'])
 
-    if game_id == 'discord':
-        query_param['host'].label = 'Guild ID'
+    if game['id'] == 'discord':
+        query_param['host'].label = t('modal.text_input.guild_id.label', interaction.locale)
         modal.remove_item(query_param['port'])
         query_param['port']._value = '0'
 
     async def modal_on_submit(interaction: Interaction):
-        host = query_param['host']._value = str(query_param['host']._value).strip()
-        port = str(query_param['port']).strip()
+        address = query_param['host']._value = str(query_param['host']._value).strip()
+        query_port = str(query_param['port']).strip()
 
         await interaction.response.defer(ephemeral=True)
 
         if is_add_server:
             try:
-                database.find_server(interaction.channel.id, host, port)
-                await interaction.followup.send('The server already exists in the channel', ephemeral=True)
+                database.find_server(interaction.channel.id, address, query_port)
+                content = t('function.query_server_modal.already_exists', interaction.locale)
+                await interaction.followup.send(content, ephemeral=True)
                 return
             except database.ServerNotFoundError:
                 pass
@@ -255,13 +265,14 @@ def modal(game_id: str, is_add_server: bool):
         try:
             result = await gamedig.run({**query_param, **query_extra})
         except Exception:
-            await interaction.followup.send(f'Fail to query `{game_id}` server `{host}:{port}`. Please try again.', ephemeral=True)
+            content = t('function.query_server_modal.fail_to_query', interaction.locale).format(game_id=game['id'], address=address, query_port=query_port)
+            await interaction.followup.send(content, ephemeral=True)
             return
 
-        server = Server.new(interaction.guild_id, interaction.channel_id, game_id, host, port, query_extra, result)
+        server = Server.new(interaction.guild_id, interaction.channel_id, game['id'], address, query_port, query_extra, result)
         style = styles['Medium'](server)
         server.style_id = style.id
-        server.style_data = await style.default_style_data()
+        server.style_data = await style.default_style_data(interaction.guild_locale)
 
         if is_add_server:
             if public:
@@ -271,27 +282,22 @@ def modal(game_id: str, is_add_server: bool):
                     webhook = Webhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'), session=session)
                     await webhook.send(content, embed=style.embed())
 
-            try:
-                server = database.add_server(server)
-                Logger.info(f'Successfully added {game_id} server {host}:{port} to #{interaction.channel.name}({interaction.channel.id}).')
-            except Exception as e:
-                Logger.error(f'Fail to add {game_id} server {host}:{port} {e}')
-                await interaction.followup.send(f'Fail to add `{game_id}` server `{host}:{port}`. Please try again later.', ephemeral=True)
-                return
-
+            server = database.add_server(server)
+            Logger.info(f'Successfully added {game["id"]} server {address}:{query_port} to #{interaction.channel.name}({interaction.channel.id}).')
             await resend_channel_messages(interaction)
             await interaction.delete_original_response()
         else:
-            await interaction.followup.send('Query successfully!', embed=style.embed())
+            content = t('function.query_server_modal.success', interaction.locale)
+            await interaction.followup.send(content, embed=style.embed())
 
     modal.on_submit = modal_on_submit
 
     return modal
 
 
-@tree.command(name='queryserver', description='Query server (One time only)', guilds=whitelist_guilds)
+@tree.command(name='queryserver', description='command.queryserver.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(game_id='Game ID. Learn more: https://discordgsm.com/guide/supported-games')
+@app_commands.describe(game_id='command.option.game_id')
 @app_commands.check(custom_command_query_check)
 @app_commands.checks.dynamic_cooldown(cooldown_for_everyone_except_administrator)
 async def command_query(interaction: Interaction, game_id: str):
@@ -299,19 +305,20 @@ async def command_query(interaction: Interaction, game_id: str):
     Logger.command(interaction, game_id)
 
     if game := await find_game(interaction, game_id):
-        await interaction.response.send_modal(modal(game['id'], False))
+        await interaction.response.send_modal(query_server_modal(interaction, game, False))
 
 
-@tree.command(name='addserver', description='Add server in current channel', guilds=whitelist_guilds)
+@tree.command(name='addserver', description='command.addserver.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(game_id='Game ID. Learn more: https://discordgsm.com/guide/supported-games')
+@app_commands.describe(game_id='command.option.game_id')
 @app_commands.check(is_administrator)
 async def command_addserver(interaction: Interaction, game_id: str):
     """Add server in current channel"""
     Logger.command(interaction, game_id)
 
     if not isinstance(interaction.channel, discord.TextChannel):
-        await interaction.response.send_message('Command only supports text channel.', ephemeral=True)
+        content = t('command.addserver.text_channel_only', interaction.locale)
+        await interaction.response.send_message(content, ephemeral=True)
         return
 
     if game := await find_game(interaction, game_id):
@@ -319,16 +326,17 @@ async def command_addserver(interaction: Interaction, game_id: str):
             limit = int(os.getenv('APP_PUBLIC_SERVER_LIMIT', '10'))
 
             if len(database.all_servers(guild_id=interaction.guild.id)) > limit:
-                await interaction.response.send_message(f'The server quota has been exceeded. Limit: {limit}', ephemeral=True)
+                content = t('command.addserver.limit_exceeded', interaction.locale).format(limit=limit)
+                await interaction.response.send_message(content, ephemeral=True)
                 return
 
-        await interaction.response.send_modal(modal(game['id'], True))
+        await interaction.response.send_modal(query_server_modal(interaction, game, True))
 
 
-@tree.command(name='delserver', description='Delete server in current channel', guilds=whitelist_guilds)
+@tree.command(name='delserver', description='command.delserver.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(address='IP address or domain name')
-@app_commands.describe(query_port='Query port')
+@app_commands.describe(address='command.option.address')
+@app_commands.describe(query_port='command.option.query_port')
 @app_commands.check(is_administrator)
 async def command_delserver(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Delete server in current channel"""
@@ -341,7 +349,7 @@ async def command_delserver(interaction: Interaction, address: str, query_port: 
         await interaction.delete_original_response()
 
 
-@tree.command(name='refresh', description='Refresh servers\' messages manually in current channel', guilds=whitelist_guilds)
+@tree.command(name='refresh', description='command.refresh.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
 @app_commands.check(is_administrator)
 async def command_refresh(interaction: Interaction):
@@ -353,14 +361,15 @@ async def command_refresh(interaction: Interaction):
     await interaction.delete_original_response()
 
 
-@tree.command(name='factoryreset', description='Delete all servers in current guild', guilds=whitelist_guilds)
+@tree.command(name='factoryreset', description='command.factoryreset.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
 @app_commands.check(is_administrator)
 async def command_factoryreset(interaction: Interaction):
     """Delete all servers in current guild"""
     Logger.command(interaction)
 
-    button = Button(style=ButtonStyle.red, label='Delete all servers')
+    label = t('command.factoryreset.button.label', interaction.locale)
+    button = Button(style=ButtonStyle.red, label=label)
 
     async def button_callback(interaction: Interaction):
         await interaction.response.defer(ephemeral=True)
@@ -381,30 +390,32 @@ async def command_factoryreset(interaction: Interaction):
 
         channel_ids = set(server.channel_id for server in servers if server.channel_id)
         await asyncio.gather(*[purge_channel(channel_id) for channel_id in channel_ids])
-        await interaction.followup.send('Factory reset successfully.', ephemeral=True)
+        content = t('command.factoryreset.success', interaction.locale)
+        await interaction.followup.send(content, ephemeral=True)
 
     button.callback = button_callback
 
     view = View()
     view.add_item(button)
 
-    await interaction.response.send_message('Are you sure you want to delete all servers in current guild? This cannot be undone.', view=view, ephemeral=True)
+    content = t('command.factoryreset.content', interaction.locale)
+    await interaction.response.send_message(content, view=view, ephemeral=True)
 
 
-@tree.command(name='moveup', description='Move the server message upward', guilds=whitelist_guilds)
+@tree.command(name='moveup', description='command.moveup.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(address='IP address or domain name')
-@app_commands.describe(query_port='Query port')
+@app_commands.describe(address='command.option.address')
+@app_commands.describe(query_port='command.option.query_port')
 @app_commands.check(is_administrator)
 async def command_moveup(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Move the server message upward"""
     await action_move(interaction, address, query_port, True)
 
 
-@tree.command(name='movedown', description='Move the server message downward', guilds=whitelist_guilds)
+@tree.command(name='movedown', description='command.movedown.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(address='IP address or domain name')
-@app_commands.describe(query_port='Query port')
+@app_commands.describe(address='command.option.address')
+@app_commands.describe(query_port='command.option.query_port')
 @app_commands.check(is_administrator)
 async def command_movedown(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Move the server message downward"""
@@ -422,10 +433,10 @@ async def action_move(interaction: Interaction, address: str, query_port: int, d
         await interaction.delete_original_response()
 
 
-@tree.command(name='changestyle', description='Change server message style', guilds=whitelist_guilds)
+@tree.command(name='changestyle', description='command.changestyle.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(address='IP address or domain name')
-@app_commands.describe(query_port='Query port')
+@app_commands.describe(address='command.option.address')
+@app_commands.describe(query_port='command.option.query_port')
 @app_commands.check(is_administrator)
 async def command_changestyle(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Change server message style"""
@@ -454,16 +465,14 @@ async def command_changestyle(interaction: Interaction, address: str, query_port
         view = View()
         view.add_item(select)
 
-        embed = Embed(title='Select the message style', description=f'Server: `{server.address}:{server.query_port}`', color=discord.Color.from_rgb(235, 69, 158))
-        embed.set_author(name=server.result['name'])
-
-        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+        content = t('command.changestyle.content', interaction.locale).format(address=server.address, query_port=server.query_port)
+        await interaction.response.send_message(content, view=view, ephemeral=True)
 
 
-@tree.command(name='editstyledata', description='Edit server message style data', guilds=whitelist_guilds)
+@tree.command(name='editstyledata', description='command.editstyledata.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(address='IP address or domain name')
-@app_commands.describe(query_port='Query port')
+@app_commands.describe(address='command.option.address')
+@app_commands.describe(query_port='command.option.query_port')
 @app_commands.check(is_administrator)
 async def command_editstyledata(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Edit server message style data"""
@@ -471,7 +480,8 @@ async def command_editstyledata(interaction: Interaction, address: str, query_po
 
     if server := await find_server(interaction, address, query_port):
         style = styles.get(server.style_id, styles['Medium'])(server)
-        modal = Modal(title=f'Edit {server.address}:{server.query_port}')
+        title = t('command.editstyledata.modal.title', interaction.locale).format(address=server.address, query_port=server.query_port)
+        modal = Modal(title=title)
         edit_fields = style.default_edit_fields
 
         for item in edit_fields.values():
@@ -488,16 +498,17 @@ async def command_editstyledata(interaction: Interaction, address: str, query_po
         await interaction.response.send_modal(modal)
 
 
-@tree.command(name='switch', description='Switch the server message(s) to another channel', guilds=whitelist_guilds)
+@tree.command(name='switch', description='command.switch.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(channel='Discord channel')
-@app_commands.describe(address='IP address or domain name')
-@app_commands.describe(query_port='Query port')
+@app_commands.describe(channel='command.option.channel')
+@app_commands.describe(address='command.option.address')
+@app_commands.describe(query_port='command.option.query_port')
 @app_commands.check(is_administrator)
 async def command_switch(interaction: Interaction, channel: discord.TextChannel, address: Optional[str], query_port: Optional[app_commands.Range[int, 0, 65535]]):
     """Switch the server message(s) to another channel"""
     if channel.id == interaction.channel.id:
-        await interaction.response.send_message('You cannot switch servers to the same channel.', ephemeral=True)
+        content = t('command.switch.same_channel', interaction.locale)
+        await interaction.response.send_message(content, ephemeral=True)
         return
 
     if servers := await find_servers(interaction, address, query_port):
@@ -513,21 +524,23 @@ async def command_switch(interaction: Interaction, channel: discord.TextChannel,
         if len(servers) <= 1:
             await interaction.delete_original_response()
         else:
-            await interaction.followup.send(f'Switched {len(servers)} servers from <#{interaction.channel.id}> to <#{channel.id}>', ephemeral=True)
+            content = t('command.switch.success', interaction.locale).format(count=len(servers), channel_id1=interaction.channel.id, channel_id2=channel.id)
+            await interaction.followup.send(content, ephemeral=True)
 
 
-@tree.command(name='settimezone', description='Set server message time zone', guilds=whitelist_guilds)
+@tree.command(name='settimezone', description='command.settimezone.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(timezone='TZ database name. Learn more: https://discordgsm.com/guide/timezones')
-@app_commands.describe(address='IP address or domain name')
-@app_commands.describe(query_port='Query port')
+@app_commands.describe(timezone='command.option.timezone')
+@app_commands.describe(address='command.option.address')
+@app_commands.describe(query_port='command.option.query_port')
 @app_commands.check(is_administrator)
 async def command_settimezone(interaction: Interaction, timezone: str, address: Optional[str], query_port: Optional[app_commands.Range[int, 0, 65535]]):
     """Set server message time zone"""
     Logger.command(interaction, timezone, address, query_port)
 
     if timezone not in timezones:
-        await interaction.response.send_message(f'`{timezone}` is not a valid time zone. Learn more: https://discordgsm.com/guide/timezones', ephemeral=True)
+        content = t('command.settimezone.invalid', interaction.locale).format(timezone=timezone)
+        await interaction.response.send_message(content, ephemeral=True)
         return
 
     if servers := await find_servers(interaction, address, query_port):
@@ -541,32 +554,58 @@ async def command_settimezone(interaction: Interaction, timezone: str, address: 
         await interaction.delete_original_response()
 
 
-@tree.command(name='setclock', description='Set server message clock format', guilds=whitelist_guilds)
+@tree.command(name='setclock', description='command.setclock.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(format='Clock format')
-@app_commands.describe(address='IP address or domain name')
-@app_commands.describe(query_port='Query port')
-@app_commands.choices(format=[app_commands.Choice(name="12-hour clock", value=12), app_commands.Choice(name="24-hour clock", value=24)])
+@app_commands.describe(clock_format='command.option.clock_format')
+@app_commands.describe(address='command.option.address')
+@app_commands.describe(query_port='command.option.query_port')
+@app_commands.choices(clock_format=[app_commands.Choice(name="command.choice.12_hour_clock", value=12), app_commands.Choice(name="command.choice.24_hour_clock", value=24)])
 @app_commands.check(is_administrator)
-async def command_setclock(interaction: Interaction, format: app_commands.Choice[int], address: Optional[str], query_port: Optional[app_commands.Range[int, 0, 65535]]):
+async def command_setclock(interaction: Interaction, clock_format: app_commands.Choice[int], address: Optional[str], query_port: Optional[app_commands.Range[int, 0, 65535]]):
     """Set server message clock format"""
-    Logger.command(interaction, format.value, address, query_port)
+    Logger.command(interaction, clock_format.value, address, query_port)
 
     if servers := await find_servers(interaction, address, query_port):
         await interaction.response.defer(ephemeral=True)
 
         for server in servers:
-            server.style_data.update({'clock_format': format.value})
+            server.style_data.update({'clock_format': clock_format.value})
 
         database.update_servers_style_data(servers)
         await refresh_channel_messages(interaction)
         await interaction.delete_original_response()
 
 
-@tree.command(name='setalert', description='Set server status alert settings', guilds=whitelist_guilds)
+@tree.command(name='setlocale', description='command.setlocale.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
-@app_commands.describe(address='IP address or domain name')
-@app_commands.describe(query_port='Query port')
+@app_commands.describe(locale='command.option.locale')
+@app_commands.describe(address='command.option.address')
+@app_commands.describe(query_port='command.option.query_port')
+@app_commands.check(is_administrator)
+async def command_setlocale(interaction: Interaction, locale: str, address: Optional[str], query_port: Optional[app_commands.Range[int, 0, 65535]]):
+    """Set server message locale"""
+    Logger.command(interaction, locale, address, query_port)
+
+    if locale not in set(l.value for l in Locale):
+        content = t('command.setlocale.invalid', interaction.locale).format(locale=locale)
+        await interaction.response.send_message(content, ephemeral=True)
+        return
+
+    if servers := await find_servers(interaction, address, query_port):
+        await interaction.response.defer(ephemeral=True)
+
+        for server in servers:
+            server.style_data.update({'locale': locale})
+
+        database.update_servers_style_data(servers)
+        await refresh_channel_messages(interaction)
+        await interaction.delete_original_response()
+
+
+@tree.command(name='setalert', description='command.setalert.description', guilds=whitelist_guilds)
+@app_commands.guild_only()
+@app_commands.describe(address='command.option.address')
+@app_commands.describe(query_port='command.option.query_port')
 @app_commands.check(is_administrator)
 async def command_setalert(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Set server status alert settings"""
@@ -574,12 +613,16 @@ async def command_setalert(interaction: Interaction, address: str, query_port: a
 
     if server := await find_server(interaction, address, query_port):
         # Set up button 1
-        button1 = Button(style=ButtonStyle.primary, label='Alert Settings')
+        label = t('command.setalert.settings.button.label', interaction.locale)
+        button1 = Button(style=ButtonStyle.primary, label=label)
 
         async def button1_callback(interaction: Interaction):
-            text_input_webhook_url = TextInput(label='Webhook URL', placeholder='Discord Webhook URL', default=server.style_data.get('_alert_webhook_url', ''), required=False)
-            text_input_webhook_content = TextInput(label='Webhook Content', placeholder='Alert Content', default=server.style_data.get('_alert_content', ''), required=False, max_length=4000)
-            modal = Modal(title='Alert Settings').add_item(text_input_webhook_url).add_item(text_input_webhook_content)
+            label = t('modal.text_input.webhook_url.label', interaction.locale)
+            text_input_webhook_url = TextInput(label=label, default=server.style_data.get('_alert_webhook_url', ''), required=False)
+            label = t('modal.text_input.webhook_content.label', interaction.locale)
+            text_input_webhook_content = TextInput(label=label, default=server.style_data.get('_alert_content', ''), required=False, max_length=4000)
+            title = t('command.setalert.settings.modal.title', interaction.locale)
+            modal = Modal(title=title).add_item(text_input_webhook_url).add_item(text_input_webhook_content)
 
             async def modal_on_submit(interaction: Interaction):
                 await interaction.response.defer(ephemeral=True)
@@ -594,28 +637,32 @@ async def command_setalert(interaction: Interaction, address: str, query_port: a
         button1.callback = button1_callback
 
         # Set up button 2
-        button2 = Button(style=ButtonStyle.secondary, label='Send Test Alert')
+        label = t('command.setalert.test.button.label', interaction.locale)
+        button2 = Button(style=ButtonStyle.secondary, label=label)
 
         async def button2_callback(interaction: Interaction):
             try:
                 await send_alert(server, Alert.TEST)
-                await interaction.response.send_message('Test webhook sent.', ephemeral=True)
+                content = t('command.setalert.test.success', interaction.locale)
+                await interaction.response.send_message(content, ephemeral=True)
                 Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert Test successfully.')
             except NameError:
                 # The URL is empty.
-                await interaction.response.send_message('The Webhook URL is empty.', ephemeral=True)
+                content = t('command.setalert.test.empty', interaction.locale)
+                await interaction.response.send_message(content, ephemeral=True)
             except ValueError:
                 # The URL is invalid.
-                await interaction.response.send_message('The Webhook URL is invalid.', ephemeral=True)
+                content = t('command.setalert.test.invalid', interaction.locale)
+                await interaction.response.send_message(content, ephemeral=True)
             except discord.NotFound:
                 # This webhook was not found.
-                await interaction.response.send_message('This webhook was not found.', ephemeral=True)
-            except discord.HTTPException:
-                # Sending the message failed.
-                await interaction.response.send_message('Sending the message failed.', ephemeral=True)
+                content = t('command.setalert.test.not_found', interaction.locale)
+                await interaction.response.send_message(content, ephemeral=True)
             except Exception as e:
+                # Sending the message failed. (Include discord.HTTPException)
                 Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] send_alert Exception {e}')
-                await interaction.response.send_message('Fail to send webhook. Please try again later.', ephemeral=True)
+                content = t('command.error.internal_error', interaction.locale)
+                await interaction.response.send_message(content, ephemeral=True)
 
         button2.callback = button2_callback
 
@@ -623,10 +670,8 @@ async def command_setalert(interaction: Interaction, address: str, query_port: a
         view.add_item(button1)
         view.add_item(button2)
 
-        embed = Embed(title='Set server status alert settings', description=f'Server: `{server.address}:{server.query_port}`', color=discord.Color.from_rgb(235, 69, 158))
-        embed.set_author(name=server.result['name'])
-
-        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+        content = t('command.setalert.content', interaction.locale).format(address=server.address, query_port=query_port)
+        await interaction.response.send_message(content, view=view, ephemeral=True)
 
 
 @command_query.error
@@ -643,7 +688,8 @@ async def command_error_handler(interaction: Interaction, error: app_commands.Ap
     if isinstance(error, app_commands.CommandOnCooldown):
         await interaction.response.send_message(str(error), ephemeral=True)
     elif isinstance(error, app_commands.CheckFailure):
-        await interaction.response.send_message('You don\'t have sufficient privileges to use this command.', ephemeral=True)
+        content = t('command.error.no_permission', interaction.locale)
+        await interaction.response.send_message(content, ephemeral=True)
     else:
         Logger.error(str(error))
 # endregion
@@ -656,7 +702,8 @@ async def find_game(interaction: Interaction, game_id: str):
         game = gamedig.find(game_id)
         return game
     except LookupError:
-        await interaction.response.send_message(f'`{game_id}` is not a valid game id. Learn more: https://discordgsm.com/guide/supported-games', ephemeral=True)
+        content = t('function.find_game.not_found', interaction.locale).format(game_id=game_id)
+        await interaction.response.send_message(content, ephemeral=True)
         return None
 
 
@@ -666,7 +713,8 @@ async def find_server(interaction: Interaction, address: str, query_port: int):
         server = database.find_server(interaction.channel.id, address, query_port)
         return server
     except database.ServerNotFoundError:
-        await interaction.response.send_message(f'The server `{address}:{query_port}` does not exist in the channel.', ephemeral=True)
+        content = t('function.find_server.not_found', interaction.locale).format(address=address, query_port=query_port)
+        await interaction.response.send_message(content, ephemeral=True)
         return None
 
 
@@ -675,12 +723,14 @@ async def find_servers(interaction: Interaction, address: Optional[str], query_p
         if servers := database.all_servers(channel_id=interaction.channel.id):
             return servers
         else:
-            await interaction.response.send_message('There are no servers in this channel.', ephemeral=True)
+            content = t('function.find_servers.empty', interaction.locale)
+            await interaction.response.send_message(content, ephemeral=True)
     elif address is not None and query_port is not None:
         if server := await find_server(interaction, address, query_port):
             return [server]
     else:
-        await interaction.response.send_message('`address` and `query_port` must be given together.', ephemeral=True)
+        content = t('function.find_servers.parameter_error', interaction.locale)
+        await interaction.response.send_message(content, ephemeral=True)
 
     return None
 
@@ -719,6 +769,7 @@ async def fetch_message(server: Server):
 
 
 async def resend_channel_messages(interaction: Interaction, channel_id: Optional[int] = None):
+    """Resend channel messages"""
     channel = client.get_channel(channel_id if channel_id else interaction.channel.id)
     servers = database.all_servers(channel_id=channel.id)
 
@@ -727,12 +778,14 @@ async def resend_channel_messages(interaction: Interaction, channel_id: Optional
     except discord.Forbidden as e:
         # You do not have proper permissions to do the actions required.
         Logger.error(f'Channel {channel.id} channel.purge discord.Forbidden {e}')
-        await interaction.followup.send('Missing Permission: `Manage Messages`', ephemeral=True)
+        content = t('missing_permission.manage_messages', interaction.locale)
+        await interaction.followup.send(content, ephemeral=True)
         return False
     except discord.HTTPException as e:
         # Purging the messages failed.
         Logger.error(f'Channel {channel.id} channel.purge discord.HTTPException {e}')
-        await interaction.followup.send('Purging the messages failed. Please try again later.', ephemeral=True)
+        content = t('command.error.internal_error', interaction.locale)
+        await interaction.followup.send(content, ephemeral=True)
         return False
 
     for chunks in to_chunks(servers, 10):
@@ -741,12 +794,14 @@ async def resend_channel_messages(interaction: Interaction, channel_id: Optional
         except discord.Forbidden as e:
             # You do not have the proper permissions to send the message.
             Logger.error(f'Channel {channel.id} send_message discord.Forbidden {e}')
-            await interaction.followup.send('Missing Permission: `Send Messages`', ephemeral=True)
+            content = t('missing_permission.send_messages', interaction.locale)
+            await interaction.followup.send(content, ephemeral=True)
             return False
         except discord.HTTPException as e:
             # Sending the message failed.
             Logger.error(f'Channel {channel.id} send_message discord.HTTPException {e}')
-            await interaction.followup.send('Sending the message failed. Please try again later.', ephemeral=True)
+            content = t('command.error.internal_error', interaction.locale)
+            await interaction.followup.send(content, ephemeral=True)
             return False
 
         for server in chunks:
@@ -760,36 +815,9 @@ async def resend_channel_messages(interaction: Interaction, channel_id: Optional
 
 
 async def refresh_channel_messages(interaction: Interaction):
+    """Edit channel messages"""
     servers = database.all_servers(channel_id=interaction.channel.id)
     await asyncio.gather(*[edit_message(chunks) for chunks in database.all_channels_servers(servers).values()])
-
-
-async def delete_message(server: Server, update_message_id: bool = False):
-    """Delete message"""
-    message = await fetch_message(server)
-
-    if message is None:
-        return
-
-    try:
-        await message.delete()
-    except discord.Forbidden as e:
-        # You do not have proper permissions to delete the message.
-        Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] delete_message discord.Forbidden {e}')
-        return
-    except discord.NotFound:
-        # The message was deleted already
-        pass
-    except discord.HTTPException as e:
-        # Deleting the message failed.
-        Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] delete_message discord.HTTPException {e}')
-        return
-
-    server.message_id = None
-    messages.pop(message.id, None)
-
-    if update_message_id:
-        database.update_servers_message_id([server])
 
 
 # Credits: https://stackoverflow.com/questions/312443/how-do-i-split-a-list-into-equally-sized-chunks

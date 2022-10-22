@@ -43,7 +43,7 @@ if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
         if locale in translations:
             return jsonify(translations[locale])
         else:
-            return jsonify({'error': 'Invalid locale', 'locales': [l.value for l in Locale]})
+            return jsonify({'error': 'Invalid locale', 'locales': [str(value) for value in Locale]})
 
     @app.route('/api/v1/guilds')
     def guilds():

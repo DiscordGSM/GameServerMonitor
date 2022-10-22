@@ -60,7 +60,7 @@ Learn more: https://discordgsm.com/guide/supported-games
 | <img src="https://discordgsm.com/images/flags/uk.png" width=20 /> Ukrainian | Українська | ❌ | [uk.json](/discordgsm/translations/uk.json) |  |
 | <img src="https://discordgsm.com/images/flags/hi.png" width=20 /> Hindi | हिन्दी | ❌ | [hi.json](/discordgsm/translations/hi.json) |  |
 | <img src="https://discordgsm.com/images/flags/th.png" width=20 /> Thai | ไทย | ❌ | [th.json](/discordgsm/translations/th.json) |  |
-| <img src="https://discordgsm.com/images/flags/zh-CN.png" width=20 /> Chinese, China | 中文 | ❌ | [zh-CN.json](/discordgsm/translations/zh-CN.json) |  |
+| <img src="https://discordgsm.com/images/flags/zh-CN.png" width=20 /> Chinese, China | 中文 | ✔️ | [zh-CN.json](/discordgsm/translations/zh-CN.json) | [@BattlefieldDuck](https://github.com/BattlefieldDuck) |
 | <img src="https://discordgsm.com/images/flags/ja.png" width=20 /> Japanese | 日本語 | ❌ | [ja.json](/discordgsm/translations/ja.json) |  |
 | <img src="https://discordgsm.com/images/flags/zh-TW.png" width=20 /> Chinese, Taiwan | 繁體中文 | ✔️ | [zh-TW.json](/discordgsm/translations/zh-TW.json) | [@BattlefieldDuck](https://github.com/BattlefieldDuck) |
 | <img src="https://discordgsm.com/images/flags/ko.png" width=20 /> Korean | 한국어 | ❌ | [ko.json](/discordgsm/translations/ko.json) |  |

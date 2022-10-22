@@ -23,10 +23,47 @@ We provide a public discord bot service which allows to monitor 10 servers per d
 For self hosting, please check https://discordgsm.com/guide#installation.
 
 ## Commands
-See: https://discordgsm.com/guide/commands
+![DiscordGSM Commands](https://discordgsm.com/game-server-monitor-commands.jpg)
+
+Learn more: https://discordgsm.com/guide/commands
 
 ## Supported Games
-See: https://discordgsm.com/guide/supported-games
+Learn more: https://discordgsm.com/guide/supported-games
+
+## Languages
+
+| Language Name | Native Name | Supported | Locale File | Contributors |
+| ------------- | ----------- | --------- | ----------- | ------------ |
+| <img src="https://discordgsm.com/images/flags/da.png" width=20 /> Danish | Dansk | ❌ | [da.json](/discordgsm/translations/da.json) |  |
+| <img src="https://discordgsm.com/images/flags/de.png" width=20 /> German | Deutsch | ❌ | [de.json](/discordgsm/translations/de.json) |  |
+| <img src="https://discordgsm.com/images/flags/en-GB.png" width=20 /> English, UK | English, UK | ✔️ | [en-GB.json](/discordgsm/translations/en-GB.json) | [@BattlefieldDuck](https://github.com/BattlefieldDuck) |
+| <img src="https://discordgsm.com/images/flags/en-US.png" width=20 /> English, US | 	English, US | ✔️ | [en-US.json](/discordgsm/translations/en-US.json) | [@BattlefieldDuck](https://github.com/BattlefieldDuck) |
+| <img src="https://discordgsm.com/images/flags/es-ES.png" width=20 /> Spanish | Español | ❌ | [es-ES.json](/discordgsm/translations/es-ES.json) |  |
+| <img src="https://discordgsm.com/images/flags/fr.png" width=20 /> French | Français | ❌ | [fr.json](/discordgsm/translations/fr.json) |  |
+| <img src="https://discordgsm.com/images/flags/hr.png" width=20 /> Croatian | Hrvatski | ❌ | [hr.json](/discordgsm/translations/hr.json) |  |
+| <img src="https://discordgsm.com/images/flags/it.png" width=20 /> Italian | Italiano | ❌ | [it.json](/discordgsm/translations/it.json) |  |
+| <img src="https://discordgsm.com/images/flags/lt.png" width=20 /> Lithuanian | Lietuviškai | ❌ | [lt.json](/discordgsm/translations/lt.json) |  |
+| <img src="https://discordgsm.com/images/flags/hu.png" width=20 /> Hungarian | Magyar | ❌ | [hu.json](/discordgsm/translations/hu.json) |  |
+| <img src="https://discordgsm.com/images/flags/nl.png" width=20 /> Dutch | Nederlands | ❌ | [nl.json](/discordgsm/translations/nl.json) |  |
+| <img src="https://discordgsm.com/images/flags/no.png" width=20 /> Norwegian | Norsk | ❌ | [no.json](/discordgsm/translations/no.json) |  |
+| <img src="https://discordgsm.com/images/flags/pl.png" width=20 /> Polish | Polski | ❌ | [pl.json](/discordgsm/translations/pl.json) |  |
+| <img src="https://discordgsm.com/images/flags/pt-BR.png" width=20 /> Portuguese, Brazilian | Português do Brasil | ❌ | [pt-BR.json](/discordgsm/translations/pt-BR.json) |  |
+| <img src="https://discordgsm.com/images/flags/ro.png" width=20 /> Romanian, Romania	| Română | ❌ | [ro.json](/discordgsm/translations/ro.json) |  |
+| <img src="https://discordgsm.com/images/flags/fi.png" width=20 /> Finnish | Suomi | ❌ | [fi.json](/discordgsm/translations/fi.json) |  |
+| <img src="https://discordgsm.com/images/flags/sv-SE.png" width=20 /> Swedish | Svenska | ❌ | [sv-SE.json](/discordgsm/translations/sv-SE.json) |  |
+| <img src="https://discordgsm.com/images/flags/vi.png" width=20 /> Vietnamese | Tiếng Việt | ❌ | [vi.json](/discordgsm/translations/vi.json) |  |
+| <img src="https://discordgsm.com/images/flags/tr.png" width=20 /> Turkish | Türkçe | ❌ | [tr.json](/discordgsm/translations/tr.json) |  |
+| <img src="https://discordgsm.com/images/flags/cs.png" width=20 /> Czech | Čeština | ❌ | [cs.json](/discordgsm/translations/cs.json) |  |
+| <img src="https://discordgsm.com/images/flags/el.png" width=20 /> Greek | Ελληνικά | ❌ | [el.json](/discordgsm/translations/el.json) |  |
+| <img src="https://discordgsm.com/images/flags/bg.png" width=20 /> Bulgarian | български | ❌ | [bg.json](/discordgsm/translations/bg.json) |  |
+| <img src="https://discordgsm.com/images/flags/ru.png" width=20 /> Russian | Pусский | ❌ | [ru.json](/discordgsm/translations/ru.json) |  |
+| <img src="https://discordgsm.com/images/flags/uk.png" width=20 /> Ukrainian | Українська | ❌ | [uk.json](/discordgsm/translations/uk.json) |  |
+| <img src="https://discordgsm.com/images/flags/hi.png" width=20 /> Hindi | हिन्दी | ❌ | [hi.json](/discordgsm/translations/hi.json) |  |
+| <img src="https://discordgsm.com/images/flags/th.png" width=20 /> Thai | ไทย | ❌ | [th.json](/discordgsm/translations/th.json) |  |
+| <img src="https://discordgsm.com/images/flags/zh-CN.png" width=20 /> Chinese, China | 中文 | ❌ | [zh-CN.json](/discordgsm/translations/zh-CN.json) |  |
+| <img src="https://discordgsm.com/images/flags/ja.png" width=20 /> Japanese | 日本語 | ❌ | [ja.json](/discordgsm/translations/ja.json) |  |
+| <img src="https://discordgsm.com/images/flags/zh-TW.png" width=20 /> Chinese, Taiwan | 繁體中文 | ✔️ | [zh-TW.json](/discordgsm/translations/zh-TW.json) | [@BattlefieldDuck](https://github.com/BattlefieldDuck) |
+| <img src="https://discordgsm.com/images/flags/ko.png" width=20 /> Korean | 한국어 | ❌ | [ko.json](/discordgsm/translations/ko.json) |  |
 
 ## Support Server
 Got any questions or feedbacks? Join our Discord Server: https://discordgsm.com/discord

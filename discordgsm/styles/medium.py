@@ -27,7 +27,7 @@ class Medium(Style):
                 default=self.server.style_data.get('country', '')
             )
         })
-        
+
         return fields
 
     def embed(self) -> Embed:
@@ -39,17 +39,17 @@ class Medium(Style):
         embed.add_field(name=name, value=value, inline=True)
 
         self.add_address_field(embed)
-        
+
         flag_emoji = ('country' in self.server.style_data) and (':flag_' + self.server.style_data['country'].lower() + f': {self.server.style_data["country"]}') or ':united_nations: Unknown'
         name = t('embed.field.country.name', self.locale)
         embed.add_field(name=name, value=flag_emoji, inline=True)
 
         self.add_game_field(embed)
-        
+
         maps = (self.server.result['map'] and self.server.result['map'].strip()) and self.server.result['map'] or '-'
         name = t('embed.field.current_map.name', self.locale)
         embed.add_field(name=name, value=maps, inline=True)
-        
+
         self.add_players_field(embed)
 
         embed.set_image(url=self.server.style_data.get('image_url'))

@@ -22,7 +22,7 @@ class Style(ABC):
     @property
     def id(self) -> str:
         return self.__class__.__name__
-    
+
     @property
     def locale(self) -> str:
         return str(self.server.style_data.get('locale', 'en-US'))
@@ -123,7 +123,7 @@ class Style(ABC):
     def add_players_field(self, embed: Embed):
         players = self.server.result.get('raw', {}).get('numplayers', len(self.server.result['players']))
         bots = len(self.server.result['bots'])
-        
+
         if self.server.status:
             players_string = str(players)  # example: 20
 
@@ -140,7 +140,7 @@ class Style(ABC):
 
         name = t(f"embed.field.{'presence' if self.server.game_id == 'discord' else 'players'}.name", self.locale)
         embed.add_field(name=name, value=players_string, inline=True)
-    
+
     def set_footer(self, embed: Embed):
         advertisement = '📺 Game Server Monitor'
 

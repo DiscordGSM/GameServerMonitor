@@ -17,7 +17,7 @@ class Small(Style):
     def embed(self) -> Embed:
         title, description, color = self.embed_data()
         embed = Embed(title=title, description=description, color=color)
-        
+
         self.add_game_field(embed)
         self.add_address_field(embed)
         self.add_players_field(embed)

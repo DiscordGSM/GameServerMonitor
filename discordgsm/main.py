@@ -187,7 +187,7 @@ def alert_embed(server: Server, alert: Alert):
 
     embed = Embed(description=description, color=color)
     embed.set_author(name=title)
-    
+
     style = styles['Medium'](server)
     style.add_game_field(embed)
     style.add_address_field(embed)
@@ -586,7 +586,7 @@ async def command_setlocale(interaction: Interaction, locale: str, address: Opti
     """Set server message locale"""
     Logger.command(interaction, locale, address, query_port)
 
-    if locale not in set(l.value for l in Locale):
+    if locale not in set(str(value) for value in Locale):
         content = t('command.setlocale.invalid', interaction.locale).format(locale=locale)
         await interaction.response.send_message(content, ephemeral=True)
         return

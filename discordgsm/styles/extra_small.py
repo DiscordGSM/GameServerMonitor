@@ -22,7 +22,7 @@ class ExtraSmall(Style):
         self.add_game_field(embed)
         self.add_address_field(embed)
         self.add_players_field(embed)
-        
+
         embed.set_image(url=self.server.style_data.get('image_url'))
         embed.set_thumbnail(url=self.server.style_data.get('thumbnail_url'))
 

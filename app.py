@@ -7,12 +7,14 @@ from flask import Flask, jsonify, render_template
 from discordgsm.database import Database
 from discordgsm.main import tree
 from discordgsm.service import gamedig, invite_link, public, whitelist_guilds
+from discordgsm.translator import translations, Locale
 from discordgsm.version import __version__
 
 load_dotenv()
 
 app = Flask(__name__, static_url_path='', static_folder='public/static', template_folder='public')
 cmd = [command.to_dict() for command in tree.get_commands(guild=None if public or len(whitelist_guilds) <= 0 else whitelist_guilds[0])]
+
 
 @app.route('/')
 def index():
@@ -35,6 +37,13 @@ if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
     @app.route('/api/v1/commands')
     def commands():
         return jsonify(cmd)
+
+    @app.route('/api/v1/locales/<locale>')
+    def locales(locale: str = 'en-US'):
+        if locale in translations:
+            return jsonify(translations[locale])
+        else:
+            return jsonify({'error': 'Invalid locale', 'locales': [l.value for l in Locale]})
 
     @app.route('/api/v1/guilds')
     def guilds():

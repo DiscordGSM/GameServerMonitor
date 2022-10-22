@@ -38,6 +38,7 @@ if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
     def commands():
         return jsonify(cmd)
 
+    @app.route('/api/v1/locales')
     @app.route('/api/v1/locales/<locale>')
     def locales(locale: str = 'en-US'):
         if locale in translations:

@@ -285,7 +285,6 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
             server = database.add_server(server)
             Logger.info(f'Successfully added {game["id"]} server {address}:{query_port} to #{interaction.channel.name}({interaction.channel.id}).')
             await resend_channel_messages(interaction)
-            await interaction.delete_original_response()
         else:
             content = t('function.query_server_modal.success', interaction.locale)
             await interaction.followup.send(content, embed=style.embed())
@@ -934,7 +933,8 @@ async def query_server(server: Server):
 async def presence_update():
     """Changes the client's presence."""
     number_of_servers = int(database.statistics()['unique_servers'])
-    activity = discord.Activity(name=f'{number_of_servers} servers', type=ActivityType.watching)
+    name = os.getenv('APP_ACTIVITY_NAME') if os.getenv('APP_ACTIVITY_NAME') else f'{number_of_servers} servers'
+    activity = discord.Activity(name=name, type=ActivityType(int(os.getenv('APP_ACTIVITY_TYPE', '3'))))
     await client.change_presence(status=discord.Status.online, activity=activity)
 
 

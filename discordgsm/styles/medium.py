@@ -46,11 +46,13 @@ class Medium(Style):
 
         self.add_game_field(embed)
 
-        maps = (self.server.result['map'] and self.server.result['map'].strip()) and self.server.result['map'] or '-'
-        name = t('embed.field.current_map.name', self.locale)
-        embed.add_field(name=name, value=maps, inline=True)
-
-        self.add_players_field(embed)
+        if self.server.result['map'] and self.server.result['map'].strip():
+            name = t('embed.field.current_map.name', self.locale)
+            embed.add_field(name=name, value=self.server.result['map'].strip(), inline=True)
+            self.add_players_field(embed)
+        else:
+            self.add_players_field(embed)
+            embed.add_field(name='*​*', value='*​*', inline=True)
 
         embed.set_image(url=self.server.style_data.get('image_url'))
         embed.set_thumbnail(url=self.server.style_data.get('thumbnail_url'))

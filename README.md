@@ -9,11 +9,9 @@
 
 ![DiscordGSM Thumbnail](https://discordgsm.com/thumbnail.jpg)
 
-🚨 Get alerted when your server is down!
+🚨 Get alerted when your server is down! Learn more: https://discordgsm.com
 
 ![DiscordGSM Alert](https://discordgsm.com/game-server-monitor-alert.jpg?v=2)
-
-Learn more: https://discordgsm.com
 
 ## Installation
 We provide a public discord bot service which allows to monitor 10 servers per discord guild.
@@ -23,14 +21,17 @@ We provide a public discord bot service which allows to monitor 10 servers per d
 For self hosting, please check https://discordgsm.com/guide#installation.
 
 ## Commands
-![DiscordGSM Commands](https://discordgsm.com/game-server-monitor-commands.jpg)
-
 Learn more: https://discordgsm.com/guide/commands
+
+![DiscordGSM Commands](https://discordgsm.com/game-server-monitor-commands.jpg)
 
 ## Supported Games
 Learn more: https://discordgsm.com/guide/supported-games
 
+![Supported Games](https://discordgsm.com/images/guide/supported-games/thumbnail.jpg)
+
 ## Languages
+Feel free to contribute! Learn more: [Contributor's Guide: Adding Translations](https://github.com/DiscordGSM/GameServerMonitor/issues/1)
 
 | Language Name | Native Name | Supported | Locale File | Contributors |
 | ------------- | ----------- | --------- | ----------- | ------------ |
@@ -67,7 +68,3 @@ Learn more: https://discordgsm.com/guide/supported-games
 
 ## Support Server
 Got any questions or feedbacks? Join our Discord Server: https://discordgsm.com/discord
-
-## Stargazers over time
-[![Stargazers over time](https://starchart.cc/DiscordGSM/GameServerMonitor.svg)](https://starchart.cc/DiscordGSM/GameServerMonitor)
-

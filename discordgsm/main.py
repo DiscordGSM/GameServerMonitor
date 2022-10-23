@@ -14,6 +14,7 @@ from discord.ext import tasks
 from discord.ui import Button, Modal, Select, TextInput, View
 from dotenv import load_dotenv
 
+from discordgsm.database import Database
 from discordgsm.gamedig import GamedigGame
 from discordgsm.logger import Logger
 from discordgsm.server import Server
@@ -890,8 +891,12 @@ async def query_servers():
     for chunks in to_chunks(tasks, 128):
         servers += await asyncio.gather(*chunks)
         await asyncio.sleep(1)
+        
+    def update_servers(servers):
+        with Database() as database:
+            database.update_servers(servers)
 
-    database.update_servers(servers)
+    await asyncio.get_event_loop().run_in_executor(None, lambda: update_servers(servers))
 
     failed = sum(server.status is False for server in servers)
     success = len(servers) - failed

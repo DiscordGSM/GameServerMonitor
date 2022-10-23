@@ -27,6 +27,12 @@ class Database:
     def __init__(self):
         self.connect()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close()
+
     def connect(self):
         DB_CONNECTION = os.getenv('DB_CONNECTION', '')
         DATABASE_URL = os.getenv('DATABASE_URL', '')

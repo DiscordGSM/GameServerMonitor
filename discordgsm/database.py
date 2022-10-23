@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import sqlite3
@@ -147,6 +148,14 @@ class Database:
 
         return channels_servers
 
+    @staticmethod
+    async def all_messages_servers_async():
+        def func():
+            with Database() as database:
+                return database.all_messages_servers()
+
+        return await asyncio.get_event_loop().run_in_executor(None, func)
+
     def all_messages_servers(self, servers: List[Server] = None):
         """Convert or get servers to dict grouped by message id"""
         all_servers = servers if servers is not None else self.all_servers()
@@ -160,6 +169,14 @@ class Database:
                     messages_servers[server.message_id] = [server]
 
         return messages_servers
+
+    @staticmethod
+    async def distinct_servers_async():
+        def func():
+            with Database() as database:
+                return database.distinct_servers()
+
+        return await asyncio.get_event_loop().run_in_executor(None, func)
 
     def distinct_servers(self):
         """Get distinct servers (Query server purpose) (Only fetch game_id, address, query_port, query_extra, status, result, style_data)"""

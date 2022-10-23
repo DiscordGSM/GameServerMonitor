@@ -790,7 +790,7 @@ async def resend_channel_messages(interaction: Interaction, channel_id: Optional
         await interaction.followup.send(content, ephemeral=True)
         return False
 
-    for chunks in to_chunks(servers, 10):
+    async for chunks in to_chunks(servers, 10):
         try:
             message = await channel.send(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in chunks])
         except discord.Forbidden as e:
@@ -823,10 +823,12 @@ async def refresh_channel_messages(interaction: Interaction):
 
 
 # Credits: https://stackoverflow.com/questions/312443/how-do-i-split-a-list-into-equally-sized-chunks
-def to_chunks(lst, n):
+async def to_chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
+        await asyncio.sleep(0.001)
         yield lst[i:i + n]
+        
 # endregion
 
 
@@ -835,19 +837,18 @@ def to_chunks(lst, n):
 async def edit_messages():
     """Edit messages (Scheduled)"""
     messages_servers = await Database.all_messages_servers_async()
-    message_ids = [*messages_servers]
     task_action = 'Fetch' if edit_messages.current_loop == 0 else 'Edit'
-    Logger.debug(f'{task_action} messages: Tasks = {len(message_ids)} messages')
+    Logger.debug(f'{task_action} messages: Tasks = {len(messages_servers)} messages')
 
     if edit_messages.current_loop == 0:
-        tasks = [fetch_message(messages_servers[message_id][0]) for message_id in message_ids]
+        tasks = [fetch_message(servers[0]) for servers in messages_servers.values()]
     else:
-        tasks = [edit_message(messages_servers[message_id]) for message_id in message_ids]
+        tasks = [edit_message(servers) for servers in messages_servers.values()]
 
     results = []
 
     # Discord Rate limit: 50 requests per second
-    for chunks in to_chunks(tasks, 25):
+    async for chunks in to_chunks(tasks, 25):
         results += await asyncio.gather(*chunks)
         await asyncio.sleep(1)
 
@@ -888,7 +889,7 @@ async def query_servers():
     tasks = [query_server(server) for server in distinct_servers]
     servers: List[Server] = []
 
-    for chunks in to_chunks(tasks, 128):
+    async for chunks in to_chunks(tasks, 128):
         servers += await asyncio.gather(*chunks)
         await asyncio.sleep(1)
 

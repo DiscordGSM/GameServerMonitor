@@ -58,6 +58,8 @@ async def on_ready():
     Logger.info(f'Connected to {database.type} database')
     Logger.info(f'Logged on as {client.user}')
     Logger.info(f'Add to Server: {invite_link}')
+    Logger.info('Thank you for using Game Server Monitor, you may consider sponsoring us ♥.')
+    Logger.info('Github Sponsors: https://github.com/sponsors/DiscordGSM')
 
     await sync_commands(whitelist_guilds)
     query_servers.start()
@@ -885,9 +887,9 @@ async def query_servers():
     tasks = [query_server(server) for server in distinct_servers]
     servers: List[Server] = []
 
-    for chunks in to_chunks(tasks, 25):
+    for chunks in to_chunks(tasks, 128):
         servers += await asyncio.gather(*chunks)
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(1)
 
     database.update_servers(servers)
 

@@ -120,10 +120,41 @@ class Gamedig:
         }, **server.query_extra})
 
     async def run(self, kv: dict):
-        if kv['type'] not in self.default_games:
+        if kv['type'] == 'terraria':
+            return await query_terraria(kv['host'], kv['port'], kv['_token'])
+        elif kv['type'] == 'discord':
+            return await query_discord(kv['host'])
+        elif kv['type'] not in self.default_games:
             kv['type'] = f"protocol-{self.games[kv['type']]['protocol']}"
 
-        return await Gamedig.__run(kv)
+        args = ['cmd.exe', '/c'] if platform.system() == 'Windows' else []
+        args.extend(['node', os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../node_modules/gamedig/bin/gamedig.js'))])
+
+        for option, value in kv.items():
+            args.extend([f'--{str(option).lstrip("_")}', Gamedig.__escape_argument(str(value)) if platform.system() == 'Windows' else str(value)])
+
+        print(f"ready {kv['host']} {kv['port']}")
+        process = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        print(f"running {kv['host']} {kv['port']}")
+        stdout, _ = await process.communicate()
+        print(f"ok {kv['host']} {kv['port']}")
+        result: GamedigResult = json.loads(stdout)
+
+        if 'error' in result:
+            if 'Invalid game:' in result['error']:
+                raise InvalidGameException()
+            else:
+                raise Exception(result['error'])
+
+        if kv['type'] == 'mordhau':
+            for tag in result['raw'].get('tags', []):
+                if tag[:2] == 'B:':
+                    result['raw']['numplayers'] = int(tag[2:])
+                    break
+
+        result['raw'] = result.get('raw', {})
+
+        return result
 
     @staticmethod
     async def __run(kv: dict):

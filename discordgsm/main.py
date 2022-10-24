@@ -826,7 +826,7 @@ async def refresh_channel_messages(interaction: Interaction):
 async def to_chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
-        await asyncio.sleep(0.001)
+        await asyncio.sleep(0.1)
         yield lst[i:i + n]
         
 # endregion
@@ -889,9 +889,8 @@ async def query_servers():
     tasks = [query_server(server) for server in distinct_servers]
     servers: List[Server] = []
 
-    async for chunks in to_chunks(tasks, 128):
+    async for chunks in to_chunks(tasks, 64):
         servers += await asyncio.gather(*chunks)
-        await asyncio.sleep(1)
 
     def update_servers(servers):
         with Database() as database:

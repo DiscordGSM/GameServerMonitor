@@ -45,7 +45,7 @@ Feel free to contribute! Learn more: [Contributor's Guide: Adding Translations](
 | <img src="https://discordgsm.com/images/flags/it.png" width=20 /> Italian | Italiano | ❌ | [it.json](/discordgsm/translations/it.json) |  |
 | <img src="https://discordgsm.com/images/flags/lt.png" width=20 /> Lithuanian | Lietuviškai | ❌ | [lt.json](/discordgsm/translations/lt.json) |  |
 | <img src="https://discordgsm.com/images/flags/hu.png" width=20 /> Hungarian | Magyar | ❌ | [hu.json](/discordgsm/translations/hu.json) |  |
-| <img src="https://discordgsm.com/images/flags/nl.png" width=20 /> Dutch | Nederlands | ✔️ | [nl.json](/discordgsm/translations/nl.json) | [@CounterForce] (https://github.com/CounterForce)  |
+| <img src="https://discordgsm.com/images/flags/nl.png" width=20 /> Dutch | Nederlands | ✔️ | [nl.json](/discordgsm/translations/nl.json) | [@CounterForce](https://github.com/CounterForce)  |
 | <img src="https://discordgsm.com/images/flags/no.png" width=20 /> Norwegian | Norsk | ❌ | [no.json](/discordgsm/translations/no.json) |  |
 | <img src="https://discordgsm.com/images/flags/pl.png" width=20 /> Polish | Polski | ❌ | [pl.json](/discordgsm/translations/pl.json) |  |
 | <img src="https://discordgsm.com/images/flags/pt-BR.png" width=20 /> Portuguese, Brazilian | Português do Brasil | ❌ | [pt-BR.json](/discordgsm/translations/pt-BR.json) |  |

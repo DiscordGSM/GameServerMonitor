@@ -68,7 +68,7 @@
     "embed.text_input.image_url.label": "Bild URL",
     "embed.text_input.image_url.placeholder": "Die Quell-URL für das Bild. Nur HTTP(S) wird unterstützt.",
     "embed.text_input.thumbnail_url.label": "Thumbnail URL",
-    "embed.text_input.thumbnail_url.placeholder": "Die Quell-URL für das Thumbnail. Nur HTTP(S) wird unterstützt
+    "embed.text_input.thumbnail_url.placeholder": "Die Quell-URL für das Thumbnail. Nur HTTP(S) wird unterstützt.",
     "embed.text_input.country.label": "Land",
     "embed.text_input.country.placeholder": "Der Alpha-2-Code des Landes.",
     "embed.description.instant_invite": "Sofortige Einladung: {url}",

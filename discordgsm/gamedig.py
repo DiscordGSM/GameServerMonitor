@@ -133,11 +133,8 @@ class Gamedig:
         for option, value in kv.items():
             args.extend([f'--{str(option).lstrip("_")}', Gamedig.__escape_argument(str(value)) if platform.system() == 'Windows' else str(value)])
 
-        print(f"ready {kv['host']} {kv['port']}")
         process = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-        print(f"running {kv['host']} {kv['port']}")
         stdout, _ = await process.communicate()
-        print(f"ok {kv['host']} {kv['port']}")
         result: GamedigResult = json.loads(stdout)
 
         if 'error' in result:

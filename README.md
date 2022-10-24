@@ -36,9 +36,9 @@ Feel free to contribute! Learn more: [Contributor's Guide: Adding Translations](
 | Language Name | Native Name | Supported | Locale File | Contributors |
 | ------------- | ----------- | --------- | ----------- | ------------ |
 | <img src="https://discordgsm.com/images/flags/da.png" width=20 /> Danish | Dansk | ❌ | [da.json](/discordgsm/translations/da.json) |  |
-| <img src="https://discordgsm.com/images/flags/de.png" width=20 /> German | Deutsch | ❌ | [de.json](/discordgsm/translations/de.json) |  |
+| <img src="https://discordgsm.com/images/flags/de.png" width=20 /> German | Deutsch | ✔️ | [de.json](/discordgsm/translations/de.json) | [@rohere58](https://github.com/rohere58) |
 | <img src="https://discordgsm.com/images/flags/en-GB.png" width=20 /> English, UK | English, UK | ✔️ | [en-GB.json](/discordgsm/translations/en-GB.json) | [@BattlefieldDuck](https://github.com/BattlefieldDuck) |
-| <img src="https://discordgsm.com/images/flags/en-US.png" width=20 /> English, US | 	English, US | ✔️ | [en-US.json](/discordgsm/translations/en-US.json) | [@BattlefieldDuck](https://github.com/BattlefieldDuck) |
+| <img src="https://discordgsm.com/images/flags/en-US.png" width=20 /> English, US | English, US | ✔️ | [en-US.json](/discordgsm/translations/en-US.json) | [@BattlefieldDuck](https://github.com/BattlefieldDuck) |
 | <img src="https://discordgsm.com/images/flags/es-ES.png" width=20 /> Spanish | Español | ❌ | [es-ES.json](/discordgsm/translations/es-ES.json) |  |
 | <img src="https://discordgsm.com/images/flags/fr.png" width=20 /> French | Français | ❌ | [fr.json](/discordgsm/translations/fr.json) |  |
 | <img src="https://discordgsm.com/images/flags/hr.png" width=20 /> Croatian | Hrvatski | ❌ | [hr.json](/discordgsm/translations/hr.json) |  |
@@ -67,4 +67,4 @@ Feel free to contribute! Learn more: [Contributor's Guide: Adding Translations](
 | <img src="https://discordgsm.com/images/flags/ko.png" width=20 /> Korean | 한국어 | ❌ | [ko.json](/discordgsm/translations/ko.json) |  |
 
 ## Support Server
-Got any questions or feedbacks? Join our Discord Server: https://discordgsm.com/discord
+Got any questions or feedback? Join our Discord Server: https://discordgsm.com/discord

@@ -6,6 +6,7 @@ import platform
 import re
 import time
 from typing import List, TypedDict
+from opengsq.protocols import Source
 
 import aiohttp
 
@@ -124,6 +125,8 @@ class Gamedig:
             return await query_terraria(kv['host'], kv['port'], kv['_token'])
         elif kv['type'] == 'discord':
             return await query_discord(kv['host'])
+        # elif self.games[kv['type']]['protocol'] == 'valve':
+        #     return await query_source(kv['host'], kv['port'])
         elif kv['type'] not in self.default_games:
             kv['type'] = f"protocol-{self.games[kv['type']]['protocol']}"
 
@@ -133,7 +136,7 @@ class Gamedig:
         for option, value in kv.items():
             args.extend([f'--{str(option).lstrip("_")}', Gamedig.__escape_argument(str(value)) if platform.system() == 'Windows' else str(value)])
 
-        process = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        process = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
         stdout, _ = await process.communicate()
         result: GamedigResult = json.loads(stdout)
 
@@ -142,45 +145,6 @@ class Gamedig:
                 raise InvalidGameException()
             else:
                 raise Exception(result['error'])
-
-        if kv['type'] == 'mordhau':
-            for tag in result['raw'].get('tags', []):
-                if tag[:2] == 'B:':
-                    result['raw']['numplayers'] = int(tag[2:])
-                    break
-
-        result['raw'] = result.get('raw', {})
-
-        return result
-
-    @staticmethod
-    async def __run(kv: dict):
-        if kv['type'] == 'terraria':
-            return await query_terraria(kv['host'], kv['port'], kv['_token'])
-        elif kv['type'] == 'discord':
-            return await query_discord(kv['host'])
-
-        args = ['cmd.exe', '/c'] if platform.system() == 'Windows' else []
-        args.extend(['node', os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../node_modules/gamedig/bin/gamedig.js'))])
-
-        for option, value in kv.items():
-            args.extend([f'--{str(option).lstrip("_")}', Gamedig.__escape_argument(str(value)) if platform.system() == 'Windows' else str(value)])
-
-        process = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-        stdout, _ = await process.communicate()
-        result: GamedigResult = json.loads(stdout)
-
-        if 'error' in result:
-            if 'Invalid game:' in result['error']:
-                raise InvalidGameException()
-            else:
-                raise Exception(result['error'])
-
-        if kv['type'] == 'mordhau':
-            for tag in result['raw'].get('tags', []):
-                if tag[:2] == 'B:':
-                    result['raw']['numplayers'] = int(tag[2:])
-                    break
 
         result['raw'] = result.get('raw', {})
 
@@ -251,14 +215,54 @@ async def query_discord(guild_id: str):
     return result
 
 
+async def query_source(address: str, query_port: int):
+    source = Source(address, query_port)
+    start = time.time()
+    info = await source.get_info()
+    end = time.time()
+    players = await source.get_players()
+    players.sort(key=lambda x: x['Duration'])
+    bots = []
+
+    while len(bots) < info['Bots']:
+        bots.append(players.pop() if len(players) > 0 else {})
+
+    result: GamedigResult = {
+        'name': info['Name'],
+        'map': info['Map'],
+        'password': info['Visibility'] != 0,
+        'maxplayers': info['MaxPlayers'],
+        'players': [{'name': player['Name'], 'raw': {'score': player['Score'], 'time': player['Duration']}} for player in players],
+        'bots': [{'name': bot['Name'], 'raw': {'score': bot['Score'], 'time': bot['Duration']}} for bot in bots],
+        'connect': f"{address}:{info.get('GamePort', query_port)}",
+        'ping': int((end - start) * 1000),
+        'raw': {
+            'numplayers': info['Players'],
+            'numbots': info['Bots']
+        }
+    }
+
+    if tags := info.get('Keywords'):
+        result['raw']['tags'] = str(tags).split(',')
+
+    if info.get('GameID') == 629760:  # mordhau
+        result['raw']['numplayers'] = int(next((tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'B:'), '0'))
+    elif info.get('GameID') == 252490:  # rust
+        result['maxplayers'] = int(next((tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'mp'), result['maxplayers']))
+
+    return result
+
+
 if __name__ == '__main__':
     async def main():
         r = await Gamedig().run({
-            'type': 'tf2',
-            'host': '104.238.229.98',
-            'port': '27015'
+            'type': 'fs22',
+            'host': '109.205.180.199',
+            'port': '27615'
         })
 
         print(r)
+        print()
+        print(await query_source('109.205.180.199', 27615))
 
     asyncio.run(main())

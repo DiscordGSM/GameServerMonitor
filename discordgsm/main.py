@@ -275,7 +275,7 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
         server = Server.new(interaction.guild_id, interaction.channel_id, game['id'], address, query_port, query_extra, result)
         style = styles['Medium'](server)
         server.style_id = style.id
-        server.style_data = await style.default_style_data(interaction.guild_locale)
+        server.style_data = await style.default_style_data()
 
         if is_add_server:
             if public:
@@ -889,7 +889,7 @@ async def query_servers():
     tasks = [query_server(server) for server in distinct_servers]
     servers: List[Server] = []
 
-    async for chunks in to_chunks(tasks, 64):
+    async for chunks in to_chunks(tasks, int(os.getenv('TASK_QUERY_CHUNK_SIZE', '50'))):
         servers += await asyncio.gather(*chunks)
 
     def update_servers(servers):

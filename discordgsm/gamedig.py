@@ -125,8 +125,8 @@ class Gamedig:
             return await query_terraria(kv['host'], kv['port'], kv['_token'])
         elif kv['type'] == 'discord':
             return await query_discord(kv['host'])
-        # elif self.games[kv['type']]['protocol'] == 'valve':
-        #     return await query_source(kv['host'], kv['port'])
+        elif self.games[kv['type']]['protocol'] == 'valve':
+            return await query_source(kv['host'], kv['port'])
         elif kv['type'] not in self.default_games:
             kv['type'] = f"protocol-{self.games[kv['type']]['protocol']}"
 

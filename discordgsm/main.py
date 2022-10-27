@@ -275,7 +275,7 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
         server = Server.new(interaction.guild_id, interaction.channel_id, game['id'], address, query_port, query_extra, result)
         style = styles['Medium'](server)
         server.style_id = style.id
-        server.style_data = await style.default_style_data()
+        server.style_data = await style.default_style_data(None)
 
         if is_add_server:
             if public:

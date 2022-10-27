@@ -836,7 +836,7 @@ async def to_chunks(lst, n):
 @tasks.loop(seconds=float(os.getenv('TASK_EDIT_MESSAGE', '60')))
 async def edit_messages():
     """Edit messages (Scheduled)"""
-    messages_servers = await Database.all_messages_servers_async()
+    messages_servers = database.all_messages_servers()
     task_action = 'Fetch' if edit_messages.current_loop == 0 else 'Edit'
     Logger.debug(f'{task_action} messages: Tasks = {len(messages_servers)} messages')
 
@@ -883,7 +883,7 @@ async def edit_message(servers: List[Server]):
 @tasks.loop(seconds=float(os.getenv('TASK_QUERY_SERVER', '60')))
 async def query_servers():
     """Query servers (Scheduled)"""
-    distinct_servers = await Database.distinct_servers_async()
+    distinct_servers = database.distinct_servers()
     Logger.debug(f'Query servers: Tasks = {len(distinct_servers)} unique servers')
 
     tasks = [query_server(server) for server in distinct_servers]
@@ -892,11 +892,7 @@ async def query_servers():
     async for chunks in to_chunks(tasks, int(os.getenv('TASK_QUERY_CHUNK_SIZE', '50'))):
         servers += await asyncio.gather(*chunks)
 
-    def update_servers(servers):
-        with Database() as database:
-            database.update_servers(servers)
-
-    await asyncio.get_event_loop().run_in_executor(None, update_servers, servers)
+    database.update_servers(servers)
 
     failed = sum(server.status is False for server in servers)
     success = len(servers) - failed

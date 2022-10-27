@@ -121,12 +121,15 @@ class Gamedig:
         }, **server.query_extra})
 
     async def run(self, kv: dict):
+        host = str(kv['host'])
+        port = int(str(kv['port']))
+
         if kv['type'] == 'terraria':
-            return await query_terraria(kv['host'], kv['port'], kv['_token'])
+            return await query_terraria(host, port, str(kv['_token']))
         elif kv['type'] == 'discord':
-            return await query_discord(kv['host'])
+            return await query_discord(host)
         elif self.games[kv['type']]['protocol'] == 'valve':
-            return await query_source(kv['host'], kv['port'])
+            return await query_source(host, port)
         elif kv['type'] not in self.default_games:
             kv['type'] = f"protocol-{self.games[kv['type']]['protocol']}"
 
@@ -216,7 +219,7 @@ async def query_discord(guild_id: str):
 
 
 async def query_source(address: str, query_port: int):
-    source = Source(address, query_port)
+    source = Source(address, query_port, 10)
     start = time.time()
     info = await source.get_info()
     end = time.time()
@@ -256,13 +259,11 @@ async def query_source(address: str, query_port: int):
 if __name__ == '__main__':
     async def main():
         r = await Gamedig().run({
-            'type': 'fs22',
-            'host': '109.205.180.199',
-            'port': '27615'
+            'type': '',
+            'host': '',
+            'port': ''
         })
 
         print(r)
-        print()
-        print(await query_source('109.205.180.199', 27615))
 
     asyncio.run(main())

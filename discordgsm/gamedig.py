@@ -220,10 +220,18 @@ async def query_discord(guild_id: str):
 
 async def query_source(address: str, query_port: int):
     source = Source(address, query_port, 10)
+
+    async def get_players():
+        try:
+            return await source.get_players()
+        except Exception:
+            # CSGO doesn't respond to player query if host_players_show is not 2
+            # Conan Exiles never responds to player query
+            return []
+
     start = time.time()
-    info = await source.get_info()
+    info, players = await asyncio.gather(source.get_info(), get_players())
     end = time.time()
-    players = await source.get_players()
     players.sort(key=lambda x: x['Duration'])
     bots = []
 

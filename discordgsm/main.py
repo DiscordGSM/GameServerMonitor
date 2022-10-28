@@ -14,7 +14,6 @@ from discord.ext import tasks
 from discord.ui import Button, Modal, Select, TextInput, View
 from dotenv import load_dotenv
 
-from discordgsm.database import Database
 from discordgsm.gamedig import GamedigGame
 from discordgsm.logger import Logger
 from discordgsm.server import Server
@@ -898,28 +897,13 @@ async def query_servers():
     success = len(servers) - failed
     Logger.info(f'Query servers: Total = {len(servers)}, Success = {success}, Failed = {failed} ({len(servers) > 0 and int(failed / len(servers) * 100) or 0}% fail)')
 
+    # Send alerts
+    servers = database.all_servers()
 
-async def query_server(server: Server):
-    """Query server"""
-    try:
-        server.result['raw'] = server.result.get('raw', {})
-        should_alert = bool(server.result['raw'].get('__sent_offline_alert', False))
-        server.result = await gamedig.query(server)
-        server.status = True
-        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Success. Ping: {server.result.get("ping", -1)}ms')
-    except Exception as e:
-        server.status = False
+    async def send_alert_webhook(server: Server):
+        if server.status is False:
+            server.result['raw']['__sent_offline_alert'] = True
 
-        # Send offline alert if server offline time >= 55 seconds and never sent before
-        utcnow_timestamp = datetime.utcnow().timestamp()
-        fail_query_timestamp = server.result['raw']['__fail_query_timestamp'] = float(server.result['raw'].get('__fail_query_timestamp', utcnow_timestamp))
-        sent_offline_alert = bool(server.result['raw'].get('__sent_offline_alert', False))
-        should_alert = sent_offline_alert is False and (utcnow_timestamp - fail_query_timestamp) >= 55
-        server.result['raw']['__sent_offline_alert'] = sent_offline_alert or should_alert
-
-        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Error: {e} {utcnow_timestamp - fail_query_timestamp} {should_alert}')
-
-    if should_alert:
         try:
             await send_alert(server, Alert.ONLINE if server.status else Alert.OFFLINE)
             Logger.info(f'({server.game_id})[{server.address}:{server.query_port}] Send Alert {"Online" if server.status else "Offline"} successfully.')
@@ -928,6 +912,37 @@ async def query_server(server: Server):
             pass
         except Exception as e:
             Logger.debug(f'({server.game_id})[{server.address}:{server.query_port}] send_alert Exception {e}')
+
+        return server
+
+    fail_query_count = max(2, int(120 / float(os.getenv('TASK_QUERY_SERVER', '60'))))
+
+    def should_send_alert(server: Server):
+        if server.status:
+            return bool(server.result['raw'].pop('__sent_offline_alert', False))
+        else:
+            return int(server.result['raw'].get('__fail_query_count', '0')) == fail_query_count
+
+    tasks = [send_alert_webhook(server) for server in servers if should_send_alert(server)]
+
+    async for chunks in to_chunks(tasks, 25):
+        servers += await asyncio.gather(*chunks)
+
+    database.update_servers(servers)
+
+
+async def query_server(server: Server):
+    """Query server"""
+    try:
+        sent_offline_alert = bool(server.result['raw'].get('__sent_offline_alert', False))
+        server.result = await gamedig.query(server)
+        server.result['raw']['__sent_offline_alert'] = sent_offline_alert
+        server.status = True
+        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Success. Ping: {server.result.get("ping", -1)}ms')
+    except Exception as e:
+        server.status = False
+        server.result['raw']['__fail_query_count'] = int(server.result.get('raw', {}).get('__fail_query_count', '0')) + 1
+        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Error: {e}')
 
     return server
 

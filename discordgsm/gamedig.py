@@ -6,9 +6,9 @@ import platform
 import re
 import time
 from typing import List, TypedDict
-from opengsq.protocols import Source
 
 import aiohttp
+from opengsq.protocols import GameSpy1, Source
 
 if __name__ == '__main__':
     from server import Server
@@ -130,6 +130,8 @@ class Gamedig:
             return await query_discord(host)
         elif self.games[kv['type']]['protocol'] == 'valve':
             return await query_source(host, port)
+        elif self.games[kv['type']]['protocol'] == 'gamespy1':
+            return await query_gamespy1(host, port)
         elif kv['type'] not in self.default_games:
             kv['type'] = f"protocol-{self.games[kv['type']]['protocol']}"
 
@@ -199,7 +201,7 @@ async def query_discord(guild_id: str):
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             data = await response.json()
-            end = time.time()
+            ping = int((time.time() - start) * 1000)
 
     result: GamedigResult = {
         'name': data['name'],
@@ -209,7 +211,7 @@ async def query_discord(guild_id: str):
         'players': [{'name': player['username'], 'raw': player} for player in data['members']],
         'bots': [],
         'connect': data['instant_invite'],
-        'ping': int((end - start) * 1000),
+        'ping': ping,
         'raw': {
             'numplayers': data['presence_count'],
         }
@@ -231,7 +233,7 @@ async def query_source(address: str, query_port: int):
 
     start = time.time()
     info, players = await asyncio.gather(source.get_info(), get_players())
-    end = time.time()
+    ping = int((time.time() - start) * 1000)
     players.sort(key=lambda x: x['Duration'])
     bots = []
 
@@ -246,7 +248,7 @@ async def query_source(address: str, query_port: int):
         'players': [{'name': player['Name'], 'raw': {'score': player['Score'], 'time': player['Duration']}} for player in players],
         'bots': [{'name': bot['Name'], 'raw': {'score': bot['Score'], 'time': bot['Duration']}} for bot in bots],
         'connect': f"{address}:{info.get('GamePort', query_port)}",
-        'ping': int((end - start) * 1000),
+        'ping': ping,
         'raw': {
             'numplayers': info['Players'],
             'numbots': info['Bots']
@@ -260,6 +262,29 @@ async def query_source(address: str, query_port: int):
         result['raw']['numplayers'] = int(next((tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'B:'), '0'))
     elif info.get('GameID') == 252490:  # rust
         result['maxplayers'] = int(next((tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'mp'), result['maxplayers']))
+
+    return result
+
+
+async def query_gamespy1(address: str, query_port: int):
+    gamespy1 = GameSpy1(address, query_port, 10)
+    start = time.time()
+    status = await gamespy1.get_status()
+    ping = int((time.time() - start) * 1000)
+    info = status['info']
+    players = status['players']
+
+    result: GamedigResult = {
+        'name': info['hostname'],
+        'map': info['mapname'],
+        'password': str(info['password']).lower() != 'false',
+        'maxplayers': int(info['maxplayers']),
+        'players': [{'name': player['player'], 'raw': player} for player in players],
+        'bots': [],
+        'connect': f"{address}:{info.get('hostport', query_port)}",
+        'ping': ping,
+        'raw': info
+    }
 
     return result
 

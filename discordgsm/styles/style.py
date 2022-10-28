@@ -121,21 +121,17 @@ class Style(ABC):
         embed.add_field(name=name, value=self.server.style_data.get('fullname', self.server.game_id), inline=True)
 
     def add_players_field(self, embed: Embed):
-        players = self.server.result.get('raw', {}).get('numplayers', len(self.server.result['players']))
+        players = int(self.server.result.get('raw', {}).get('numplayers', len(self.server.result['players'])))
         bots = len(self.server.result['bots'])
+        players_string = str(players)  # example: 20
 
-        if self.server.status:
-            players_string = str(players)  # example: 20
-
-            if bots > 0:
-                players_string += f' ({bots})'  # example: 20 (2)
-        else:
-            players_string = '0'  # example: 0
+        if bots > 0:
+            players_string += f' ({bots})'  # example: 20 (2)
 
         maxplayers = int(self.server.result['maxplayers'])
 
         if maxplayers >= 0:
-            percentage = 0 if maxplayers <= 0 else int(players / int(self.server.result['maxplayers']) * 100)
+            percentage = 0 if maxplayers <= 0 else int(players / maxplayers * 100)
             players_string = f'{players_string}/{maxplayers} ({percentage}%)'
 
         name = t(f"embed.field.{'presence' if self.server.game_id == 'discord' else 'players'}.name", self.locale)

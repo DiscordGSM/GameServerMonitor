@@ -57,7 +57,7 @@ class Server:
             status=row[4] == 1,
             result=json.loads(row[5]),
             style_id=None,
-            style_data=json.loads(row[6]),
+            style_data=None,
         )
 
     @staticmethod

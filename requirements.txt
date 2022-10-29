@@ -4,4 +4,4 @@ Flask==2.2.2
 gunicorn==20.1.0
 psycopg2-binary==2.9.4
 python-dotenv==0.21.0
-opengsq==1.2.1
+opengsq==1.2.3

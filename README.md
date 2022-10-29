@@ -57,7 +57,7 @@ Feel free to contribute! Learn more: [Contributor's Guide: Adding Translations](
 | <img src="https://discordgsm.com/images/flags/cs.png" width=20 /> Czech | Čeština | ❌ | [cs.json](/discordgsm/translations/cs.json) |  |
 | <img src="https://discordgsm.com/images/flags/el.png" width=20 /> Greek | Ελληνικά | ❌ | [el.json](/discordgsm/translations/el.json) |  |
 | <img src="https://discordgsm.com/images/flags/bg.png" width=20 /> Bulgarian | български | ❌ | [bg.json](/discordgsm/translations/bg.json) |  |
-| <img src="https://discordgsm.com/images/flags/ru.png" width=20 /> Russian | Pусский | ❌ | [ru.json](/discordgsm/translations/ru.json) |  |
+| <img src="https://discordgsm.com/images/flags/ru.png" width=20 /> Russian | Pусский | ✔️ | [ru.json](/discordgsm/translations/ru.json) | [@K-Faktor](https://github.com/K-Faktor) |
 | <img src="https://discordgsm.com/images/flags/uk.png" width=20 /> Ukrainian | Українська | ❌ | [uk.json](/discordgsm/translations/uk.json) |  |
 | <img src="https://discordgsm.com/images/flags/hi.png" width=20 /> Hindi | हिन्दी | ❌ | [hi.json](/discordgsm/translations/hi.json) |  |
 | <img src="https://discordgsm.com/images/flags/th.png" width=20 /> Thai | ไทย | ❌ | [th.json](/discordgsm/translations/th.json) |  |

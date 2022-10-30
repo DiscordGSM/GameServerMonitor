@@ -71,7 +71,7 @@ class Gamedig:
             next(reader, None)
 
             for row in reader:
-                if len(row) > 0:
+                if len(row) > 0 and not row[0].startswith('#'):
                     id = row[0].split(',')[0]
                     options = len(row) > 3 and row_to_dict(row[3]) or {}
                     extra = len(row) > 4 and row_to_dict(row[4]) or {}

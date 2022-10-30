@@ -253,7 +253,7 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
         address = query_param['host']._value = str(query_param['host']._value).strip()
         query_port = str(query_param['port']).strip()
 
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer(ephemeral=True, thinking=True)
 
         if is_add_server:
             try:

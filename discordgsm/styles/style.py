@@ -121,21 +121,8 @@ class Style(ABC):
         embed.add_field(name=name, value=self.server.style_data.get('fullname', self.server.game_id), inline=True)
 
     def add_players_field(self, embed: Embed):
-        players = int(self.server.result.get('raw', {}).get('numplayers', len(self.server.result['players'])))
-        bots = len(self.server.result['bots'])
-        players_string = str(players)  # example: 20
-
-        if bots > 0:
-            players_string += f' ({bots})'  # example: 20 (2)
-
-        maxplayers = int(self.server.result['maxplayers'])
-
-        if maxplayers >= 0:
-            percentage = 0 if maxplayers <= 0 else int(players / maxplayers * 100)
-            players_string = f'{players_string}/{maxplayers} ({percentage}%)'
-
         name = t(f"embed.field.{'presence' if self.server.game_id == 'discord' else 'players'}.name", self.locale)
-        embed.add_field(name=name, value=players_string, inline=True)
+        embed.add_field(name=name, value=self.get_players_display_string(self.server), inline=True)
 
     def set_footer(self, embed: Embed):
         advertisement = '📺 Game Server Monitor'
@@ -152,3 +139,20 @@ class Style(ABC):
         last_update = t('embed.field.footer.last_update', self.locale).format(last_update=last_update)
         icon_url = 'https://avatars.githubusercontent.com/u/61296017'
         embed.set_footer(text=f'DiscordGSM {__version__} | {advertisement} | {last_update}', icon_url=icon_url)
+
+    @staticmethod
+    def get_players_display_string(server: Server):
+        players = int(server.result.get('raw', {}).get('numplayers', len(server.result['players'])))
+        bots = int(server.result.get('raw', {}).get('numbots', len(server.result['bots'])))
+        players_string = str(players)  # example: 20
+
+        if bots > 0:
+            players_string += f' ({bots})'  # example: 20 (2)
+
+        maxplayers = int(server.result['maxplayers'])
+
+        if maxplayers >= 0:
+            percentage = 0 if maxplayers <= 0 else int(players / maxplayers * 100)
+            players_string = f'{players_string}/{maxplayers} ({percentage}%)'
+
+        return players_string

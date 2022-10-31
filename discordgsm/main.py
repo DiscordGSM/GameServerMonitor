@@ -231,7 +231,12 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
         )
     }
 
-    modal = Modal(title=game['fullname']).add_item(query_param['host']).add_item(query_param['port'])
+    title = game['fullname'].ljust(45)[:45]
+
+    if len(game['fullname']) > 45:
+        title = title[:-3] + '...'
+
+    modal = Modal(title=title).add_item(query_param['host']).add_item(query_param['port'])
     query_extra = {}
 
     if game['id'] == 'teamspeak2':
@@ -947,11 +952,19 @@ async def query_server(server: Server):
     return server
 
 
-@tasks.loop(minutes=5)
+@tasks.loop(minutes=1)
 async def presence_update():
     """Changes the client's presence."""
-    number_of_servers = int(database.statistics()['unique_servers'])
-    name = os.getenv('APP_ACTIVITY_NAME') if os.getenv('APP_ACTIVITY_NAME') else f'{number_of_servers} servers'
+    if activity_name := os.getenv('APP_ACTIVITY_NAME'):
+        name = activity_name
+    else:
+        unique_servers = int(database.statistics()['unique_servers'])
+        name = f'{unique_servers} servers'
+        
+        if unique_servers == 1:
+            if servers := database.all_servers():
+                name = Style.get_players_display_string(servers[0])
+
     activity = discord.Activity(name=name, type=ActivityType(int(os.getenv('APP_ACTIVITY_TYPE', '3'))))
     await client.change_presence(status=discord.Status.online, activity=activity)
 

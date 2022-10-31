@@ -47,6 +47,7 @@
     "function.find_server.not_found": "頻道中不存在遊戲伺服器 `{address}:{query_port}`",
     "function.find_servers.empty": "此頻道中沒有遊戲伺服器。",
     "function.find_servers.parameter_error": "`address`和`query_port`必須一起輸入。",
+    "function.query_server_modal.invalid_port": "端口號大小必須介於0-65535間。",
     "function.query_server_modal.already_exists": "此遊戲伺服器已存在於頻道中。",
     "function.query_server_modal.fail_to_query": "查詢`{game_id}`遊戲伺服器失敗 `{address}:{query_port}`。請再試一次。",
     "function.query_server_modal.success": "查詢成功！",

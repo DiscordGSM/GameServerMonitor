@@ -47,6 +47,7 @@
     "function.find_server.not_found": "频道中不存在游戏服务器 `{address}:{query_port}`",
     "function.find_servers.empty": "此频道中没有游戏服务器。",
     "function.find_servers.parameter_error": "`address`和`query_port`必须一起输入。",
+    "function.query_server_modal.invalid_port": "端口号大小必须介于0-65535间。",
     "function.query_server_modal.already_exists": "此游戏服务器已存在于频道中。",
     "function.query_server_modal.fail_to_query": "查询`{game_id}`游戏服务器失败 `{address}:{query_port}`。请再试一次。",
     "function.query_server_modal.success": "查询成功！",

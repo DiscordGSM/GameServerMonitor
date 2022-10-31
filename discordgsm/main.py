@@ -257,7 +257,14 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
     async def modal_on_submit(interaction: Interaction):
         address = query_param['host']._value = str(query_param['host']._value).strip()
         query_port = str(query_param['port']).strip()
-
+        params = {**query_param, **query_extra}
+        
+        for key in params.keys():
+            if 'port' in key.lower() and not gamedig.is_port_valid(str(params[key])):
+                content = t('function.query_server_modal.invalid_port', interaction.locale)
+                await interaction.response.send_message(content, ephemeral=True)
+                return
+        
         await interaction.response.defer(ephemeral=True, thinking=True)
 
         if is_add_server:
@@ -270,7 +277,7 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
                 pass
 
         try:
-            result = await gamedig.run({**query_param, **query_extra})
+            result = await gamedig.run(params)
         except Exception:
             content = t('function.query_server_modal.fail_to_query', interaction.locale).format(game_id=game['id'], address=address, query_port=query_port)
             await interaction.followup.send(content, ephemeral=True)

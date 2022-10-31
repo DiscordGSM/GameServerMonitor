@@ -47,6 +47,7 @@
     "function.find_server.not_found": "The server `{address}:{query_port}` does not exist in the channel.",
     "function.find_servers.empty": "There are no servers in this channel.",
     "function.find_servers.parameter_error": "`address` and `query_port` must be given together.",
+    "function.query_server_modal.invalid_port": "The port number must be between 0 and 65535.",
     "function.query_server_modal.already_exists": "This server already exists in the channel.",
     "function.query_server_modal.fail_to_query": "Fail to query `{game_id}` server `{address}:{query_port}`. Please try again.",
     "function.query_server_modal.success": "Query successfully!",

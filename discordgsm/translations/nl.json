@@ -47,6 +47,7 @@
     "function.find_server.not_found": "De server `{address}:{query_port}` bestaat niet in het kanaal.",
     "function.find_servers.empty": "Er zijn geen servers in dit kanaal.",
     "function.find_servers.parameter_error": "`address` en `query_port` moeten samen worden gegeven.",
+    "function.query_server_modal.invalid_port": "The port number must be between 0 and 65535.",
     "function.query_server_modal.already_exists": "Deze server bestaat al in het kanaal.",
     "function.query_server_modal.fail_to_query": "Query `{game_id}` server `{address}:{query_port}` is gefaald. Probeer het opnieuw.",
     "function.query_server_modal.success": "Query succesvol!",

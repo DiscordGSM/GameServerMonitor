@@ -47,6 +47,7 @@
     "function.find_server.not_found": "Сервер `{address}:{query_port}` не существует в канале.",
     "function.find_servers.empty": "В этом канале нет серверов.",
     "function.find_servers.parameter_error": "`address` и `query_port` должны быть вместе.",
+    "function.query_server_modal.invalid_port": "The port number must be between 0 and 65535.",
     "function.query_server_modal.already_exists": "Этот сервер уже существует в канале.",
     "function.query_server_modal.fail_to_query": "Не удается выполнить запрос `{game_id}` сервер `{address}:{query_port}`. Пожалуйста, попробуйте снова.",
     "function.query_server_modal.success": "Запрос успешно выполнен!",

@@ -111,6 +111,15 @@ class Gamedig:
 
         return game_port
 
+    @staticmethod
+    def is_port_valid(port: str):
+        try:
+            port_number = int(port)
+        except ValueError:
+            return False
+
+        return 0 <= port_number <= 65535
+
     async def query(self, server: Server):
         return await self.run({**{
             'type': server.game_id,

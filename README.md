@@ -48,7 +48,7 @@ Feel free to contribute! Learn more: [Contributor's Guide: Adding Translations](
 | <img src="https://discordgsm.com/images/flags/nl.png" width=20 /> Dutch | Nederlands | ✔️ | [nl.json](/discordgsm/translations/nl.json) | [@CounterForce](https://github.com/CounterForce)  |
 | <img src="https://discordgsm.com/images/flags/no.png" width=20 /> Norwegian | Norsk | ❌ | [no.json](/discordgsm/translations/no.json) |  |
 | <img src="https://discordgsm.com/images/flags/pl.png" width=20 /> Polish | Polski | ❌ | [pl.json](/discordgsm/translations/pl.json) |  |
-| <img src="https://discordgsm.com/images/flags/pt-BR.png" width=20 /> Portuguese, Brazilian | Português do Brasil | ❌ | [pt-BR.json](/discordgsm/translations/pt-BR.json) |  |
+| <img src="https://discordgsm.com/images/flags/pt-BR.png" width=20 /> Portuguese, Brazilian | Português do Brasil | ✔️ | [pt-BR.json](/discordgsm/translations/pt-BR.json) | [@ricardoguimaraes2021](https://github.com/ricardoguimaraes2021)  |
 | <img src="https://discordgsm.com/images/flags/ro.png" width=20 /> Romanian, Romania	| Română | ❌ | [ro.json](/discordgsm/translations/ro.json) |  |
 | <img src="https://discordgsm.com/images/flags/fi.png" width=20 /> Finnish | Suomi | ❌ | [fi.json](/discordgsm/translations/fi.json) |  |
 | <img src="https://discordgsm.com/images/flags/sv-SE.png" width=20 /> Swedish | Svenska | ❌ | [sv-SE.json](/discordgsm/translations/sv-SE.json) |  |

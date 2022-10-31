@@ -89,7 +89,7 @@
     "embed.field.footer.last_update": "Última Actualización: {last_update}",
     "style.extra_small.display_name": "Extra pequeño",
     "style.extra_small.description": "Un formato extra pequeño que muestra menos información.",
-    "style.small.display_name": "Pequeno",
+    "style.small.display_name": "Pequeño",
     "style.small.description": "Un formato pequeño que muestra menos información del servidor.",
     "style.medium.display_name": "Mediano",
     "style.medium.description": "Un formato mediano que muestra información del servidor.",

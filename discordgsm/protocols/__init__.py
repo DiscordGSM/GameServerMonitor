@@ -1,3 +1,4 @@
+from .assettocorsa import AssettoCorsa
 from .discord import Discord
 from .fivem import FiveM
 from .gamespy1 import GameSpy1
@@ -28,6 +29,8 @@ class Protocol:
             return FiveM(address, query_port)
         elif kv['type'] == 'hexen2':
             return Hexen2(address, query_port)
+        elif kv['type'] == 'assettocorsa':
+            return AssettoCorsa(address, query_port)
         elif protocol_name == 'valve':
             return Source(address, query_port)
         elif protocol_name == 'gamespy1':

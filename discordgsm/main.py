@@ -830,7 +830,7 @@ async def resend_channel_messages(interaction: Interaction, channel_id: Optional
 async def refresh_channel_messages(interaction: Interaction):
     """Edit channel messages"""
     servers = database.all_servers(channel_id=interaction.channel.id)
-    await asyncio.gather(*[edit_message(chunks) for chunks in database.all_channels_servers(servers).values()])
+    await asyncio.gather(*[edit_message(chunks) for chunks in database.all_messages_servers(servers).values()])
 
 
 # Credits: https://stackoverflow.com/questions/312443/how-do-i-split-a-list-into-equally-sized-chunks

@@ -258,13 +258,13 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
         address = query_param['host']._value = str(query_param['host']._value).strip()
         query_port = str(query_param['port']).strip()
         params = {**query_param, **query_extra}
-        
+
         for key in params.keys():
             if 'port' in key.lower() and not gamedig.is_port_valid(str(params[key])):
                 content = t('function.query_server_modal.invalid_port', interaction.locale)
                 await interaction.response.send_message(content, ephemeral=True)
                 return
-        
+
         await interaction.response.defer(ephemeral=True, thinking=True)
 
         if is_add_server:
@@ -278,7 +278,8 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
 
         try:
             result = await gamedig.run(params)
-        except Exception:
+        except Exception as e:
+            print(e.args)
             content = t('function.query_server_modal.fail_to_query', interaction.locale).format(game_id=game['id'], address=address, query_port=query_port)
             await interaction.followup.send(content, ephemeral=True)
             return
@@ -299,6 +300,7 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
             server = database.add_server(server)
             Logger.info(f'Successfully added {game["id"]} server {address}:{query_port} to #{interaction.channel.name}({interaction.channel.id}).')
             await resend_channel_messages(interaction)
+            await interaction.delete_original_response()
         else:
             content = t('function.query_server_modal.success', interaction.locale)
             await interaction.followup.send(content, embed=style.embed())
@@ -839,7 +841,7 @@ async def to_chunks(lst, n):
     for i in range(0, len(lst), n):
         await asyncio.sleep(0.1)
         yield lst[i:i + n]
-        
+
 # endregion
 
 
@@ -967,7 +969,7 @@ async def presence_update():
     else:
         unique_servers = int(database.statistics()['unique_servers'])
         name = f'{unique_servers} servers'
-        
+
         if unique_servers == 1:
             if servers := database.all_servers():
                 name = Style.get_players_display_string(servers[0])
@@ -1002,7 +1004,7 @@ async def heroku_query():
             async with session.get(url, raise_for_status=True) as _:
                 Logger.debug(f'Sends a GET request to {url}')
     except Exception as e:
-        Logger.error(f'Sends a GET request to {url}, {e}')
+        Logger.error(f'Fail to send a GET request to {url}, {e}, your discord bot will sleeps after 30 minutes of inactivity.')
 # endregion
 
 if __name__ == '__main__':

@@ -29,6 +29,10 @@ class Large(Medium, Style):
             if len(player['name']) > 23:
                 name = name[:-3] + '...'
 
+            # Replace Markdown
+            # https://support.discord.com/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline-
+            name = name.replace('*', '\*').replace('_', '\_').replace('~', '\~').replace('`', '\`').replace('>', '\>')
+
             values[i % len(values)] += f"{name}\n"
 
         for i, name in enumerate([field_name, empty_value, empty_value]):

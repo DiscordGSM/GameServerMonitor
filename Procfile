@@ -1,1 +1,1 @@
-web: /bin/sh -c "gunicorn app:app & python3 -u main.py"
+web: /bin/sh -c "gunicorn app:app & python -u main.py"

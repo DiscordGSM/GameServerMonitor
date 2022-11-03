@@ -21,7 +21,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: discord-game-server-monitor:local
-    command: /bin/sh -c "gunicorn --bind 0.0.0.0:8000 --workers=2 --worker-class=gthread app:app --timeout 90 & python3 -u main.py"
+    command: /bin/sh -c "gunicorn --bind 0.0.0.0:8000 --workers=2 --worker-class=gthread app:app --timeout 90 & python -u main.py"
     ports:
       - 8000:8000
     env_file:

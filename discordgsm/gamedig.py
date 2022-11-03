@@ -1,9 +1,6 @@
 import asyncio
 import csv
-import json
 import os
-import platform
-import re
 from typing import List, TypedDict
 
 from discordgsm.protocols import Protocol
@@ -50,7 +47,6 @@ class Gamedig:
     def __init__(self):
         path = os.path.dirname(os.path.realpath(__file__))
         self.games = Gamedig.__load_games(os.path.join(path, 'games.txt'))
-        self.default_games = Gamedig.__load_games(os.path.join(path, '..', 'node_modules', 'gamedig', 'games.txt'))
 
     @staticmethod
     def __load_games(path: str):
@@ -131,42 +127,7 @@ class Gamedig:
         if protocol := Protocol.get(self.games[kv['type']]['protocol'], kv):
             return await protocol.query()
 
-        if kv['type'] not in self.default_games:
-            kv['type'] = f"protocol-{self.games[kv['type']]['protocol']}"
-
-        args = ['cmd.exe', '/c'] if platform.system() == 'Windows' else []
-        args.extend(['node', os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../node_modules/gamedig/bin/gamedig.js'))])
-
-        for option, value in kv.items():
-            args.extend([f'--{str(option).lstrip("_")}', Gamedig.__escape_argument(str(value)) if platform.system() == 'Windows' else str(value)])
-
-        process = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-        stdout, _ = await process.communicate()
-        result: GamedigResult = json.loads(stdout)
-
-        if 'error' in result:
-            if 'Invalid game:' in result['error']:
-                raise InvalidGameException()
-            else:
-                raise Exception(result['error'])
-
-        result['raw'] = result.get('raw', {})
-
-        return result
-
-    # Credits: https://stackoverflow.com/questions/29213106/how-to-securely-escape-command-line-arguments-for-the-cmd-exe-shell-on-windows
-    @staticmethod
-    def __escape_argument(arg: str):
-        if not arg or re.search(r'(["\s])', arg):
-            arg = '"' + arg.replace('"', r'\"') + '"'
-
-        return Gamedig.__escape_for_cmd_exe(arg)
-
-    # Credits: https://stackoverflow.com/questions/29213106/how-to-securely-escape-command-line-arguments-for-the-cmd-exe-shell-on-windows
-    @staticmethod
-    def __escape_for_cmd_exe(arg: str):
-        meta_re = re.compile(r'([()%!^"<>&|])')
-        return meta_re.sub('^\1', arg)
+        raise Exception('No protocol supported')
 
 
 if __name__ == '__main__':

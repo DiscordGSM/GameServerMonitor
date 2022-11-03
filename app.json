@@ -1,35 +1,31 @@
 {
     "name": "Discord Game Server Monitor",
-    "description": "📺 Monitor your game servers on Discord and tracks the live data of your game servers.",
+    "description": "📺 A discord bot that monitors your game server and tracks the live data of your game servers.",
     "repository": "https://github.com/DiscordGSM/GameServerMonitor",
     "logo": "https://discordgsm.com/android-chrome-192x192.png",
-    "keywords": ["discordgsm", "query", "gameserver", "gameservers", "monitor", "dgsm", "game-servers", "discord", "gaming", "game"],
+    "keywords": ["game", "python", "discord", "discord-bot", "slash-commands", "discordgsm", "game-server-monitoring"],
     "env": {
         "HEROKU_APP_NAME": {
-            "description": "Heroku App name - same as the app name set above",
+            "description": "Heroku App name. Same as the app name set above.",
             "value": ""
         },
         "APP_TOKEN": {
-            "description": "Discord Bot Token (https://discordgsm.com/guide/how-to-get-a-discord-bot-token)",
+            "description": "Discord Bot Token. Learn more: https://discordgsm.com/guide/how-to-get-a-discord-bot-token",
             "value": ""
         },
         "WHITELIST_GUILDS": {
-            "description": "Discord Guild ID, if more than one, separate with ;",
+            "description": "Discord Guild ID, if more than one, separated by the semi colon ;",
             "value": ""
         }
     },
     "buildpacks": [
         {
             "url": "heroku/python"
-        },
-        {
-            "url": "heroku/nodejs"
         }
     ],
     "addons": [
         {
             "plan": "heroku-postgresql"
         }
-    ],
-    "success_url": "/"
+    ]
 }

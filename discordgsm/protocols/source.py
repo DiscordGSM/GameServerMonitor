@@ -27,11 +27,8 @@ class Source:
         start = time.time()
         info, players = await asyncio.gather(source.get_info(), get_players())
         ping = int((time.time() - start) * 1000)
-        players.sort(key=lambda x: x['Duration'])
-        bots = []
-
-        while len(bots) < info['Bots']:
-            bots.append(players.pop() if len(players) > 0 else {})
+        players.sort(key=lambda x: x['Duration'], reverse=True)
+        players, bots = players[:info['Bots']], players[info['Bots']:]
 
         result: GamedigResult = {
             'name': info['Name'],
@@ -57,3 +54,11 @@ class Source:
             result['maxplayers'] = int(next((tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'mp'), result['maxplayers']))
 
         return result
+
+
+if __name__ == '__main__':
+    async def main():
+        source = Source('87.98.130.157', 27015)
+        print(await source.query())
+
+    asyncio.run(main())

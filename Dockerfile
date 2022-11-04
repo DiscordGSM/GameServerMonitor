@@ -1,7 +1,11 @@
-FROM nikolaik/python-nodejs:python3.9-nodejs16-alpine
+FROM python:3.9-alpine
 
-WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+WORKDIR /usr/src/app
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY . .
-
-RUN pip install -r requirements.txt
-RUN npm install

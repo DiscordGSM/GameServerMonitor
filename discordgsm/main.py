@@ -883,12 +883,14 @@ async def edit_message(servers: List[Server]):
         except discord.Forbidden as e:
             # Tried to suppress a message without permissions or edited a message's content or embed that isn't yours.
             Logger.debug(f'Edit messages: {message.id} edit_messages discord.Forbidden {e}')
+            messages.pop(message.id, None)
         except discord.HTTPException as e:
             # Editing the message failed.
             Logger.debug(f'Edit messages: {message.id} edit_messages discord.HTTPException {e}')
         except asyncio.TimeoutError:
             # Possible: discord.http: We are being rate limited.
             Logger.debug(f'Edit messages: {message.id} edit_messages asyncio.TimeoutError')
+            messages.pop(message.id, None)
 
     return False
 

@@ -299,8 +299,9 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
 
             server = database.add_server(server)
             Logger.info(f'Successfully added {game["id"]} server {address}:{query_port} to #{interaction.channel.name}({interaction.channel.id}).')
-            await resend_channel_messages(interaction)
-            await interaction.delete_original_response()
+
+            if await resend_channel_messages(interaction):
+                await interaction.delete_original_response()
         else:
             content = t('function.query_server_modal.success', interaction.locale)
             await interaction.followup.send(content, embed=style.embed())
@@ -360,8 +361,9 @@ async def command_delserver(interaction: Interaction, address: str, query_port: 
     if server := await find_server(interaction, address, query_port):
         await interaction.response.defer(ephemeral=True)
         database.delete_server(server)
-        await resend_channel_messages(interaction)
-        await interaction.delete_original_response()
+
+        if await resend_channel_messages(interaction):
+            await interaction.delete_original_response()
 
 
 @tree.command(name='refresh', description='command.refresh.description', guilds=whitelist_guilds)
@@ -372,8 +374,9 @@ async def command_refresh(interaction: Interaction):
     Logger.command(interaction)
 
     await interaction.response.defer(ephemeral=True)
-    await resend_channel_messages(interaction)
-    await interaction.delete_original_response()
+
+    if await resend_channel_messages(interaction):
+        await interaction.delete_original_response()
 
 
 @tree.command(name='factoryreset', description='command.factoryreset.description', guilds=whitelist_guilds)
@@ -533,8 +536,8 @@ async def command_switch(interaction: Interaction, channel: discord.TextChannel,
             server.channel_id = channel.id
 
         database.update_servers_channel_id(servers)
-        await resend_channel_messages(interaction)
-        await resend_channel_messages(interaction, channel.id)
+        await resend_channel_messages(None, interaction.channel.id)
+        await resend_channel_messages(None, channel.id)
 
         if len(servers) <= 1:
             await interaction.delete_original_response()
@@ -783,7 +786,7 @@ async def fetch_message(server: Server):
     return None
 
 
-async def resend_channel_messages(interaction: Interaction, channel_id: Optional[int] = None):
+async def resend_channel_messages(interaction: Optional[Interaction], channel_id: Optional[int] = None):
     """Resend channel messages"""
     channel = client.get_channel(channel_id if channel_id else interaction.channel.id)
     servers = database.all_servers(channel_id=channel.id)
@@ -794,13 +797,13 @@ async def resend_channel_messages(interaction: Interaction, channel_id: Optional
         # You do not have proper permissions to do the actions required.
         Logger.error(f'Channel {channel.id} channel.purge discord.Forbidden {e}')
         content = t('missing_permission.manage_messages', interaction.locale)
-        await interaction.followup.send(content, ephemeral=True)
+        if interaction: await interaction.followup.send(content, ephemeral=True)
         return False
     except discord.HTTPException as e:
         # Purging the messages failed.
         Logger.error(f'Channel {channel.id} channel.purge discord.HTTPException {e}')
         content = t('command.error.internal_error', interaction.locale)
-        await interaction.followup.send(content, ephemeral=True)
+        if interaction: await interaction.followup.send(content, ephemeral=True)
         return False
 
     async for chunks in to_chunks(servers, 10):
@@ -810,13 +813,13 @@ async def resend_channel_messages(interaction: Interaction, channel_id: Optional
             # You do not have the proper permissions to send the message.
             Logger.error(f'Channel {channel.id} send_message discord.Forbidden {e}')
             content = t('missing_permission.send_messages', interaction.locale)
-            await interaction.followup.send(content, ephemeral=True)
+            if interaction: await interaction.followup.send(content, ephemeral=True)
             return False
         except discord.HTTPException as e:
             # Sending the message failed.
             Logger.error(f'Channel {channel.id} send_message discord.HTTPException {e}')
             content = t('command.error.internal_error', interaction.locale)
-            await interaction.followup.send(content, ephemeral=True)
+            if interaction: await interaction.followup.send(content, ephemeral=True)
             return False
 
         for server in chunks:
@@ -841,7 +844,6 @@ async def to_chunks(lst, n):
     for i in range(0, len(lst), n):
         await asyncio.sleep(0.1)
         yield lst[i:i + n]
-
 # endregion
 
 
@@ -963,7 +965,7 @@ async def query_server(server: Server):
     return server
 
 
-@tasks.loop(minutes=1)
+@tasks.loop(seconds=float(os.getenv('TASK_EDIT_MESSAGE', '60')))
 async def presence_update():
     """Changes the client's presence."""
     if activity_name := os.getenv('APP_ACTIVITY_NAME'):

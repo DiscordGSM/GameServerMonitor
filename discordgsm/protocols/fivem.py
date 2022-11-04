@@ -38,14 +38,14 @@ class FiveM():
 
     async def query_info(self):
         url = f'http://{self.address}:{self.query_port}/info.json?v={int(time.time())}'
-        
+
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 return await response.json(content_type=None)
 
     async def query_players(self):
         url = f'http://{self.address}:{self.query_port}/players.json?v={int(time.time())}'
-        
+
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 return await response.json(content_type=None)

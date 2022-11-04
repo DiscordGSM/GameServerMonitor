@@ -35,7 +35,7 @@ class ASE:
 
 if __name__ == '__main__':
     import asyncio
-    
+
     async def main():
         ase = ASE('79.137.97.3', 22126)
         print(await ase.query())

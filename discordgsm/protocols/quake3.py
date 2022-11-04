@@ -20,7 +20,7 @@ class Quake3():
         info = status['info']
         players = []
         bots = []
-        
+
         for player in status['players']:
             (bots if player['ping'] == 0 else players).append({'name': player['name'], 'raw': player})
 

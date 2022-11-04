@@ -22,7 +22,7 @@ class Vcmp:
             except Exception:
                 # Server may not response when numplayers > 100
                 return []
-        
+
         start = time.time()
         status, players = await asyncio.gather(samp.get_status(), get_players())
         ping = int((time.time() - start) * 1000)

@@ -16,7 +16,7 @@ class Hexen2():
         quake1 = opengsq.Quake1(self.address, self.query_port, 10)
         quake1._request_header = b'\xFFstatus\x0a'
         quake1._response_header = b'\xFFn'
-        
+
         start = time.time()
         status = await quake1.get_status()
         ping = int((time.time() - start) * 1000)

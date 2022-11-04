@@ -22,7 +22,7 @@ class Samp:
             except Exception:
                 # Server may not response when numplayers > 100
                 return []
-        
+
         start = time.time()
         status, players, rules = await asyncio.gather(samp.get_status(), get_players(), samp.get_rules())
         ping = int((time.time() - start) * 1000)

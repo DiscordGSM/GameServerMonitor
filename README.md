@@ -5,7 +5,7 @@
 [![Python Package](https://github.com/DiscordGSM/GameServerMonitor/actions/workflows/python-package.yml/badge.svg)](https://github.com/DiscordGSM/GameServerMonitor/actions/workflows/python-package.yml)
 [![Docker Image](https://github.com/DiscordGSM/GameServerMonitor/actions/workflows/docker-image.yml/badge.svg)](https://github.com/DiscordGSM/GameServerMonitor/actions/workflows/docker-image.yml)
 
-📺 Monitor your game servers on Discord and tracks the live data of your game servers.
+📺 A discord bot that monitors your game server and tracks the live data of your game servers.
 
 ![DiscordGSM Thumbnail](https://discordgsm.com/thumbnail.jpg)
 

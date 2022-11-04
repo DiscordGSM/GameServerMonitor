@@ -2,6 +2,6 @@ backports.zoneinfo==0.2.1;python_version<"3.9"
 discord.py==2.0.1
 Flask==2.2.2
 gunicorn==20.1.0
-opengsq==1.4.2
+opengsq==1.4.3
 psycopg2-binary==2.9.4
 python-dotenv==0.21.0

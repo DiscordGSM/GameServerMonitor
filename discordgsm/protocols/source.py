@@ -28,7 +28,7 @@ class Source:
         info, players = await asyncio.gather(source.get_info(), get_players())
         ping = int((time.time() - start) * 1000)
         players.sort(key=lambda x: x['Duration'], reverse=True)
-        players, bots = players[:info['Bots']], players[info['Bots']:]
+        players, bots = players[info['Bots']:], players[:info['Bots']]
 
         result: GamedigResult = {
             'name': info['Name'],

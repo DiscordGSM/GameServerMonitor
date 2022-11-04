@@ -265,7 +265,7 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
                 await interaction.response.send_message(content, ephemeral=True)
                 return
 
-        await interaction.response.defer(ephemeral=True, thinking=True)
+        await interaction.response.defer(ephemeral=is_add_server, thinking=True)
 
         if is_add_server:
             try:

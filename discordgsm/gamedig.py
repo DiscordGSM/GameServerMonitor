@@ -3,7 +3,7 @@ import csv
 import os
 from typing import List, TypedDict
 
-from discordgsm.protocols import Protocol
+from discordgsm.protocols import Protocols
 
 if __name__ == '__main__':
     from server import Server
@@ -124,8 +124,8 @@ class Gamedig:
         }, **server.query_extra})
 
     async def run(self, kv: dict):
-        if protocol := Protocol.get(self.games[kv['type']]['protocol'], kv):
-            return await asyncio.wait_for(protocol.query(), timeout=10.0)
+        if protocol := Protocols.get(self.games[kv['type']]['protocol'], kv):
+            return await asyncio.wait_for(protocol.query(), timeout=float(os.getenv('TASK_QUERY_SERVER_TIMEOUT', '15')))
 
         raise Exception('No protocol supported')
 

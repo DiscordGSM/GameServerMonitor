@@ -4,17 +4,15 @@ from typing import TYPE_CHECKING
 
 import opengsq
 
+from discordgsm.protocols.protocol import Protocol
+
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
 
-class Vcmp:
-    def __init__(self, address: str, query_port: int):
-        self.address = address
-        self.query_port = query_port
-
+class Vcmp(Protocol):
     async def query(self):
-        samp = opengsq.Vcmp(self.address, self.query_port, 10)
+        samp = opengsq.Vcmp(self.address, self.query_port, self.timeout)
 
         async def get_players():
             try:

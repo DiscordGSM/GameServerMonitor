@@ -3,17 +3,15 @@ from typing import TYPE_CHECKING
 
 import opengsq
 
+from discordgsm.protocols.protocol import Protocol
+
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
 
-class Doom3:
-    def __init__(self, address: str, query_port: int):
-        self.address = address
-        self.query_port = query_port
-
+class Doom3(Protocol):
     async def query(self):
-        doom3 = opengsq.Doom3(self.address, self.query_port, 10)
+        doom3 = opengsq.Doom3(self.address, self.query_port, self.timeout)
         start = time.time()
         info = await doom3.get_info()
         ping = int((time.time() - start) * 1000)

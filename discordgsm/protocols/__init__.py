@@ -23,7 +23,7 @@ from .vcmp import Vcmp
 from .won import WON
 
 
-class Protocol:
+class Protocols:
     @staticmethod
     def get(protocol_name: str, kv: dict):
         address = str(kv['host'])

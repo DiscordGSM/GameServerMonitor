@@ -4,15 +4,13 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 
+from discordgsm.protocols.protocol import Protocol
+
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
 
-class AssettoCorsa():
-    def __init__(self, address: str, query_port: int):
-        self.address = address
-        self.query_port = query_port
-
+class AssettoCorsa(Protocol):
     async def query(self):
         start = time.time()
         info, data = await asyncio.gather(self.query_info(), self.query_json())

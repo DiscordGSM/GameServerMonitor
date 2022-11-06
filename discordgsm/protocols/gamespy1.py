@@ -3,17 +3,15 @@ from typing import TYPE_CHECKING
 
 import opengsq
 
+from discordgsm.protocols.protocol import Protocol
+
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
 
-class GameSpy1:
-    def __init__(self, address: str, query_port: int):
-        self.address = address
-        self.query_port = query_port
-
+class GameSpy1(Protocol):
     async def query(self):
-        gamespy1 = opengsq.GameSpy1(self.address, self.query_port, 10)
+        gamespy1 = opengsq.GameSpy1(self.address, self.query_port, self.timeout)
         start = time.time()
         status = await gamespy1.get_status()
         ping = int((time.time() - start) * 1000)

@@ -3,17 +3,15 @@ from typing import TYPE_CHECKING
 
 import opengsq
 
+from discordgsm.protocols.protocol import Protocol
+
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
 
-class Quake2():
-    def __init__(self, address: str, query_port: int):
-        self.address = address
-        self.query_port = query_port
-
+class Quake2(Protocol):
     async def query(self):
-        quake2 = opengsq.Quake2(self.address, self.query_port, 10)
+        quake2 = opengsq.Quake2(self.address, self.query_port, self.timeout)
         start = time.time()
         status = await quake2.get_status()
         ping = int((time.time() - start) * 1000)

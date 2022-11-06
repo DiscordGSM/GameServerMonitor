@@ -4,18 +4,16 @@ from typing import TYPE_CHECKING
 
 import opengsq
 
+from discordgsm.protocols.protocol import Protocol
+
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
 
-class Minecraft:
-    def __init__(self, address: str, query_port: int):
-        self.address = address
-        self.query_port = query_port
-
+class Minecraft(Protocol):
     async def query(self):
         start = time.time()
-        minecraft = opengsq.Minecraft(self.address, self.query_port, 10)
+        minecraft = opengsq.Minecraft(self.address, self.query_port, self.timeout)
         status = await minecraft.get_status(strip_color=True)
         ping = int((time.time() - start) * 1000)
         name = ''

@@ -879,7 +879,8 @@ async def edit_message(servers: List[Server]):
 
     if message := await fetch_message(servers[0]):
         try:
-            message = await asyncio.wait_for(message.edit(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in servers]), timeout=2.0)
+            embeds = [styles.get(server.style_id, styles['Medium'])(server).embed() for server in servers]
+            message = await asyncio.wait_for(message.edit(embeds=embeds), timeout=float(os.getenv('TASK_EDIT_MESSAGE_TIMEOUT', '3')))
             Logger.debug(f'Edit messages: {message.id} success')
             return True
         except discord.Forbidden as e:

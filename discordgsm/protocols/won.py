@@ -4,17 +4,15 @@ from typing import TYPE_CHECKING
 
 import opengsq
 
+from discordgsm.protocols.protocol import Protocol
+
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
 
-class WON:
-    def __init__(self, address: str, query_port: int):
-        self.address = address
-        self.query_port = query_port
-
+class WON(Protocol):
     async def query(self):
-        won = opengsq.WON(self.address, self.query_port, 10)
+        won = opengsq.WON(self.address, self.query_port, self.timeout)
         start = time.time()
         info, players = await asyncio.gather(won.get_info(), won.get_players())
         ping = int((time.time() - start) * 1000)

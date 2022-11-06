@@ -3,14 +3,15 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 
+from discordgsm.protocols.protocol import Protocol
+
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
 
-class Terraria:
+class Terraria(Protocol):
     def __init__(self, address: str, query_port: int, token: str):
-        self.address = address
-        self.query_port = query_port
+        super().__init__(address, query_port)
         self.token = token
 
     async def query(self):

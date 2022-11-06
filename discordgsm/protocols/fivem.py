@@ -5,17 +5,15 @@ from typing import TYPE_CHECKING
 import aiohttp
 import opengsq
 
+from discordgsm.protocols.protocol import Protocol
+
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
 
-class FiveM():
-    def __init__(self, address: str, query_port: int):
-        self.address = address
-        self.query_port = query_port
-
+class FiveM(Protocol):
     async def query(self):
-        quake3 = opengsq.Quake3(self.address, self.query_port, 10)
+        quake3 = opengsq.Quake3(self.address, self.query_port, self.timeout)
         start = time.time()
         info, players = await asyncio.gather(quake3.get_info(strip_color=True), self.query_players())
         ping = int((time.time() - start) * 1000)

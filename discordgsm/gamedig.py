@@ -125,7 +125,7 @@ class Gamedig:
 
     async def run(self, kv: dict):
         if protocol := Protocol.get(self.games[kv['type']]['protocol'], kv):
-            return await protocol.query()
+            return await asyncio.wait_for(protocol.query(), timeout=10.0)
 
         raise Exception('No protocol supported')
 

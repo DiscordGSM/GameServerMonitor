@@ -25,6 +25,14 @@
   <body>
     <div id="particles-js"></div>
 
+    {% if show_alert %}
+      <div class="alert alert-danger mx-4 mb-5" role="alert">
+        Incorrect environment variables for HEROKU_APP_NAME<br>
+        Please set the value to {{ heroku_app_name }}<br>
+        Otherwise your discord bot will sleeps after 30 minutes of inactivity
+      </div>
+    {% endif %}
+
     <div class="message">
       <img src="android-chrome-256x256.png" width="60" alt="DiscordGSM Logo">
       <div class="message__title">DiscordGSM Deployed</div>

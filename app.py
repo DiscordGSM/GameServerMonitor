@@ -1,13 +1,14 @@
 import json
 import os
+import re
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 
 from discordgsm.database import Database
 from discordgsm.main import tree
 from discordgsm.service import gamedig, invite_link, public, whitelist_guilds
-from discordgsm.translator import translations, Locale
+from discordgsm.translator import Locale, translations
 from discordgsm.version import __version__
 
 load_dotenv()
@@ -18,7 +19,16 @@ cmd = [command.to_dict() for command in tree.get_commands(guild=None if public o
 
 @app.route('/')
 def index():
-    return render_template('index.html', invite_link=invite_link)
+    show_alert = False
+    heroku_app_name = ''
+
+    if match := re.search(r':\/\/([a-z|\d|-]+)\.herokuapp\.com', request.base_url):
+        heroku_app_name = match.groups()[0]
+
+        if os.getenv('HEROKU_APP_NAME').strip() != heroku_app_name:
+            show_alert = True
+
+    return render_template('index.html', invite_link=invite_link, show_alert=show_alert, heroku_app_name=heroku_app_name)
 
 
 if os.getenv('WEB_API_ENABLE', '').lower() == 'true':

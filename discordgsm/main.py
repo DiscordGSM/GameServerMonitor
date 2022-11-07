@@ -936,15 +936,15 @@ async def tasks_edit_messages(fetch_messages=False):
     pendings: List[asyncio.Task] = []
 
     # Discord Rate limit: 50 requests per second
-    async for chunks in to_chunks(tasks, 25):
+    async for chunks in to_chunks(tasks, 35):
         start = datetime.now().timestamp()
         done, pending = await asyncio.wait(chunks, timeout=1.0)
         time_used = datetime.now().timestamp() - start
         dones.extend(done)
         pendings.extend(pending)
 
-        # Wait 1.5 second since 1 second may still hit rate limit
-        await asyncio.sleep(max(0, 1.5 - time_used))
+        # Wait 2 second since 1 second may still hit rate limit
+        await asyncio.sleep(max(0, 2 - time_used))
 
     await asyncio.gather(*pendings)
 

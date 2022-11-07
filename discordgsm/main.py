@@ -278,8 +278,7 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
 
         try:
             result = await gamedig.run(params)
-        except Exception as e:
-            print(e.args)
+        except Exception:
             content = t('function.query_server_modal.fail_to_query', interaction.locale).format(game_id=game['id'], address=address, query_port=query_port)
             await interaction.followup.send(content, ephemeral=True)
             return
@@ -933,7 +932,7 @@ async def tasks_fetch_messages():
         start = datetime.now().timestamp()
         results += await asyncio.gather(*chunks)
         time_used = datetime.now().timestamp() - start
-        await asyncio.sleep(max(0, 1 - time_used))
+        await asyncio.sleep(max(0, 1.5 - time_used))
 
     failed = sum(result is False or result is None for result in results)
     success = len(results) - failed

@@ -930,7 +930,10 @@ async def tasks_fetch_messages():
 
     # Discord Rate limit: 50 requests per second
     async for chunks in to_chunks(tasks, 35):
+        start = datetime.now().timestamp()
         results += await asyncio.gather(*chunks)
+        time_used = datetime.now().timestamp() - start
+        await asyncio.sleep(max(0, 1 - time_used))
 
     failed = sum(result is False or result is None for result in results)
     success = len(results) - failed

@@ -62,9 +62,9 @@ async def on_ready():
     Logger.info('Github Sponsors: https://github.com/sponsors/DiscordGSM')
 
     await sync_commands(whitelist_guilds)
-    query_servers.start()
-    edit_messages.start()
-    presence_update.start()
+    await tasks_edit_messages(fetch_messages=True)
+
+    tasks_query.start()
 
     if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
         cache_guilds.start()
@@ -842,64 +842,14 @@ async def refresh_channel_messages(interaction: Interaction):
 async def to_chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.001)
         yield lst[i:i + n]
 # endregion
 
 
 # region Application tasks
-@tasks.loop(seconds=float(os.getenv('TASK_EDIT_MESSAGE', '60')))
-async def edit_messages():
-    """Edit messages (Scheduled)"""
-    messages_servers = database.all_messages_servers()
-    task_action = 'Fetch' if edit_messages.current_loop == 0 else 'Edit'
-    Logger.debug(f'{task_action} messages: Tasks = {len(messages_servers)} messages')
-
-    if edit_messages.current_loop == 0:
-        tasks = [fetch_message(servers[0]) for servers in messages_servers.values()]
-    else:
-        tasks = [edit_message(servers) for servers in messages_servers.values()]
-
-    results = []
-
-    # Discord Rate limit: 50 requests per second
-    async for chunks in to_chunks(tasks, 25):
-        results += await asyncio.gather(*chunks)
-        await asyncio.sleep(1)
-
-    failed = sum(result is False or result is None for result in results)
-    success = len(results) - failed
-    Logger.info(f'{task_action} messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
-
-
-async def edit_message(servers: List[Server]):
-    """Edit message"""
-    if len(servers) <= 0:
-        return True
-
-    if message := await fetch_message(servers[0]):
-        try:
-            embeds = [styles.get(server.style_id, styles['Medium'])(server).embed() for server in servers]
-            message = await asyncio.wait_for(message.edit(embeds=embeds), timeout=float(os.getenv('TASK_EDIT_MESSAGE_TIMEOUT', '3')))
-            Logger.debug(f'Edit messages: {message.id} success')
-            return True
-        except discord.Forbidden as e:
-            # Tried to suppress a message without permissions or edited a message's content or embed that isn't yours.
-            Logger.debug(f'Edit messages: {message.id} edit_messages discord.Forbidden {e}')
-            messages.pop(message.id, None)
-        except discord.HTTPException as e:
-            # Editing the message failed.
-            Logger.debug(f'Edit messages: {message.id} edit_messages discord.HTTPException {e}')
-        except asyncio.TimeoutError:
-            # Possible: discord.http: We are being rate limited.
-            Logger.debug(f'Edit messages: {message.id} edit_messages asyncio.TimeoutError')
-            messages.pop(message.id, None)
-
-    return False
-
-
-@tasks.loop(seconds=float(os.getenv('TASK_QUERY_SERVER', '60')))
-async def query_servers():
+@tasks.loop(seconds=max(15.0, float(os.getenv('TASK_QUERY_SERVER', '60'))))
+async def tasks_query():
     """Query servers (Scheduled)"""
     distinct_servers = database.distinct_servers()
     Logger.debug(f'Query servers: Tasks = {len(distinct_servers)} unique servers')
@@ -916,7 +866,28 @@ async def query_servers():
     success = len(servers) - failed
     Logger.info(f'Query servers: Total = {len(servers)}, Success = {success}, Failed = {failed} ({len(servers) > 0 and int(failed / len(servers) * 100) or 0}% fail)')
 
-    # Send alerts
+    # Run the tasks after the server queries
+    await asyncio.gather(tasks_send_alert(), tasks_edit_messages(), tasks_presence_update(tasks_query.current_loop))
+
+
+async def query_server(server: Server):
+    """Query server"""
+    try:
+        sent_offline_alert = bool(server.result['raw'].get('__sent_offline_alert', False))
+        server.result = await gamedig.query(server)
+        server.result['raw']['__sent_offline_alert'] = sent_offline_alert
+        server.status = True
+        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Success. Ping: {server.result.get("ping", -1)}ms')
+    except Exception as e:
+        server.status = False
+        server.result['raw']['__fail_query_count'] = int(server.result.get('raw', {}).get('__fail_query_count', '0')) + 1
+        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Error: {e}')
+
+    return server
+
+
+async def tasks_send_alert():
+    """Send alerts tasks"""
     servers = database.all_servers()
 
     async def send_alert_webhook(server: Server):
@@ -950,37 +921,94 @@ async def query_servers():
     database.update_servers(servers)
 
 
-async def query_server(server: Server):
-    """Query server"""
-    try:
-        sent_offline_alert = bool(server.result['raw'].get('__sent_offline_alert', False))
-        server.result = await gamedig.query(server)
-        server.result['raw']['__sent_offline_alert'] = sent_offline_alert
-        server.status = True
-        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Success. Ping: {server.result.get("ping", -1)}ms')
-    except Exception as e:
-        server.status = False
-        server.result['raw']['__fail_query_count'] = int(server.result.get('raw', {}).get('__fail_query_count', '0')) + 1
-        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Error: {e}')
+async def tasks_edit_messages(fetch_messages=False):
+    """Edit messages tasks"""
+    messages_servers = database.all_messages_servers()
+    task_action = 'Fetch' if fetch_messages else 'Edit'
+    Logger.debug(f'{task_action} messages: Tasks: {len(messages_servers)} messages')
 
-    return server
-
-
-@tasks.loop(seconds=float(os.getenv('TASK_EDIT_MESSAGE', '60')))
-async def presence_update():
-    """Changes the client's presence."""
-    if activity_name := os.getenv('APP_ACTIVITY_NAME'):
-        name = activity_name
+    if fetch_messages:
+        tasks = [fetch_message(servers[0]) for servers in messages_servers.values()]
     else:
+        tasks = [edit_message(servers) for servers in messages_servers.values()]
+
+    dones = []
+    pendings = []
+
+    # Discord Rate limit: 50 requests per second
+    async for chunks in to_chunks(tasks, 25):
+        start = datetime.now().timestamp()
+        done, pending = await asyncio.wait(chunks, timeout=2.0)
+        time_used = datetime.now().timestamp() - start
+        dones.extend(done)
+        pendings.extend(pending)
+        await asyncio.sleep(max(0, 1 - time_used))
+
+    await asyncio.gather(*pendings)
+
+    results = [task.result() for task in dones + pendings]
+    failed = sum(result is False or result is None for result in results)
+    success = len(results) - failed
+    Logger.info(f'{task_action} messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
+
+
+async def edit_message(servers: List[Server]):
+    """Edit message"""
+    if len(servers) <= 0:
+        return True
+
+    if message := await fetch_message(servers[0]):
+        try:
+            embeds = [styles.get(server.style_id, styles['Medium'])(server).embed() for server in servers]
+            message = await asyncio.wait_for(message.edit(embeds=embeds), timeout=float(os.getenv('TASK_EDIT_MESSAGE_TIMEOUT', '3')))
+            Logger.debug(f'Edit messages: {message.id} success')
+            return True
+        except discord.Forbidden as e:
+            # Tried to suppress a message without permissions or edited a message's content or embed that isn't yours.
+            Logger.debug(f'Edit messages: {message.id} edit_messages discord.Forbidden {e}')
+            messages.pop(message.id, None)
+        except discord.HTTPException as e:
+            # Editing the message failed.
+            Logger.debug(f'Edit messages: {message.id} edit_messages discord.HTTPException {e}')
+        except asyncio.TimeoutError:
+            # Possible: discord.http: We are being rate limited.
+            Logger.debug(f'Edit messages: {message.id} edit_messages asyncio.TimeoutError')
+            messages.pop(message.id, None)
+
+    return False
+
+
+async def tasks_presence_update(current_loop: int):
+    """Presence update tasks"""
+    name = None
+    status = discord.Status.online
+
+    if activity_name := os.getenv('APP_ACTIVITY_NAME'):
+        # Activity name override
+        name = activity_name
+    elif os.getenv('APP_PRESENCE_ADVERTISE', '').lower() == 'true':
+        # Advertise online servers one by one
+        if servers := database.all_servers():
+            online_servers = [server for server in servers if server.status]
+
+            if len(online_servers) > 0:
+                server = online_servers[current_loop % len(online_servers)]
+                name = Style.get_players_display_string(server) + f' {server.result["name"]}'
+    else:
+        # Display number of server monitoring
         unique_servers = int(database.statistics()['unique_servers'])
-        name = f'{unique_servers} servers'
 
         if unique_servers == 1:
+            # Display server status on presence when one server only
             if servers := database.all_servers():
-                name = Style.get_players_display_string(servers[0])
+                server = servers[0]
+                status = discord.Status.online if server.status else discord.Status.do_not_disturb
+                name = Style.get_players_display_string(server)
+        else:
+            name = f'{unique_servers} servers'
 
     activity = discord.Activity(name=name, type=ActivityType(int(os.getenv('APP_ACTIVITY_TYPE', '3'))))
-    await client.change_presence(status=discord.Status.online, activity=activity)
+    await client.change_presence(status=status, activity=activity)
 
 
 @tasks.loop(minutes=30)

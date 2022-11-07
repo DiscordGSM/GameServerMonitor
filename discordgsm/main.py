@@ -62,7 +62,7 @@ async def on_ready():
     Logger.info('Github Sponsors: https://github.com/sponsors/DiscordGSM')
 
     await sync_commands(whitelist_guilds)
-    await tasks_edit_messages(fetch_messages=True)
+    await tasks_fetch_messages()
 
     tasks_query.start()
 
@@ -921,17 +921,28 @@ async def tasks_send_alert():
     database.update_servers(servers)
 
 
+async def tasks_fetch_messages():
+    messages_servers = database.all_messages_servers()
+    Logger.debug(f'Fetch messages: Tasks: {len(messages_servers)} messages')
+
+    tasks = [fetch_message(servers[0]) for servers in messages_servers.values()]
+    results = []
+
+    # Discord Rate limit: 50 requests per second
+    async for chunks in to_chunks(tasks, 35):
+        results += await asyncio.gather(*chunks)
+
+    failed = sum(result is False or result is None for result in results)
+    success = len(results) - failed
+    Logger.info(f'Fetch messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
+
+
 async def tasks_edit_messages(fetch_messages=False):
     """Edit messages tasks"""
     messages_servers = database.all_messages_servers()
-    task_action = 'Fetch' if fetch_messages else 'Edit'
-    Logger.debug(f'{task_action} messages: Tasks: {len(messages_servers)} messages')
+    Logger.debug(f'Edit messages: Tasks: {len(messages_servers)} messages')
 
-    if fetch_messages:
-        tasks = [fetch_message(servers[0]) for servers in messages_servers.values()]
-    else:
-        tasks = [edit_message(servers) for servers in messages_servers.values()]
-
+    tasks = [edit_message(servers) for servers in messages_servers.values()]
     dones: List[asyncio.Task] = []
     pendings: List[asyncio.Task] = []
 
@@ -942,16 +953,14 @@ async def tasks_edit_messages(fetch_messages=False):
         time_used = datetime.now().timestamp() - start
         dones.extend(done)
         pendings.extend(pending)
-
-        # Wait 2 second since 1 second may still hit rate limit
-        await asyncio.sleep(max(0, 2 - time_used))
+        await asyncio.sleep(max(0, 1 - time_used))
 
     await asyncio.gather(*pendings)
 
     results = [task.result() for task in dones + pendings]
     failed = sum(result is False or result is None for result in results)
     success = len(results) - failed
-    Logger.info(f'{task_action} messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
+    Logger.info(f'Edit messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
 
 
 async def edit_message(servers: List[Server]):

@@ -31,13 +31,3 @@ class Raknet(Protocol):
         result['raw']['numplayers'] = int(status.get('num_players', ''))
 
         return result
-
-
-if __name__ == '__main__':
-    import asyncio
-
-    async def main():
-        raknet = Raknet('mobzgaming.hopto.org', 19132)
-        print(await raknet.query())
-
-    asyncio.run(main())

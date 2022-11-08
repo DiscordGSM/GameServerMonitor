@@ -30,11 +30,3 @@ class Battlefield(Protocol):
         }
 
         return result
-
-
-if __name__ == '__main__':
-    async def main():
-        battlefield = Battlefield('74.91.124.140', 47200)
-        print(await battlefield.query())
-
-    asyncio.run(main())

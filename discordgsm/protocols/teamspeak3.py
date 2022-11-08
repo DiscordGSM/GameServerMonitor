@@ -37,11 +37,3 @@ class Teamspeak3(Protocol):
         }
 
         return result
-
-
-if __name__ == '__main__':
-    async def main():
-        teamspeak3 = Teamspeak3('199.231.233.138', 10011, 9987)
-        print(await teamspeak3.query())
-
-    asyncio.run(main())

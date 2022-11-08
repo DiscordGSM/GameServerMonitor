@@ -30,13 +30,3 @@ class Doom3(Protocol):
         }
 
         return result
-
-
-if __name__ == '__main__':
-    import asyncio
-
-    async def main():
-        doom3 = Doom3('88.99.0.7', 28007)
-        print(await doom3.query())
-
-    asyncio.run(main())

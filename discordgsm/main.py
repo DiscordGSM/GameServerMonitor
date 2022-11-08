@@ -290,7 +290,7 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
 
         # Query the server
         try:
-            result = await gamedig.run({'type': game['id'], **query_extra})
+            result = await gamedig.run({**{'type': game['id']}, **params})
         except Exception:
             content = t('function.query_server_modal.fail_to_query', interaction.locale).format(game_id=game['id'], address=address, query_port=query_port)
             await interaction.followup.send(content, ephemeral=True)

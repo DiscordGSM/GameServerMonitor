@@ -46,11 +46,3 @@ class AssettoCorsa(Protocol):
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 return await response.json(content_type=None)
-
-
-if __name__ == '__main__':
-    async def main():
-        assettocorsa = AssettoCorsa('89.22.232.211', 8003)
-        print(await assettocorsa.query())
-
-    asyncio.run(main())

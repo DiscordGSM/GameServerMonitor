@@ -38,11 +38,3 @@ class Vcmp(Protocol):
         }
 
         return result
-
-
-if __name__ == '__main__':
-    async def main():
-        vcmp = Vcmp('91.121.134.5', 8192)
-        print(await vcmp.query())
-
-    asyncio.run(main())

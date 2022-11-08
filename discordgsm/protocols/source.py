@@ -52,11 +52,3 @@ class Source(Protocol):
             result['maxplayers'] = int(next((tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'mp'), result['maxplayers']))
 
         return result
-
-
-if __name__ == '__main__':
-    async def main():
-        source = Source('87.98.130.157', 27015)
-        print(await source.query())
-
-    asyncio.run(main())

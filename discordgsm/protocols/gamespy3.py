@@ -31,13 +31,3 @@ class GameSpy3(Protocol):
         }
 
         return result
-
-
-if __name__ == '__main__':
-    import asyncio
-
-    async def main_async():
-        gs3 = GameSpy3('2b2tjb.jp', 19132)
-        print(await gs3.query())
-
-    asyncio.run(main_async())

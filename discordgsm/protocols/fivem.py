@@ -47,11 +47,3 @@ class FiveM(Protocol):
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 return await response.json(content_type=None)
-
-
-if __name__ == '__main__':
-    async def main():
-        fivem = FiveM('85.215.99.119', 30112)
-        print(await fivem.query())
-
-    asyncio.run(main())

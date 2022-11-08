@@ -44,11 +44,3 @@ class Minecraft(Protocol):
         result['raw']['numplayers'] = int(status.get('players', {}).get('online', '0'))
 
         return result
-
-
-if __name__ == '__main__':
-    async def main():
-        minecraft = Minecraft('minecraft.hypixel.net', 25565)
-        print(await minecraft.query())
-
-    asyncio.run(main())

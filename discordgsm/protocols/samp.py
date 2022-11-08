@@ -41,11 +41,3 @@ class Samp(Protocol):
         }
 
         return result
-
-
-if __name__ == '__main__':
-    async def main():
-        samp = Samp('51.254.178.238', 7777)
-        print(await samp.query())
-
-    asyncio.run(main())

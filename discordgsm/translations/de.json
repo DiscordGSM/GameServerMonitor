@@ -47,7 +47,7 @@
     "function.find_server.not_found": "Der Server `{address}:{query_port}` existiert nicht im Channel.",
     "function.find_servers.empty": "Es gibt keine Server in diesem Channel.",
     "function.find_servers.parameter_error": "`address` und `query_port` müssen zusammen angegeben werden.",
-    "function.query_server_modal.invalid_port": "The port number must be between 0 and 65535.",
+    "function.query_server_modal.invalid_port": "Die Portnummer muss zwischen 0 und 65535 liegen.",
     "function.query_server_modal.already_exists": "Dieser Server existiert bereits im Channel.",
     "function.query_server_modal.fail_to_query": "Abfrage von `{game_id}` Server `{address}:{query_port}` fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "function.query_server_modal.success": "Abfrage erfolgreich!",

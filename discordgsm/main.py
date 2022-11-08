@@ -218,14 +218,13 @@ async def send_alert(server: Server, alert: Alert):
         raise NameError()
 
 
-def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_server: bool):
+def query_server_modal(game: GamedigGame, locale: Locale):
     """Query server modal"""
-    query_param = {
-        'type': game['id'],
-        'host': TextInput(label=t('modal.text_input.address.label', interaction.locale), placeholder=t('command.option.address', interaction.locale)),
+    query_param: Dict[str, TextInput] = {
+        'host': TextInput(label=t('modal.text_input.address.label', locale), placeholder=t('command.option.address', locale)),
         'port': TextInput(
-            label=t('modal.text_input.query_port.label', interaction.locale),
-            placeholder=t('command.option.query_port', interaction.locale),
+            label=t('modal.text_input.query_port.label', locale),
+            placeholder=t('command.option.query_port', locale),
             max_length='5',
             default=gamedig.default_port(game['id'])
         )
@@ -237,7 +236,7 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
         title = title[:-3] + '...'
 
     modal = Modal(title=title).add_item(query_param['host']).add_item(query_param['port'])
-    query_extra = {}
+    query_extra: Dict[str, TextInput] = {}
 
     if game['id'] == 'teamspeak2':
         query_extra['teamspeakQueryPort'] = TextInput(label='TeamSpeak Query Port', max_length='5', default=51234)
@@ -250,15 +249,26 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
         modal.add_item(query_extra['_token'])
 
     if game['id'] == 'discord':
-        query_param['host'].label = t('modal.text_input.guild_id.label', interaction.locale)
+        query_param['host'].label = t('modal.text_input.guild_id.label', locale)
         modal.remove_item(query_param['port'])
         query_param['port']._value = '0'
 
+    return modal, query_param, query_extra
+
+
+def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_add_server: bool):
+    """Query server modal"""
+    modal, query_param, query_extra = query_server_modal(game, interaction.locale)
+
     async def modal_on_submit(interaction: Interaction):
-        address = query_param['host']._value = str(query_param['host']._value).strip()
-        query_port = str(query_param['port']).strip()
         params = {**query_param, **query_extra}
 
+        for item in params.values():
+            item.default = item._value = str(item._value).strip()
+
+        address, query_port = str(query_param['host']), str(query_param['port'])
+
+        # Validate the port number
         for key in params.keys():
             if 'port' in key.lower() and not gamedig.is_port_valid(str(params[key])):
                 content = t('function.query_server_modal.invalid_port', interaction.locale)
@@ -267,6 +277,7 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
 
         await interaction.response.defer(ephemeral=is_add_server, thinking=True)
 
+        # Check is the server already exists in database
         if is_add_server:
             try:
                 database.find_server(interaction.channel.id, address, query_port)
@@ -276,13 +287,15 @@ def query_server_modal(interaction: Interaction, game: GamedigGame, is_add_serve
             except database.ServerNotFoundError:
                 pass
 
+        # Query the server
         try:
-            result = await gamedig.run(params)
+            result = await gamedig.run({'type': game['id'], **query_extra})
         except Exception:
             content = t('function.query_server_modal.fail_to_query', interaction.locale).format(game_id=game['id'], address=address, query_port=query_port)
             await interaction.followup.send(content, ephemeral=True)
             return
 
+        # Create new server object
         server = Server.new(interaction.guild_id, interaction.channel_id, game['id'], address, query_port, query_extra, result)
         style = styles['Medium'](server)
         server.style_id = style.id
@@ -320,7 +333,7 @@ async def command_query(interaction: Interaction, game_id: str):
     Logger.command(interaction, game_id)
 
     if game := await find_game(interaction, game_id):
-        await interaction.response.send_modal(query_server_modal(interaction, game, False))
+        await interaction.response.send_modal(query_server_modal_handler(interaction, game, False))
 
 
 @tree.command(name='addserver', description='command.addserver.description', guilds=whitelist_guilds)
@@ -345,7 +358,7 @@ async def command_addserver(interaction: Interaction, game_id: str):
                 await interaction.response.send_message(content, ephemeral=True)
                 return
 
-        await interaction.response.send_modal(query_server_modal(interaction, game, True))
+        await interaction.response.send_modal(query_server_modal_handler(interaction, game, True))
 
 
 @tree.command(name='delserver', description='command.delserver.description', guilds=whitelist_guilds)

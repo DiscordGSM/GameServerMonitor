@@ -64,12 +64,13 @@ async def on_ready():
     await sync_commands(whitelist_guilds)
     await tasks_fetch_messages()
 
-    tasks_query.start()
+    if not tasks_query.is_running():
+        tasks_query.start()
 
-    if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
+    if not cache_guilds.is_running() and os.getenv('WEB_API_ENABLE', '').lower() == 'true':
         cache_guilds.start()
 
-    if os.getenv('HEROKU_APP_NAME') is not None:
+    if not heroku_query.is_running() and os.getenv('HEROKU_APP_NAME') is not None:
         heroku_query.start()
 
 

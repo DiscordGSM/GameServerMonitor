@@ -944,18 +944,14 @@ async def tasks_edit_messages():
     messages_servers = database.all_messages_servers()
     Logger.debug(f'Edit messages: Tasks: {len(messages_servers)} messages')
 
+    tasks = [edit_message(servers) for servers in messages_servers.values()]
     results: List[bool] = []
-    tasks = [asyncio.create_task(edit_message(servers)) for servers in messages_servers.values()]
 
     # Discord Rate limit: 50 requests per second
-    pendings, tasks = tasks[:25], tasks[25:]
-
-    while pendings:
+    async for chunks in to_chunks(tasks, 25):
         start = datetime.now().timestamp()
-        done, pending = await asyncio.wait(pendings, return_when=asyncio.FIRST_COMPLETED)
+        results += await asyncio.gather(*chunks)
         time_used = datetime.now().timestamp() - start
-        pendings, tasks = list(pending) + tasks[:len(done)], tasks[len(done):]
-        results.extend(task.result() for task in done)
         await asyncio.sleep(max(0, 1 - time_used))
 
     failed = sum(result is False for result in results)

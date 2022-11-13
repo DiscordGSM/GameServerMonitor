@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from discordgsm.protocols.protocol import Protocol
 import aiohttp
+import re
 
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
@@ -18,8 +19,12 @@ class Eco(Protocol):
                 data = await response.json()
                 ping = int((time.time() - start) * 1000)
 
+        name = re.sub(r'<color=\w*>|<(color=)?#[0-9a-fA-F]{6}>|<\/color>', '', data['Description'])
+        name = re.sub(r'</?b>', '', name)
+        name = re.sub(r'</?i>', '_', name)
+
         result: GamedigResult = {
-            'name': data['Description'],
+            'name': name,
             'map': '',
             'password': data['HasPassword'],
             'maxplayers': data['MaxActivePlayers'],

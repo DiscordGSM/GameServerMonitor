@@ -151,7 +151,7 @@ class Style(ABC):
 
         maxplayers = int(server.result['maxplayers'])
 
-        if maxplayers >= 0:
+        if maxplayers > 0:
             percentage = 0 if maxplayers <= 0 else int(players / maxplayers * 100)
             players_string = f'{players_string}/{maxplayers} ({percentage}%)'
 

@@ -1,9 +1,10 @@
+import re
 import time
 from typing import TYPE_CHECKING
 
-from discordgsm.protocols.protocol import Protocol
 import aiohttp
-import re
+
+from discordgsm.protocols.protocol import Protocol
 
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult

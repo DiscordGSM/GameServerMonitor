@@ -9,6 +9,7 @@ from .gamespy2 import GameSpy2
 from .gamespy3 import GameSpy3
 from .hexen2 import Hexen2
 from .minecraft import Minecraft
+from .eco import Eco
 from .quake1 import Quake1
 from .quake2 import Quake2
 from .quake3 import Quake3
@@ -33,6 +34,8 @@ class Protocols:
             return Terraria(address, query_port, str(kv['_token']))
         elif kv['type'] == 'minecraft':
             return Minecraft(address, query_port)
+        elif kv['type'] == 'eco':
+            return Eco(address, query_port)
         elif kv['type'] == 'minecraftpe':
             return Raknet(address, query_port)
         elif kv['type'] == 'discord':

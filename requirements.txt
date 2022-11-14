@@ -5,3 +5,4 @@ gunicorn==20.1.0
 opengsq==1.4.3
 psycopg2-binary==2.9.4
 python-dotenv==0.21.0
+tzdata>=2022.6;platform_system=="Windows"

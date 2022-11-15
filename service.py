@@ -24,9 +24,9 @@ from discordgsm import client
 
 
 class WindowsService(win32serviceutil.ServiceFramework):
-    _svc_name_ = 'DgsmSvc'
-    _svc_display_name_ = 'DiscordGSM Service'
-    _svc_description_ = 'A discord bot that monitors your game server and tracks the live data of your game servers.'
+    _svc_name_ = os.getenv('SERVICE_NAME', 'DgsmSvc')
+    _svc_display_name_ = os.getenv('SERVICE_DISPLAY_NAME', 'DiscordGSM Service')
+    _svc_description_ = os.getenv('SERVICE_DESCRIPTION', 'A discord bot that monitors your game server and tracks the live data of your game servers.')
 
     def __init__(self, args):
         win32serviceutil.ServiceFramework.__init__(self, args)

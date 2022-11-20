@@ -1,6 +1,5 @@
 import logging
 import os
-from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
 
 from discord import Interaction, utils
@@ -9,8 +8,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'data', 'logs', '{:%Y-%m-%d}.txt'.format(datetime.now()))
-file_handler = TimedRotatingFileHandler(filename=filename, when='D', encoding='utf-8')
+filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'data', 'logs', 'discordgsm.log')
+file_handler = TimedRotatingFileHandler(filename, when='D', encoding='utf-8')
+file_handler.namer = lambda name: name.replace('.log', '') + '.log'
 utils.setup_logging(handler=file_handler, root=True)
 
 handler = logging.StreamHandler()

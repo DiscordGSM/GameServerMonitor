@@ -805,18 +805,24 @@ async def resend_channel_messages(interaction: Optional[Interaction], channel_id
     servers = database.all_servers(channel_id=channel.id)
 
     try:
-        await channel.purge(check=lambda m: m.author == client.user, before=interaction.created_at)
+        await channel.purge(check=lambda m: m.author == client.user, before=interaction.created_at if interaction else None)
     except discord.Forbidden as e:
         # You do not have proper permissions to do the actions required.
         Logger.error(f'Channel {channel.id} channel.purge discord.Forbidden {e}')
-        content = t('missing_permission.manage_messages', interaction.locale)
-        if interaction: await interaction.followup.send(content, ephemeral=True)
+
+        if interaction:
+            content = t('missing_permission.manage_messages', interaction.locale)
+            await interaction.followup.send(content, ephemeral=True)
+
         return False
     except discord.HTTPException as e:
         # Purging the messages failed.
         Logger.error(f'Channel {channel.id} channel.purge discord.HTTPException {e}')
-        content = t('command.error.internal_error', interaction.locale)
-        if interaction: await interaction.followup.send(content, ephemeral=True)
+
+        if interaction:
+            content = t('command.error.internal_error', interaction.locale)
+            await interaction.followup.send(content, ephemeral=True)
+
         return False
 
     async for chunks in to_chunks(servers, 10):
@@ -825,14 +831,20 @@ async def resend_channel_messages(interaction: Optional[Interaction], channel_id
         except discord.Forbidden as e:
             # You do not have the proper permissions to send the message.
             Logger.error(f'Channel {channel.id} send_message discord.Forbidden {e}')
-            content = t('missing_permission.send_messages', interaction.locale)
-            if interaction: await interaction.followup.send(content, ephemeral=True)
+
+            if interaction:
+                content = t('missing_permission.send_messages', interaction.locale)
+                await interaction.followup.send(content, ephemeral=True)
+
             return False
         except discord.HTTPException as e:
             # Sending the message failed.
             Logger.error(f'Channel {channel.id} send_message discord.HTTPException {e}')
-            content = t('command.error.internal_error', interaction.locale)
-            if interaction: await interaction.followup.send(content, ephemeral=True)
+
+            if interaction:
+                content = t('command.error.internal_error', interaction.locale)
+                await interaction.followup.send(content, ephemeral=True)
+
             return False
 
         for server in chunks:

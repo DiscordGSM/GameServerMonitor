@@ -31,7 +31,7 @@ handler.setFormatter(formatter)
 
 library, _, _ = __name__.partition('.')
 logger = logging.getLogger(library)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG if os.getenv('APP_DEBUG', '').lower() == 'true' else logging.INFO)
 logger.addHandler(handler)
 
 

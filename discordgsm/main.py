@@ -267,7 +267,7 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
         for item in params.values():
             item.default = item._value = str(item._value).strip()
 
-        address, query_port = str(query_param['host']), str(query_param['port'])
+        game_id, address, query_port = game['id'], str(query_param['host']), str(query_param['port'])
 
         # Validate the port number
         for key in params.keys():
@@ -290,14 +290,15 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
 
         # Query the server
         try:
-            result = await gamedig.run({**{'type': game['id']}, **params})
-        except Exception:
-            content = t('function.query_server_modal.fail_to_query', interaction.locale).format(game_id=game['id'], address=address, query_port=query_port)
+            result = await gamedig.run({**{'type': game_id}, **params})
+        except Exception as e:
+            content = t('function.query_server_modal.fail_to_query', interaction.locale).format(game_id=game_id, address=address, query_port=query_port)
             await interaction.followup.send(content, ephemeral=True)
+            Logger.debug(f'Query servers: ({game_id})[{address}:{query_port}] Error: {e}')
             return
 
         # Create new server object
-        server = Server.new(interaction.guild_id, interaction.channel_id, game['id'], address, query_port, query_extra, result)
+        server = Server.new(interaction.guild_id, interaction.channel_id, game_id, address, query_port, query_extra, result)
         style = styles['Medium'](server)
         server.style_id = style.id
         server.style_data = await style.default_style_data(None)
@@ -311,7 +312,7 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
                     await webhook.send(content, embed=style.embed())
 
             server = database.add_server(server)
-            Logger.info(f'Successfully added {game["id"]} server {address}:{query_port} to #{interaction.channel.name}({interaction.channel.id}).')
+            Logger.info(f'Successfully added {game_id} server {address}:{query_port} to #{interaction.channel.name}({interaction.channel.id}).')
 
             if await resend_channel_messages(interaction):
                 await interaction.delete_original_response()
@@ -905,7 +906,10 @@ async def query_server(server: Server):
         Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Success. Ping: {server.result.get("ping", -1)}ms')
     except Exception as e:
         server.status = False
-        server.result['raw']['__fail_query_count'] = int(server.result.get('raw', {}).get('__fail_query_count', '0')) + 1
+        raw = server.result.get('raw', {})
+        server.result['raw']['__fail_query_count'] = int(raw.get('__fail_query_count', '0')) + 1
+        offline_since = int(datetime.utcnow().timestamp())
+        server.result['raw']['__offline_since'] = min(int(raw.get('__offline_since', offline_since)), offline_since)
         Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Error: {e}')
 
     return server

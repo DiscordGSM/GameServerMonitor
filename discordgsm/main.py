@@ -331,7 +331,7 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
 @app_commands.checks.dynamic_cooldown(cooldown_for_everyone_except_administrator)
 async def command_query(interaction: Interaction, game_id: str):
     """Query server"""
-    Logger.command(interaction, game_id)
+    Logger.command(interaction, game_id=game_id)
 
     if game := await find_game(interaction, game_id):
         await interaction.response.send_modal(query_server_modal_handler(interaction, game, False))
@@ -343,7 +343,7 @@ async def command_query(interaction: Interaction, game_id: str):
 @app_commands.check(is_administrator)
 async def command_addserver(interaction: Interaction, game_id: str):
     """Add server in current channel"""
-    Logger.command(interaction, game_id)
+    Logger.command(interaction, game_id=game_id)
 
     if not isinstance(interaction.channel, discord.TextChannel):
         content = t('command.addserver.text_channel_only', interaction.locale)
@@ -369,7 +369,7 @@ async def command_addserver(interaction: Interaction, game_id: str):
 @app_commands.check(is_administrator)
 async def command_delserver(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Delete server in current channel"""
-    Logger.command(interaction, address, query_port)
+    Logger.command(interaction, address=address, query_port=query_port)
 
     if server := await find_server(interaction, address, query_port):
         await interaction.response.defer(ephemeral=True)
@@ -455,7 +455,7 @@ async def command_movedown(interaction: Interaction, address: str, query_port: a
 
 async def action_move(interaction: Interaction, address: str, query_port: int, direction: bool):
     """True if move up, otherwise move down"""
-    Logger.command(interaction, address, query_port)
+    Logger.command(interaction, address=address, query_port=query_port)
 
     if server := await find_server(interaction, address, query_port):
         await interaction.response.defer(ephemeral=True)
@@ -471,7 +471,7 @@ async def action_move(interaction: Interaction, address: str, query_port: int, d
 @app_commands.check(is_administrator)
 async def command_changestyle(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Change server message style"""
-    Logger.command(interaction, address, query_port)
+    Logger.command(interaction, address=address, query_port=query_port)
 
     if server := await find_server(interaction, address, query_port):
         current_style = styles.get(server.style_id, styles['Medium'])(server)
@@ -507,7 +507,7 @@ async def command_changestyle(interaction: Interaction, address: str, query_port
 @app_commands.check(is_administrator)
 async def command_editstyledata(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Edit server message style data"""
-    Logger.command(interaction, address, query_port)
+    Logger.command(interaction, address=address, query_port=query_port)
 
     if server := await find_server(interaction, address, query_port):
         style = styles.get(server.style_id, styles['Medium'])(server)
@@ -567,7 +567,7 @@ async def command_switch(interaction: Interaction, channel: discord.TextChannel,
 @app_commands.check(is_administrator)
 async def command_settimezone(interaction: Interaction, timezone: str, address: Optional[str], query_port: Optional[app_commands.Range[int, 0, 65535]]):
     """Set server message time zone"""
-    Logger.command(interaction, timezone, address, query_port)
+    Logger.command(interaction, timezone=timezone, address=address, query_port=query_port)
 
     if timezone not in timezones:
         content = t('command.settimezone.invalid', interaction.locale).format(timezone=timezone)
@@ -594,7 +594,7 @@ async def command_settimezone(interaction: Interaction, timezone: str, address: 
 @app_commands.check(is_administrator)
 async def command_setclock(interaction: Interaction, clock_format: app_commands.Choice[int], address: Optional[str], query_port: Optional[app_commands.Range[int, 0, 65535]]):
     """Set server message clock format"""
-    Logger.command(interaction, clock_format.value, address, query_port)
+    Logger.command(interaction, clock_format=clock_format.value, address=address, query_port=query_port)
 
     if servers := await find_servers(interaction, address, query_port):
         await interaction.response.defer(ephemeral=True)
@@ -615,7 +615,7 @@ async def command_setclock(interaction: Interaction, clock_format: app_commands.
 @app_commands.check(is_administrator)
 async def command_setlocale(interaction: Interaction, locale: str, address: Optional[str], query_port: Optional[app_commands.Range[int, 0, 65535]]):
     """Set server message locale"""
-    Logger.command(interaction, locale, address, query_port)
+    Logger.command(interaction, locale=locale, address=address, query_port=query_port)
 
     if locale not in set(str(value) for value in Locale):
         content = t('command.setlocale.invalid', interaction.locale).format(locale=locale)
@@ -640,7 +640,7 @@ async def command_setlocale(interaction: Interaction, locale: str, address: Opti
 @app_commands.check(is_administrator)
 async def command_setalert(interaction: Interaction, address: str, query_port: app_commands.Range[int, 0, 65535]):
     """Set server status alert settings"""
-    Logger.command(interaction, address, query_port)
+    Logger.command(interaction, address=address, query_port=query_port)
 
     if server := await find_server(interaction, address, query_port):
         # Set up button 1

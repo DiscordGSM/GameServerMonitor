@@ -33,25 +33,26 @@ class Logger:
     """Custom Logger"""
 
     @staticmethod
-    def command(interaction: Interaction, *args, **kwargs):
-        message = f'{interaction.guild.name}({interaction.guild.id}) '
-        message += f'#{interaction.channel.name}({interaction.channel.id}) '
-        message += f'{interaction.user.name}({interaction.user.id}): /{interaction.command.name}'
-        Logger.info(message, *args, **kwargs)
+    def command(interaction: Interaction, **kwargs):
+        msg = f'{interaction.guild.name}({interaction.guild.id}) '
+        msg += f'#{interaction.channel.name}({interaction.channel.id}) '
+        msg += f'{interaction.user.name}({interaction.user.id}): /{interaction.command.name} '
+        msg += ' '.join([f'{k}: {v}' for k, v in kwargs.items()])
+        logger.info(msg)
 
     @staticmethod
-    def info(*args, **kwargs):
-        logger.info(*args, **kwargs)
+    def info(msg, *args, **kwargs):
+        logger.info(msg, *args, **kwargs)
 
     @staticmethod
-    def warning(*args, **kwargs):
-        logger.warning(*args, **kwargs)
+    def warning(msg, *args, **kwargs):
+        logger.warning(msg, *args, **kwargs)
 
     @staticmethod
-    def error(*args, **kwargs):
-        logger.error(*args, **kwargs)
+    def error(msg, *args, **kwargs):
+        logger.error(msg, *args, **kwargs)
 
     @staticmethod
-    def debug(*args, **kwargs):
+    def debug(msg, *args, **kwargs):
         if os.getenv('APP_DEBUG', '').lower() == 'true':
-            logger.debug(*args, **kwargs)
+            logger.debug(msg, *args, **kwargs)

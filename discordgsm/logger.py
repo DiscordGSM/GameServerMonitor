@@ -1,6 +1,7 @@
 import logging
 import os
 from logging.handlers import TimedRotatingFileHandler
+from pathlib import Path
 
 from discord import Interaction, utils
 from discord.utils import _ColourFormatter, stream_supports_colour
@@ -8,11 +9,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'data', 'logs', 'discordgsm.log')
-file_handler = TimedRotatingFileHandler(filename, when='D', encoding='utf-8')
+# Create logs directory
+log_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'data', 'logs')
+Path(log_path).mkdir(parents=True, exist_ok=True)
+
+# Set up TimedRotatingFileHandler
+file_handler = TimedRotatingFileHandler(os.path.join(log_path, 'discordgsm.log'), when='D', encoding='utf-8')
 file_handler.namer = lambda name: name.replace('.log', '') + '.log'
 utils.setup_logging(handler=file_handler, root=True)
 
+# Set up logger
 handler = logging.StreamHandler()
 
 if isinstance(handler, logging.StreamHandler) and stream_supports_colour(handler.stream):

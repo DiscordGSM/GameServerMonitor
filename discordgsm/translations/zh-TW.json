@@ -86,6 +86,7 @@
     "embed.field.presence.name": "在線",
     "embed.field.members.name": "成員",
     "embed.field.player_list.name": "玩家列表",
+    "embed.field.bot_list.name": "Bot List",
     "embed.field.footer.last_update": "最後更新：{last_update}",
     "style.extra_small.display_name": "超小型",
     "style.extra_small.description": "顯示較少信息的超小型主題。",
@@ -94,5 +95,7 @@
     "style.medium.display_name": "中型",
     "style.medium.description": "顯示遊戲伺服器信息的中型主題。",
     "style.large.display_name": "大型",
-    "style.large.description": "顯示服務器信息和玩家列表的大型主題。"
+    "style.large.description": "顯示服務器信息和玩家列表的大型主題。",
+    "style.extra_large.display_name": "Extra Large",
+    "style.extra_large.description": "An extra large-sized style that shows with bot list."
 }

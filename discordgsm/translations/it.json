@@ -86,6 +86,7 @@
     "embed.field.presence.name": "Presence",
     "embed.field.members.name": "Members",
     "embed.field.player_list.name": "Player List",
+    "embed.field.bot_list.name": "Bot List",
     "embed.field.footer.last_update": "Last update: {last_update}",
     "style.extra_small.display_name": "Extra Small",
     "style.extra_small.description": "An extra small-sized style that shows less information.",
@@ -94,5 +95,7 @@
     "style.medium.display_name": "Medium",
     "style.medium.description": "A medium-sized style that shows server information.",
     "style.large.display_name": "Large",
-    "style.large.description": "A large-sized style that shows server info and player list."
+    "style.large.description": "A large-sized style that shows server info and player list.",
+    "style.extra_large.display_name": "Extra Large",
+    "style.extra_large.description": "An extra large-sized style that shows with bot list."
 }

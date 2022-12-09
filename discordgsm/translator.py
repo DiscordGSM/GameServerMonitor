@@ -3,7 +3,7 @@ import os
 import sys
 from argparse import ArgumentParser
 from collections import OrderedDict
-from typing import Dict, Optional
+from typing import Dict, Optional, OrderedDict
 
 from discord import Locale, app_commands
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
             enUS: OrderedDict[str, str] = json.loads(f.read(), object_pairs_hook=OrderedDict)
 
         for locale in Locale:
-            results: OrderedDict[str, str] = {}
+            results: OrderedDict[str, str] = OrderedDict()
             translation = translations[locale.value]
 
             for key, value in enUS.items():

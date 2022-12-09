@@ -86,6 +86,7 @@
     "embed.field.presence.name": "Presença",
     "embed.field.members.name": "Membros",
     "embed.field.player_list.name": "Lista de jogadores",
+    "embed.field.bot_list.name": "Bot List",
     "embed.field.footer.last_update": "Última atualização: {last_update}",
     "style.extra_small.display_name": "Muito pequeno",
     "style.extra_small.description": "Um estilo muito pequeno que mostra menos informações do servidor.",
@@ -94,5 +95,7 @@
     "style.medium.display_name": "Médio",
     "style.medium.description": "Um estilo de tamanho médio que exibe informações do servidor.",
     "style.large.display_name": "Grande",
-    "style.large.description": "Um estilo de tamanho grande que mostra informações do servidor e lista de jogadores."
+    "style.large.description": "Um estilo de tamanho grande que mostra informações do servidor e lista de jogadores.",
+    "style.extra_large.display_name": "Extra Large",
+    "style.extra_large.description": "An extra large-sized style that shows with bot list."
 }

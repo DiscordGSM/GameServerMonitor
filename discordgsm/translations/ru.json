@@ -86,6 +86,7 @@
     "embed.field.presence.name": "Присутствие",
     "embed.field.members.name": "Участники",
     "embed.field.player_list.name": "Список игроков",
+    "embed.field.bot_list.name": "Bot List",
     "embed.field.footer.last_update": "Последнее обновление: {last_update}",
     "style.extra_small.display_name": "Очень маленький",
     "style.extra_small.description": "Очень маленький стиль, который показывает меньше информации.",
@@ -94,5 +95,7 @@
     "style.medium.display_name": "Средний",
     "style.medium.description": "Стиль среднего размера, отображает информацию о сервере.",
     "style.large.display_name": "Большой",
-    "style.large.description": "Стиль большого размера, отображает информацию о сервере и список игроков."
+    "style.large.description": "Стиль большого размера, отображает информацию о сервере и список игроков.",
+    "style.extra_large.display_name": "Extra Large",
+    "style.extra_large.description": "An extra large-sized style that shows with bot list."
 }

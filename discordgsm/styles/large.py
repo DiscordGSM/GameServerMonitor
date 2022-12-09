@@ -1,10 +1,13 @@
+from typing import List
+
 from discord import Embed
+
+from discordgsm.gamedig import GamedigPlayer
 from discordgsm.styles.medium import Medium
-from discordgsm.styles.style import Style
 from discordgsm.translator import t
 
 
-class Large(Medium, Style):
+class Large(Medium):
     """Large style"""
 
     @property
@@ -17,13 +20,18 @@ class Large(Medium, Style):
 
     def embed(self) -> Embed:
         embed = super().embed()
-        empty_value = '*​*'
         field_name = t(f"embed.field.{'members' if self.server.game_id == 'discord' else 'player_list'}.name", self.locale)
-        players = [player for player in self.server.result['players'] if player['name'].strip()]
-        players = sorted(players, key=lambda player: player['name'])
+        self.add_player_list_fields(embed, field_name, self.server.result['players'])
+
+        return embed
+
+    def add_player_list_fields(self, embed: Embed, field_name: str, players: List[GamedigPlayer]):
+        empty_value = '*​*'
+        filtered_players = [player for player in players if player['name'].strip()]
+        filtered_players = sorted(filtered_players, key=lambda player: player['name'])
         values = ['', '', '']
 
-        for i, player in enumerate(players):
+        for i, player in enumerate(filtered_players):
             name = player['name'].ljust(23)[:23]
 
             if len(player['name']) > 23:

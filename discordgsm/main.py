@@ -17,9 +17,9 @@ from dotenv import load_dotenv
 from discordgsm.gamedig import GamedigGame
 from discordgsm.logger import Logger
 from discordgsm.server import Server
-from discordgsm.service import (ZoneInfo, database, gamedig, invite_link,
-                                public, timezones, whitelist_guilds)
-from discordgsm.styles.style import Style
+from discordgsm.service import (database, gamedig, invite_link, public,
+                                timezones, tz, whitelist_guilds)
+from discordgsm.styles import Styles
 from discordgsm.translator import Translator, t
 from discordgsm.version import __version__
 
@@ -27,9 +27,6 @@ load_dotenv()
 
 # Create table here because it will cause thread issue on service.py
 database.create_table_if_not_exists()
-
-styles = {style.__name__: style for style in Style.__subclasses__()}
-"""DiscordGSM styles"""
 
 messages: Dict[int, Message] = {}
 """DiscordGSM messages cache"""
@@ -191,11 +188,11 @@ def alert_embed(server: Server, alert: Alert):
     embed = Embed(description=description, color=color)
     embed.set_author(name=title)
 
-    style = styles['Medium'](server)
+    style = Styles.get(server, 'Medium')
     style.add_game_field(embed)
     style.add_address_field(embed)
 
-    query_time = datetime.now(tz=ZoneInfo(server.style_data.get('timezone', 'Etc/UTC'))).strftime('%Y-%m-%d %I:%M:%S%p')
+    query_time = datetime.now(tz=tz(server.style_data.get('timezone', 'Etc/UTC'))).strftime('%Y-%m-%d %I:%M:%S%p')
     query_time = t('embed.alert.footer.query_time', locale).format(query_time=query_time)
     icon_url = 'https://avatars.githubusercontent.com/u/61296017'
     embed.set_footer(text=f'DiscordGSM {__version__} | {query_time}', icon_url=icon_url)
@@ -299,7 +296,7 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
 
         # Create new server object
         server = Server.new(interaction.guild_id, interaction.channel_id, game_id, address, query_port, query_extra, result)
-        style = styles['Medium'](server)
+        style = Styles.get(server, 'Medium')
         server.style_id = style.id
         server.style_data = await style.default_style_data(None)
 
@@ -475,17 +472,17 @@ async def command_changestyle(interaction: Interaction, address: str, query_port
     Logger.command(interaction, address=address, query_port=query_port)
 
     if server := await find_server(interaction, address, query_port):
-        current_style = styles.get(server.style_id, styles['Medium'])(server)
+        current_style = Styles.get(server)
         options = []
 
-        for style_id in styles:
-            style = styles[style_id](server)
-            options.append(SelectOption(label=style.display_name, value=style_id, description=style.description, emoji=style.emoji, default=style_id == current_style.id))
+        for style_type in Styles.types():
+            style = style_type(server)
+            options.append(SelectOption(label=style.display_name, value=style.id, description=style.description, emoji=style.emoji, default=style.id == current_style.id))
 
         select = Select(options=options)
 
         async def select_callback(interaction: Interaction):
-            if select.values[0] not in styles:
+            if not Styles.contains(select.values[0]):
                 return
 
             await interaction.response.defer(ephemeral=True)
@@ -511,7 +508,7 @@ async def command_editstyledata(interaction: Interaction, address: str, query_po
     Logger.command(interaction, address=address, query_port=query_port)
 
     if server := await find_server(interaction, address, query_port):
-        style = styles.get(server.style_id, styles['Medium'])(server)
+        style = Styles.get(server)
         title = t('command.editstyledata.modal.title', interaction.locale).format(address=server.address, query_port=server.query_port)
         modal = Modal(title=title)
         edit_fields = style.default_edit_fields
@@ -828,7 +825,7 @@ async def resend_channel_messages(interaction: Optional[Interaction], channel_id
 
     async for chunks in to_chunks(servers, 10):
         try:
-            message = await channel.send(embeds=[styles.get(server.style_id, styles['Medium'])(server).embed() for server in chunks])
+            message = await channel.send(embeds=[Styles.get(server).embed() for server in chunks])
         except discord.Forbidden as e:
             # You do not have the proper permissions to send the message.
             Logger.error(f'Channel {channel.id} send_message discord.Forbidden {e}')
@@ -996,7 +993,7 @@ async def edit_message(servers: List[Server]):
 
     if message := await fetch_message(servers[0]):
         try:
-            embeds = [styles.get(server.style_id, styles['Medium'])(server).embed() for server in servers]
+            embeds = [Styles.get(server).embed() for server in servers]
             message = await asyncio.wait_for(message.edit(embeds=embeds), timeout=float(os.getenv('TASK_EDIT_MESSAGE_TIMEOUT', '3')))
             Logger.debug(f'Edit messages: {message.id} success')
             return True

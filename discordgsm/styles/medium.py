@@ -2,6 +2,7 @@ from typing import Dict
 
 from discord import Embed
 from discord.ui import TextInput
+
 from discordgsm.styles.style import Style
 from discordgsm.translator import t
 

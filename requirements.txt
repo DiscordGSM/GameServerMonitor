@@ -6,4 +6,4 @@ opengsq>=1.4.3
 psycopg2-binary==2.9.4
 python-dotenv==0.21.0
 pywin32>=305;platform_system=="Windows"
-tzdata>=2022.6;platform_system=="Windows"
+tzdata>=2022.6

@@ -6,8 +6,9 @@ from typing import Dict, Optional, Union
 import aiohttp
 from discord import Color, Embed, Emoji, Locale, PartialEmoji, TextStyle
 from discord.ui import TextInput
+
 from discordgsm.server import Server
-from discordgsm.service import ZoneInfo, gamedig
+from discordgsm.service import gamedig, tz
 from discordgsm.translator import t
 from discordgsm.version import __version__
 
@@ -135,7 +136,7 @@ class Style(ABC):
             advertisement = '🎉 Happy New Year!'
 
         time_format = '%Y-%m-%d %I:%M:%S%p' if int(self.server.style_data.get('clock_format', '12')) == 12 else '%Y-%m-%d %H:%M:%S'
-        last_update = datetime.now(tz=ZoneInfo(self.server.style_data.get('timezone', 'Etc/UTC'))).strftime(time_format)
+        last_update = datetime.now(tz=tz(self.server.style_data.get('timezone', 'Etc/UTC'))).strftime(time_format)
         last_update = t('embed.field.footer.last_update', self.locale).format(last_update=last_update)
         icon_url = 'https://avatars.githubusercontent.com/u/61296017'
         embed.set_footer(text=f'DiscordGSM {__version__} | {advertisement} | {last_update}', icon_url=icon_url)

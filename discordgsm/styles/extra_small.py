@@ -1,4 +1,5 @@
 from discord import Embed
+
 from discordgsm.styles.style import Style
 from discordgsm.translator import t
 

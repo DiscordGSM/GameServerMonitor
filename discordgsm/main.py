@@ -19,7 +19,7 @@ from discordgsm.logger import Logger
 from discordgsm.server import Server
 from discordgsm.service import (database, gamedig, invite_link, public,
                                 timezones, tz, whitelist_guilds)
-from discordgsm.styles import Styles
+from discordgsm.styles import Style, Styles
 from discordgsm.translator import Translator, t
 from discordgsm.version import __version__
 

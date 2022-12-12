@@ -1,4 +1,3 @@
-
 # id | pretty name for readme | protocol | options | extra
 
 7d2d|7 Days to Die (2013)|valve|port=26900,port_query_offset=1
@@ -31,6 +30,8 @@ baldursgate|Baldur's Gate (1998)|gamespy1|port=6073,port_query=1470
 barotrauma|Barotrauma (2019)|valve|port=27015,port_query_offset=1
 bat1944|Battalion 1944 (2018)|valve|port=7777,port_query_offset=3
 
+beyondthewire|Beyond the Wire|valve|port=7887,port_query=27165
+
 bf1942|Battlefield 1942 (2002)|gamespy1|port=14567,port_query=23000
 bfv|Battlefield Vietnam (2004)|gamespy2|port=15567,port_query=23000
 bf2|Battlefield 2 (2005)|gamespy3|port=16567,port_query=29900
@@ -41,7 +42,6 @@ bf4|Battlefield 4 (2013)|battlefield|port=25200,port_query_offset=22000
 bfh|Battlefield Hardline (2015)|battlefield|port=25200,port_query_offset=22000
 
 bm|Black Mesa (2015)|valve|port=27015
-bty|Beyond the Wire|valve|port=27015
 breach|Breach (2011)|valve|port=27016
 breed|Breed (2004)|gamespy2|port=7649
 brink|Brink (2011)|valve|port_query_offset=1
@@ -101,6 +101,9 @@ doi|Day of Infamy (2017)|valve|port=27015
 doom3|Doom 3 (2004)|doom3|port=27666
 dota2|Dota 2 (2013)|valve|port=27015
 drakan|Drakan: Order of the Flame (1999)|gamespy1|port=27045,port_query_offset=1
+
+eco|ECO|eco|port=3001
+
 empyrion|Empyrion - Galactic Survival (2015)|valve|port=30000,port_query_offset=1
 etqw|Enemy Territory: Quake Wars (2007)|doom3|port=3074,port_query=27733
 fear|F.E.A.R. (2005)|gamespy2|port_query=27888

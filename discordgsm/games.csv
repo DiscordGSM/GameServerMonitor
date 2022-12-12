@@ -1,5 +1,7 @@
-Id, Name, Protocol, Options, Extra
+Id, Name, Protocol, Options
+
 7d2d,7 Days to Die (2013),valve,port=26900;port_query_offset=1
+
 ageofchivalry,Age of Chivalry (2007),valve,port=27015
 aoe2,Age of Empires 2 (1999),ase,port_query=27224
 alienarena,Alien Arena (2004),quake2,port_query=27910
@@ -19,6 +21,7 @@ arma2oa,ARMA 2: Operation Arrowhead (2010),valve,port=2302;port_query_offset=1
 armacwa,ARMA: Cold War Assault (2011),gamespy1,port=2302;port_query_offset=1
 armar,ARMA: Resistance (2011),gamespy1,port=2302;port_query_offset=1
 arma3,ARMA 3 (2013),valve,port=2302;port_query_offset=1
+
 baldursgate,Baldur's Gate (1998),gamespy1,port=6073;port_query=1470
 barotrauma,Barotrauma (2019),valve,port=27015;port_query_offset=1
 bat1944,Battalion 1944 (2018),valve,port=7777;port_query_offset=3
@@ -35,6 +38,7 @@ bm,Black Mesa (2015),valve,port=27015
 breach,Breach (2011),valve,port=27016
 breed,Breed (2004),gamespy2,port=7649
 brink,Brink (2011),valve,port_query_offset=1
+
 cod,Call of Duty (2003),quake3,port=28960
 coduo,Call of Duty: United Offensive (2004),quake3,port=28960
 cod2,Call of Duty 2 (2005),quake3,port=28960
@@ -56,11 +60,12 @@ cs15,Counter-Strike 1.5 (2002),goldsrc,port=27015
 cs16,Counter-Strike 1.6 (2003),valve,port=27015
 cscz,Counter-Strike: Condition Zero (2004),valve,port=27015
 css,Counter-Strike: Source (2004),valve,port=27015
-csgo,Counter-Strike: Global Offensive (2012),valve,port=27015,doc_notes=csgo
+csgo,Counter-Strike: Global Offensive (2012),valve,port=27015
 crossracing,Cross Racing Championship Extreme 2005 (2005),ase,port=12321;port_query_offset=123
 crysis,Crysis (2007),gamespy3,port=64087
 crysiswars,Crysis Wars (2008),gamespy3,port=64100
 crysis2,Crysis 2 (2011),gamespy3,port=64000
+
 daikatana,Daikatana (2000),quake2,port=27982;port_query_offset=10
 dmomam,Dark Messiah of Might and Magic (2006),valve,port=27015
 darkesthour,Darkest Hour: Europe '44-'45 (2008),unreal2,port=7757;port_query_offset=1
@@ -75,7 +80,7 @@ deusex,Deus Ex (2000),gamespy2,port=7791;port_query_offset=1
 devastation,Devastation (2003),unreal2,port=7777;port_query_offset=1
 dinodday,Dino D-Day (2011),valve,port=27015
 dirttrackracing2,Dirt Track Racing 2 (2002),gamespy1,port=32240;port_query_offset=-100
-discord,Discord,discord,,doc_notes=discord
+discord,Discord,discord,
 dnl,Dark and Light (2017),valve,port=7777;port_query=27015
 dod,Day of Defeat (2003),valve,port=27015
 dods,Day of Defeat: Source (2005),valve,port=27015
@@ -83,9 +88,11 @@ doi,Day of Infamy (2017),valve,port=27015
 doom3,Doom 3 (2004),doom3,port=27666
 dota2,Dota 2 (2013),valve,port=27015
 drakan,Drakan: Order of the Flame (1999),gamespy1,port=27045;port_query_offset=1
+
 eco,ECO,eco,port=3001
 empyrion,Empyrion - Galactic Survival (2015),valve,port=30000;port_query_offset=1
 etqw,Enemy Territory: Quake Wars (2007),doom3,port=3074;port_query=27733
+
 fear,F.E.A.R. (2005),gamespy2,port_query=27888
 f12002,Formula One 2002 (2002),gamespy1,port_query=3297
 f1c9902,F1 Challenge '99-'02 (2002),gamespy1,port_query=34397
@@ -97,6 +104,7 @@ flashpointresistance,Operation Flashpoint: Resistance (2002),gamespy1,port=2302;
 fivem,Grand Theft Auto V - FiveM (2013),fivem,port=30120
 forrest,The Forrest (2014),valve,port=27015;port_query_offset=1
 fs22,Farming Simulator 22 (2021),valve,port=27015
+
 garrysmod,Garry's Mod (2004),valve,port=27015
 graw,Tom Clancy's Ghost Recon Advanced Warfighter (2006),gamespy2,port_query=15250
 graw2,Tom Clancy's Ghost Recon Advanced Warfighter 2 (2007),gamespy2,port_query=16250
@@ -106,6 +114,7 @@ ges,GoldenEye: Source (2010),valve,port=27015
 gore,Gore: Ultimate Soldier (2002),gamespy1,port=27777;port_query_offset=1
 groundbreach,Ground Breach (2018),valve,port=27015
 gunmanchronicles,Gunman Chronicles (2000),valve,port=27015
+
 hldm,Half-Life Deathmatch (1998),valve,port=27015
 hldms,Half-Life Deathmatch: Source (2005),valve,port=27015
 hl2dm,Half-Life 2: Deathmatch (2004),valve,port=27015
@@ -119,20 +128,25 @@ had2,Hidden & Dangerous 2 (2003),gamespy1,port=11001;port_query_offset=3
 homefront,Homefront (2011),valve,port=27015
 homeworld2,Homeworld 2 (2003),gamespy1,port_query=6500
 hurtworld,Hurtworld (2015),valve,port=12871;port_query=12881
+
 igi2,I.G.I.-2: Covert Strike (2003),gamespy1,port_query=26001
 il2,IL-2 Sturmovik (2001),gamespy1,port_query=21000
 insurgency,Insurgency (2014),valve,port=27015
 insurgencysandstorm,Insurgency: Sandstorm (2018),valve,port=27015;port_query_offset=1
 ironstorm,Iron Storm (2002),gamespy1,port_query=3505
+
 jamesbondnightfire,James Bond 007: Nightfire (2002),gamespy1,port_query=6550
 jc3mp,Just Cause 3 - Multiplayer (2017),valve,port=4200;port_query_offset=1
+
 killingfloor,Killing Floor (2009),unreal2,port=7707;port_query_offset=1
 killingfloor2,Killing Floor 2 (2016),valve,port=7777;port_query=27015
 kingpin,Kingpin: Life of Crime (1999),gamespy1,port=31510;port_query_offset=-10
 kisspc,Kiss: Psycho Circus: The Nightmare Child (2000),gamespy1,port=7777;port_query_offset=1
 kzmod,Kreedz Climbing (2017),valve,port=27015
+
 left4dead,Left 4 Dead (2008),valve,port=27015
 left4dead2,Left 4 Dead 2 (2009),valve,port=27015
+
 medievalengineers,Medieval Engineers (2015),valve,port=27015
 mohaa,Medal of Honor: Allied Assault (2002),gamespy1,port=12203;port_query_offset=97
 mohsh,Medal of Honor: Allied Assault Spearhead (2002),gamespy1,port=12203;port_query_offset=97
@@ -147,6 +161,7 @@ mnc,Monday Night Combat (2011),valve,port=7777;port_query=27016
 mordhau,Mordhau (2019),valve,port=7777;port_query=27015
 mtavc,Grand Theft Auto: Vice City - Multi Theft Auto (2002),ase,port=22003;port_query_offset=123
 mtasa,Grand Theft Auto: San Andreas - Multi Theft Auto (2004),ase,port=22003;port_query_offset=123
+
 nascarthunder2004,NASCAR Thunder 2004 (2003),gamespy2,port_query=13333
 netpanzer,netPanzer (2002),gamespy1,port=3030
 nmrih,No More Room in Hell (2011),valve,port=27015
@@ -161,7 +176,9 @@ nitrofamily,Nitro Family (2004),gamespy1,port_query=25601
 nolf,The Operative: No One Lives Forever (2000),gamespy1,port_query=27888
 nolf2,No One Lives Forever 2: A Spy in H.A.R.M.'s Way (2002),gamespy1,port_query=27890
 nucleardawn,Nuclear Dawn (2011),valve,port=27015
+
 openarena,OpenArena (2005),quake3,port_query=27960
+
 painkiller,Painkiller,ase,port=3455;port_query_offset=123
 pixark,PixARK (2018),valve,port=7777;port_query=27015
 ps,Post Scriptum,valve,port=10027;port_query=10037
@@ -170,11 +187,13 @@ prey,Prey,doom3,port=27719
 primalcarnage,Primal Carnage: Extinction,valve,port=7777;port_query=27015
 prbf2,Project Reality: Battlefield 2 (2005),gamespy3,port=16567;port_query=29900
 przomboid,Project Zomboid,valve,port=16261
+
 quake1,Quake 1: QuakeWorld (1996),quake1,port=27500
 quake2,Quake 2 (1997),quake2,port=27910
 quake3,Quake 3: Arena (1999),quake3,port=27960
 quake4,Quake 4 (2005),doom3,port=28004
 quakelive,Quake Live (2010),valve,port=27960
+
 ragdollkungfu,Rag Doll Kung Fu,valve,port=27015
 r6,Rainbow Six,gamespy1,port_query=2348
 r6roguespear,Rainbow Six 2: Rogue Spear,gamespy1,port_query=2346
@@ -191,6 +210,7 @@ riseofnations,Rise of Nations,gamespy1,port_query=6501
 rs2,Rising Storm 2: Vietnam,valve,port=27015
 rune,Rune,gamespy1,port=7777;port_query_offset=1
 rust,Rust,valve,port=28015
+
 samp,San Andreas Multiplayer,samp,port=7777
 spaceengineers,Space Engineers,valve,port=27015
 ss,Serious Sam,gamespy1,port=25600;port_query_offset=1
@@ -218,14 +238,15 @@ suicidesurvival,Suicide Survival,valve,port=27015
 swat4,SWAT 4,gamespy2,port=10480;port_query_offset=2
 svencoop,Sven Coop,valve,port=27015
 synergy,Synergy,valve,port=27015
+
 tacticalops,Tactical Ops,gamespy1,port=7777;port_query_offset=1
 takeonhelicopters,Take On Helicopters (2011),gamespy1,port=2302;port_query_offset=1
 teamfactor,Team Factor,gamespy1,port_query=57778
 tfc,Team Fortress Classic,valve,port=27015
 tf2,Team Fortress 2,valve,port=27015
-teamspeak3,Teamspeak 3,teamspeak3,port=9987,doc_notes=teamspeak3
+teamspeak3,Teamspeak 3,teamspeak3,port=9987
 terminus,Terminus,gamespy1,port_query=12286
-terraria,Terraria - TShock (2011),terraria,port=7777;port_query_offset=101,doc_notes=terraria
+terraria,Terraria - TShock (2011),terraria,port=7777;port_query_offset=101
 theisle,The Isle (2015),valve,port_query=7778
 thps3,Tony Hawk's Pro Skater 3,gamespy1,port_query=6500
 thps4,Tony Hawk's Pro Skater 4,gamespy1,port_query=6500
@@ -235,6 +256,7 @@ tremulous,Tremulous,quake3,port_query=30720
 tribesvengeance,Tribes: Vengeance,gamespy2,port=7777;port_query_offset=1
 tron20,Tron 2.0,gamespy2,port_query=27888
 turok2,Turok 2,gamespy1,port_query=12880
+
 universalcombat,Universal Combat,ase,port=1135;port_query_offset=123
 unreal,Unreal,gamespy1,port=7777;port_query_offset=1
 unturned,unturned,valve,port=27015;port_query_offset=1
@@ -243,16 +265,20 @@ ut2003,Unreal Tournament 2003,unreal2,port=7757;port_query_offset=1
 ut2004,Unreal Tournament 2004,unreal2,port=7777;port_query_offset=1
 ut3,Unreal Tournament 3,ut3,port=7777;port_query_offset=-1277
 urbanterror,Urban Terror,quake3,port_query=27960
+
 v8supercar,V8 Supercar Challenge,gamespy1,port_query=16700
-valheim,Valheim (2021),valve,port=2456;port_query_offset=1,doc_notes=valheim
+valheim,Valheim (2021),valve,port=2456;port_query_offset=1
 vcmp,Vice City Multiplayer,vcmp,port=8192
 vietcong,Vietcong,gamespy1,port=5425;port_query=15425
 vietcong2,Vietcong 2,gamespy2,port=5001;port_query=19967
 vrising,V Rising,valve,port=9876;port_query=9877
+
 warsow,Warsow,quake3,port=44400
 wheeloftime,Wheel of Time,gamespy1,port=7777;port_query_offset=1
 wolfenstein2009,Wolfenstein 2009,doom3,port=27666
 wolfensteinet,Wolfenstein: Enemy Territory,quake3,port_query=27960
+
 xpandrally,Xpand Rally,ase,port=28015;port_query_offset=123
+
 zombiemaster,Zombie Master,valve,port=27015
 zps,Zombie Panic: Source,valve,port=27015

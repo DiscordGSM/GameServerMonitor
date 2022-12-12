@@ -46,7 +46,7 @@ class InvalidGameException(Exception):
 class Gamedig:
     def __init__(self):
         path = os.path.dirname(os.path.realpath(__file__))
-        self.games = Gamedig.__load_games(os.path.join(path, 'games.txt'))
+        self.games = Gamedig.__load_games(os.path.join(path, 'games.csv'))
 
     @staticmethod
     def __load_games(path: str):
@@ -56,19 +56,19 @@ class Gamedig:
             data = {}
 
             if len(row) > 0:
-                for item in row.split(','):
+                for item in row.split(';'):
                     results = item.split('=')
                     data[results[0]] = results[1]
 
             return data
 
         with open(path, 'r', encoding='utf8') as f:
-            reader = csv.reader(f, delimiter='|')
+            reader = csv.reader(f, delimiter=',')
             next(reader, None)
 
             for row in reader:
                 if len(row) > 0 and not row[0].startswith('#'):
-                    id = row[0].split(',')[0]
+                    id = row[0].split(';')[0]
                     options = len(row) > 3 and row_to_dict(row[3]) or {}
                     extra = len(row) > 4 and row_to_dict(row[4]) or {}
                     games[id] = GamedigGame(id=id, fullname=row[1], protocol=row[2], options=options, extra=extra)

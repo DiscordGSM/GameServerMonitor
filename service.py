@@ -15,12 +15,12 @@ path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)))
 venv = os.getenv('VIRTUAL_ENV', os.path.join(path, 'venv'))
 site.addsitedir(os.path.join(venv, 'Lib', 'site-packages'))
 
-import win32serviceutil
+import win32serviceutil  # noqa: E402
 
 # Set working directory
 os.chdir(path)
 
-from discordgsm import client
+from discordgsm import client  # noqa: E402
 
 
 class WindowsService(win32serviceutil.ServiceFramework):

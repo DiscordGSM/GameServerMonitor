@@ -86,7 +86,7 @@
     "embed.field.presence.name": "在线",
     "embed.field.members.name": "成员",
     "embed.field.player_list.name": "玩家列表",
-    "embed.field.bot_list.name": "Bot List",
+    "embed.field.bot_list.name": "机器人列表",
     "embed.field.footer.last_update": "最后更新：{last_update}",
     "style.extra_small.display_name": "超小型",
     "style.extra_small.description": "显示较少信息的超小型主题。",
@@ -96,6 +96,6 @@
     "style.medium.description": "显示游戏服务器信息的中型主题。",
     "style.large.display_name": "大型",
     "style.large.description": "显示服务器信息和玩家列表的大型主题。",
-    "style.extra_large.display_name": "Extra Large",
-    "style.extra_large.description": "An extra large-sized style that shows with bot list."
+    "style.extra_large.display_name": "超大型",
+    "style.extra_large.description": "显示机器人列表的超大型主题。"
 }

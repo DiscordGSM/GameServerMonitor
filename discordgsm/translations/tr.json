@@ -96,6 +96,6 @@
     "style.medium.description": "Sunucu bilgilerini gösteren orta boyutlu bir stil.",
     "style.large.display_name": "Büyük",
     "style.large.description": "Sunucu bilgilerini ve oyuncu listesini gösteren büyük boyutlu bir stil.",
-    "style.extra_large.display_name": "Extra Large",
-    "style.extra_large.description": "An extra large-sized style that shows with bot list."
+    "style.extra_large.display_name": "Ekstra Büyük",
+    "style.extra_large.description": "Bot listesiyle gösterilen ekstra büyük boyutlu bir stil."
 }

@@ -35,7 +35,7 @@ Feel free to contribute! Learn more: [Contributor's Guide: Adding Translations](
 
 | Language Name | Native Name | Supported | Locale File | Contributors |
 | ------------- | ----------- | --------- | ----------- | ------------ |
-| <img src="https://discordgsm.com/images/flags/da.png" width=20 /> Danish | Dansk | ❌ | [da.json](/discordgsm/translations/da.json) | [@XiqZo](https://github.com/XiqZo) |
+| <img src="https://discordgsm.com/images/flags/da.png" width=20 /> Danish | Dansk | ✔️ | [da.json](/discordgsm/translations/da.json) | [@XiqZo](https://github.com/XiqZo) |
 | <img src="https://discordgsm.com/images/flags/de.png" width=20 /> German | Deutsch | ✔️ | [de.json](/discordgsm/translations/de.json) | [@rohere58](https://github.com/rohere58) |
 | <img src="https://discordgsm.com/images/flags/en-GB.png" width=20 /> English, UK | English, UK | ✔️ | [en-GB.json](/discordgsm/translations/en-GB.json) | [@BattlefieldDuck](https://github.com/BattlefieldDuck) |
 | <img src="https://discordgsm.com/images/flags/en-US.png" width=20 /> English, US | English, US | ✔️ | [en-US.json](/discordgsm/translations/en-US.json) | [@BattlefieldDuck](https://github.com/BattlefieldDuck) |

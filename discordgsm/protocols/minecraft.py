@@ -28,6 +28,7 @@ class Minecraft(Protocol):
 
         name = '\n'.join(row.strip() for row in name.split('\n'))
         players = [{'name': player.get('name', ''), 'raw': player} for player in status.get('players', {}).get('sample', [])]
+        status.pop('favicon', None)
 
         result: GamedigResult = {
             'name': name,

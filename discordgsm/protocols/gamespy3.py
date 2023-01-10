@@ -22,6 +22,8 @@ class GameSpy3(Protocol):
             'name': info.get('hostname', ''),
             'map': info.get('mapname', info.get('map', '')),
             'password': int(info.get('password', '0')) != 0,
+            'numplayers': int(info['numplayers']),
+            'numbots': 0,
             'maxplayers': int(info['maxplayers']),
             'players': [{'name': player['player'], 'raw': player} for player in players],
             'bots': [],

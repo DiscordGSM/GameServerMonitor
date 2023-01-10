@@ -27,19 +27,20 @@ class Minecraft(Protocol):
             name = ''.join(data.get('text', '') for data in status['description']['extra'])
 
         name = '\n'.join(row.strip() for row in name.split('\n'))
+        players = [{'name': player.get('name', ''), 'raw': player} for player in status.get('players', {}).get('sample', [])]
 
         result: GamedigResult = {
             'name': name,
             'map': '',
             'password': False,
+            'numplayers': int(status.get('players', {}).get('online', '0')),
+            'numbots': 0,
             'maxplayers': int(status.get('players', {}).get('max', '0')),
-            'players': [{'name': player.get('name', ''), 'raw': player} for player in status.get('players', {}).get('sample', [])],
+            'players': players,
             'bots': [],
             'connect': f'{self.address}:{self.query_port}',
             'ping': ping,
             'raw': status
         }
-
-        result['raw']['numplayers'] = int(status.get('players', {}).get('online', '0'))
 
         return result

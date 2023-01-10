@@ -29,6 +29,8 @@ class Samp(Protocol):
             'name': status['servername'],
             'map': rules.get('mapname', ''),
             'password': status['password'] == 1,
+            'numplayers': len(players),
+            'numbots': 0,
             'maxplayers': status['maxplayers'],
             'players': [{'name': player['name'], 'raw': player} for player in players],
             'bots': [],

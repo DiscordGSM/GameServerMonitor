@@ -15,13 +15,16 @@ class AssettoCorsa(Protocol):
         start = time.time()
         info, data = await asyncio.gather(self.query_info(), self.query_json())
         ping = int((time.time() - start) * 1000)
+        players = [{'name': car['DriverName'], 'raw': car} for car in data['Cars'] if car['IsConnected']]
 
         result: GamedigResult = {
             'name': info['name'],
             'map': info['track'],
             'password': info['pass'],
+            'numplayers': len(players),
+            'numbots': 0,
             'maxplayers': info['maxclients'],
-            'players': [{'name': car['DriverName'], 'raw': car} for car in data['Cars'] if car['IsConnected']],
+            'players': players,
             'bots': [],
             'connect': f'{self.address}:{info["port"]}',
             'ping': ping,

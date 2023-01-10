@@ -22,6 +22,8 @@ class UT3(Protocol):
             'name': info['hostname'],
             'map': info['p1073741825'],
             'password': int(info['s7']) != 0,
+            'numplayers': len(players),
+            'numbots': 0,
             'maxplayers': int(info['maxplayers']),
             'players': [{'name': player['player'], 'raw': player} for player in players],
             'bots': [],

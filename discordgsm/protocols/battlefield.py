@@ -21,6 +21,8 @@ class Battlefield(Protocol):
             'name': info['hostname'],
             'map': info['map'],
             'password': info['password'],
+            'numplayers': info['numplayers'],
+            'numbots': 0,
             'maxplayers': info['maxplayers'],
             'players': [{'name': player['name'], 'raw': player} for player in players],
             'bots': [],

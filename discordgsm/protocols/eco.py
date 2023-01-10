@@ -28,14 +28,14 @@ class Eco(Protocol):
             'name': name,
             'map': '',
             'password': data['HasPassword'],
+            'numplayers': data['OnlinePlayers'],
+            'numbots': 0,
             'maxplayers': data['MaxActivePlayers'],
             'players': [{'name': player, 'raw': player} for player in data['OnlinePlayersNames']],
             'bots': [],
             'connect': data['JoinUrl'],
             'ping': ping,
-            'raw': {
-                'numplayers': data['OnlinePlayers'],
-            }
+            'raw': data
         }
 
         return result

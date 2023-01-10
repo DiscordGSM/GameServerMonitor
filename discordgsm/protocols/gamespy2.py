@@ -22,6 +22,8 @@ class GameSpy2(Protocol):
             'name': info['hostname'],
             'map': info['mapname'],
             'password': str(info['password']).lower() != 'false',
+            'numplayers': int(info['numplayers']),
+            'numbots': 0,
             'maxplayers': int(info['maxplayers']),
             'players': [{'name': player['player'], 'raw': player} for player in players],
             'bots': [],

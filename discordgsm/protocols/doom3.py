@@ -21,6 +21,8 @@ class Doom3(Protocol):
             'name': info.get('si_name', ''),
             'map': info.get('si_map', ''),
             'password': info.get('si_usepass', info.get('si_needPass', '0')) == 1,
+            'numplayers': int(players),
+            'numbots': 0,
             'maxplayers': int(info.get('si_maxplayers', info.get('si_maxPlayers', '0'))),
             'players': [{'name': player['name'], 'raw': player} for player in players],
             'bots': [],

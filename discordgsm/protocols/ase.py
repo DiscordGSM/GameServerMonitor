@@ -20,6 +20,8 @@ class ASE(Protocol):
             'name': status['hostname'],
             'map': status['map'] if status['map'] != 'None' else '',
             'password': int(status['password']) != 0,
+            'numplayers': int(status['numplayers']),
+            'numbots': 0,
             'maxplayers': int(status['maxplayers']),
             'players': [{'name': player['name'], 'raw': player} for player in status['players']],
             'bots': [],

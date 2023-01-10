@@ -29,6 +29,8 @@ class Vcmp(Protocol):
             'name': status['servername'],
             'map': status.get('language', ''),
             'password': status['password'] == 1,
+            'numplayers': len(players),
+            'numbots': 0,
             'maxplayers': status['maxplayers'],
             'players': players,
             'bots': [],

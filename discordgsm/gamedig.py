@@ -31,6 +31,8 @@ class GamedigResult(TypedDict):
     name: str
     map: str
     password: bool
+    numplayers: int
+    numbots: int
     maxplayers: int
     players: List[GamedigPlayer]
     bots: List[GamedigPlayer]

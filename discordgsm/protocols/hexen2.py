@@ -29,6 +29,8 @@ class Hexen2(Protocol):
             'name': info.get('hostname', info.get('sv_hostname', '')),
             'map': info.get('map', info.get('mapname', '')),
             'password': False,
+            'numplayers': len(players),
+            'numbots': len(bots),
             'maxplayers': int(info.get('sv_maxclients', info.get('maxclients', '0'))),
             'players': players,
             'bots': bots,

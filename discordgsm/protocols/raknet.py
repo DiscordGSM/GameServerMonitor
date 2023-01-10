@@ -20,6 +20,8 @@ class Raknet(Protocol):
             'name': status.get('motd_line_1', ''),
             'map': status.get('motd_line_2', ''),
             'password': False,
+            'numplayers': int(status.get('num_players', '')),
+            'numbots': 0,
             'maxplayers': int(status.get('max_players', '')),
             'players': [],
             'bots': [],
@@ -27,7 +29,5 @@ class Raknet(Protocol):
             'ping': ping,
             'raw': status
         }
-
-        result['raw']['numplayers'] = int(status.get('num_players', ''))
 
         return result

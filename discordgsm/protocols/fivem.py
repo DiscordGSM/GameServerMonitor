@@ -22,14 +22,14 @@ class FiveM(Protocol):
             'name': info.get('hostname', ''),
             'map': info.get('mapname', ''),
             'password': False,
+            'numplayers': int(info.get('clients', '0')),
+            'numbots': 0,
             'maxplayers': int(info.get('sv_maxclients', '0')),
             'players': [{'name': player['name'], 'raw': player} for player in players],
             'bots': [],
             'connect': f'{self.address}:{self.query_port}',
             'ping': ping,
-            'raw': {
-                'numplayers': int(info.get('clients', '0')),
-            }
+            'raw': info
         }
 
         return result

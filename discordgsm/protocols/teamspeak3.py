@@ -20,13 +20,16 @@ class Teamspeak3(Protocol):
         start = time.time()
         info, clients, channels = await asyncio.gather(teamspeak3.get_info(), teamspeak3.get_clients(), teamspeak3.get_channels())
         ping = int((time.time() - start) * 1000)
+        players = [{'name': player['client_nickname'], 'raw': player} for player in clients if player.get('client_type') == '0']
 
         result: GamedigResult = {
             'name': info.get('virtualserver_name', ''),
             'map': '',
             'password': int(info.get('virtualserver_flag_password', '0')) == 1,
+            'numplayers': len(players),
+            'numbots': 0,
             'maxplayers': int(info.get('virtualserver_maxclients', '0')),
-            'players': [{'name': player['client_nickname'], 'raw': player} for player in clients if player.get('client_type') == '0'],
+            'players': players,
             'bots': [],
             'connect': f'{self.address}:{self.query_port}',
             'ping': ping,

@@ -27,6 +27,8 @@ class Terraria(Protocol):
             'name': data['name'],
             'map': data['world'],
             'password': data['serverpassword'],
+            'numplayers': len(data['players']),
+            'numbots': 0,
             'maxplayers': data['maxplayers'],
             'players': [{'name': player['nickname'], 'raw': player} for player in data['players']],
             'bots': [],

@@ -22,6 +22,8 @@ class Unreal2(Protocol):
             'name': details['ServerName'],
             'map': details['MapName'],
             'password': False,
+            'numplayers': numplayers,
+            'numbots': 0,
             'maxplayers': int(details['MaxPlayers']),
             'players': [{'name': player['Name'], 'raw': player} for player in players],
             'bots': [],

@@ -24,14 +24,14 @@ class Discord:
             'name': data['name'],
             'map': '',
             'password': False,
+            'numplayers': data['presence_count'],
+            'numbots': 0,
             'maxplayers': -1,
             'players': [{'name': player['username'], 'raw': player} for player in data['members']],
             'bots': [],
             'connect': data['instant_invite'],
             'ping': ping,
-            'raw': {
-                'numplayers': data['presence_count'],
-            }
+            'raw': {}
         }
 
         return result

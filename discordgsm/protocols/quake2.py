@@ -26,6 +26,8 @@ class Quake2(Protocol):
             'name': info.get('hostname', info.get('sv_hostname', '')),
             'map': info.get('mapname', ''),
             'password': int(info.get('g_needpass', info.get('needpass', '0'))) == 1,
+            'numplayers': len(players),
+            'numbots': len(bots),
             'maxplayers': int(info.get('sv_maxclients', info.get('maxclients', '0'))),
             'players': players,
             'bots': bots,

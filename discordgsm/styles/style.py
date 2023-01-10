@@ -141,6 +141,16 @@ class Style(ABC):
         icon_url = 'https://avatars.githubusercontent.com/u/61296017'
         embed.set_footer(text=f'DiscordGSM {__version__} | {advertisement} | {last_update}', icon_url=icon_url)
 
+    def set_image_and_thumbnail(self, embed: Embed):
+        image_url = self.server.style_data.get('image_url', '')
+        thumbnail_url = self.server.style_data.get('thumbnail_url', '')
+
+        if image_url.startswith('http://') or image_url.startswith('https://'):
+            embed.set_image(url=image_url)
+
+        if thumbnail_url.startswith('http://') or thumbnail_url.startswith('https://'):
+            embed.set_thumbnail(url=thumbnail_url)
+
     @staticmethod
     def get_players_display_string(server: Server):
         if 'numplayers' in server.result:

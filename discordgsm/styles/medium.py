@@ -55,9 +55,7 @@ class Medium(Style):
             self.add_players_field(embed)
             embed.add_field(name='*​*', value='*​*', inline=True)
 
-        embed.set_image(url=self.server.style_data.get('image_url'))
-        embed.set_thumbnail(url=self.server.style_data.get('thumbnail_url'))
-
+        self.set_image_and_thumbnail(embed)
         self.set_footer(embed)
 
         return embed

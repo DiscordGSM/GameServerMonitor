@@ -143,8 +143,16 @@ class Style(ABC):
 
     @staticmethod
     def get_players_display_string(server: Server):
-        players = int(server.result.get('raw', {}).get('numplayers', len(server.result['players'])))
-        bots = int(server.result.get('raw', {}).get('numbots', len(server.result['bots'])))
+        if 'numplayers' in server.result:
+            players = int(server.result['numplayers'])
+        else:
+            players = int(server.result.get('raw', {}).get('numplayers', len(server.result['players'])))
+
+        if 'numbots' in server.result:
+            bots = int(server.result['numbots'])
+        else:
+            bots = int(server.result.get('raw', {}).get('numbots', len(server.result['bots'])))
+
         players_string = str(players)  # example: 20
 
         if bots > 0:

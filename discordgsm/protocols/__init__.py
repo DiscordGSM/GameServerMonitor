@@ -15,6 +15,7 @@ from .quake2 import Quake2
 from .quake3 import Quake3
 from .raknet import Raknet
 from .samp import Samp
+from .scum import Scum
 from .source import Source
 from .teamspeak3 import Teamspeak3
 from .terraria import Terraria
@@ -69,6 +70,8 @@ class Protocols:
             return Quake3(address, query_port)
         elif protocol_name == 'samp':
             return Samp(address, query_port)
+        elif protocol_name == 'scum':
+            return Scum(address, query_port)
         elif protocol_name == 'unreal2':
             return Unreal2(address, query_port)
         elif protocol_name == 'teamspeak3':

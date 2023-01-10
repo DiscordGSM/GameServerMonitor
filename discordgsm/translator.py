@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import json
 import os
 import sys
 from argparse import ArgumentParser
 from collections import OrderedDict
-from typing import Dict, Optional, OrderedDict
+from typing import Dict, Optional
 
 from discord import Locale, app_commands
 

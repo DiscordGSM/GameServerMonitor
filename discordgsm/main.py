@@ -322,6 +322,26 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
     return modal
 
 
+@tree.command(name='sponsor', description='Sponsor to DiscordGSM', guilds=whitelist_guilds)
+async def command_sponsor(interaction: Interaction):
+    """Sponsor to DiscordGSM"""
+    Logger.command(interaction)
+
+    title = 'DiscordGSM/GameServerMonitor'
+    description = \
+    """
+    Thank you for considering a DiscordGSM sponsorship!
+
+    DiscordGSM is a free and open-source solution to your discord server monitoring your game servers on Discord and tracking the live data of your game servers.
+
+    Your sponsorship helps us keep a team of maintainers actively working to improve DiscordGSM and ensure it stays up-to-date with the latest Discord changes.
+    """
+    embed = Embed(title=title, description=description, color=discord.Color.from_rgb(88, 101, 242))
+    embed.add_field(name='❤️ Github Sponsor', value='https://github.com/sponsors/DiscordGSM')
+    embed.add_field(name='⭐ Give us a star on Github', value='https://discordgsm.com/github')
+    await interaction.response.send_message(embed=embed)
+
+
 @tree.command(name='queryserver', description='command.queryserver.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
 @app_commands.describe(game_id='command.option.game_id')

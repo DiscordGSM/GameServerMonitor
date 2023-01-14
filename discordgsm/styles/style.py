@@ -75,6 +75,9 @@ class Style(ABC):
         game = gamedig.find(self.server.game_id)
         style_data = {'fullname': game['fullname'], 'locale': locale.value if locale else 'en-US'}
 
+        if self.server.game_id == 'gportal' and (key := self.server.result["raw"].get('key', None)):
+            style_data['fullname'] += f' ({key})'
+
         if self.server.game_id == 'discord' and self.server.result['connect']:
             style_data['description'] = t('embed.description.instant_invite', self.locale).format(url=self.server.result['connect'])
         elif gamedig.default_port(self.server.game_id) == 27015 and gamedig.game_port(self.server.result) == int(self.server.query_port):

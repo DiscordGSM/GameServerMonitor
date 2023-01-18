@@ -58,6 +58,9 @@ async def on_ready():
     Logger.info('Thank you for using Game Server Monitor, you may consider sponsoring us ♥.')
     Logger.info('Github Sponsors: https://github.com/sponsors/DiscordGSM')
 
+    if not public and not whitelist_guilds:
+        Logger.warning('Environment variable WHITELIST_GUILDS is empty! Please set the environment variable.')
+
     await sync_commands(whitelist_guilds)
     await tasks_fetch_messages()
 

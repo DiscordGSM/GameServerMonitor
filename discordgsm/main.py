@@ -195,7 +195,8 @@ def alert_embed(server: Server, alert: Alert):
     style.add_game_field(embed)
     style.add_address_field(embed)
 
-    query_time = datetime.now(tz=tz(server.style_data.get('timezone', 'Etc/UTC'))).strftime('%Y-%m-%d %I:%M:%S%p')
+    time_format = '%Y-%m-%d %I:%M:%S%p' if int(server.style_data.get('clock_format', '12')) == 12 else '%Y-%m-%d %H:%M:%S'
+    query_time = datetime.now(tz=tz(server.style_data.get('timezone', 'Etc/UTC'))).strftime(time_format)
     query_time = t('embed.alert.footer.query_time', locale).format(query_time=query_time)
     icon_url = 'https://avatars.githubusercontent.com/u/61296017'
     embed.set_footer(text=f'DiscordGSM {__version__} | {query_time}', icon_url=icon_url)

@@ -4,10 +4,10 @@ from .battlefield import Battlefield
 from .discord import Discord
 from .doom3 import Doom3
 from .fivem import FiveM
+from .redm import RedM
 from .gamespy1 import GameSpy1
 from .gamespy2 import GameSpy2
 from .gamespy3 import GameSpy3
-from .gportal import GPortal
 from .hexen2 import Hexen2
 from .minecraft import Minecraft
 from .eco import Eco
@@ -44,10 +44,10 @@ class Protocols:
             return Discord(address)
         elif kv['type'] == 'fivem':
             return FiveM(address, query_port)
+        elif kv['type'] == 'redm':
+            return RedM(address, query_port)
         elif kv['type'] == 'hexen2':
             return Hexen2(address, query_port)
-        elif kv['type'] == 'gportal':
-            return GPortal(address, query_port, str(kv['serverId']))
 
         if protocol_name == 'ase':
             return ASE(address, query_port)

@@ -66,8 +66,9 @@ class Server:
         style_data: dict = json.loads(row[12])
 
         if filter_secret:
+            # Filter key started with _ and filter the description since it may contain secrets
             query_extra = {k: v for k, v in query_extra.items() if not str(k).startswith('_')}
-            style_data = {k: v for k, v in style_data.items() if not str(k).startswith('_')}
+            style_data = {k: v for k, v in style_data.items() if not str(k).startswith('_') and k != 'description'}
 
         return Server(
             id=row[0],

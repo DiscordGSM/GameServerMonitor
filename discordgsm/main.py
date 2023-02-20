@@ -903,7 +903,7 @@ async def tasks_query():
     """Query servers (Scheduled)"""
     distinct_servers = database.distinct_servers()
     tasks = filtered_tasks(distinct_servers)
-    Logger.debug(f'Query servers: Tasks = {len(tasks)} servers. {len(distinct_servers) - len(tasks)} servers were filtered.')
+    Logger.info(f'Query servers: Tasks = {len(tasks)} servers. {len(distinct_servers) - len(tasks)} servers were filtered.')
 
     servers: List[Server] = []
 
@@ -922,10 +922,10 @@ async def tasks_query():
 
 def filtered_tasks(servers: List[Server]):
     tasks = []
-    days = timedelta(days=int(os.getenv('TASK_QUERY_DISABLE_DAYS', '30'))).total_seconds()
+    days = int(os.getenv('TASK_QUERY_DISABLE_DAYS', '30'))
 
     for server in servers:
-        raw = server.result.get('raw')
+        raw = server.result.get('raw', {})
 
         if '__offline_since' in raw and datetime.utcnow().timestamp() - int(raw['__offline_since']) >= timedelta(days=days).total_seconds():
             continue

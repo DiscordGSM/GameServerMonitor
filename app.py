@@ -64,8 +64,15 @@ if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
         return jsonify(data)
 
     @app.route('/api/v1/servers')
-    def servers():
-        return jsonify(Database().all_servers(filter_secret=True))
+    @app.route('/api/v1/servers/<game_id>')
+    def servers(game_id: str = None):
+        if game_id is None:
+            return jsonify(Database().all_servers(filter_secret=True))
+
+        if game_id not in gamedig.games:
+            return jsonify({'error': 'Invalid game id'})
+
+        return jsonify(Database().all_servers(game_id=game_id, filter_secret=True))
 
     @app.route('/api/v1/channels')
     @app.route('/api/v1/channels/<channel_id>')

@@ -116,7 +116,7 @@ class Database:
             'unique_servers': row[3],
         }
 
-    def all_servers(self, channel_id: int = None, guild_id: int = None, message_id: int = None, filter_secret: bool = False):
+    def all_servers(self, channel_id: int = None, guild_id: int = None, message_id: int = None, game_id: str = None, filter_secret: bool = False):
         """Get all servers"""
         cursor = self.conn.cursor()
 
@@ -126,6 +126,8 @@ class Database:
             cursor.execute(self.transform('SELECT * FROM servers WHERE guild_id = ? ORDER BY position'), (guild_id,))
         elif message_id:
             cursor.execute(self.transform('SELECT * FROM servers WHERE message_id = ? ORDER BY position'), (message_id,))
+        elif game_id:
+            cursor.execute(self.transform('SELECT * FROM servers WHERE game_id = ? ORDER BY id'), (game_id,))
         else:
             cursor.execute('SELECT * FROM servers ORDER BY position')
 

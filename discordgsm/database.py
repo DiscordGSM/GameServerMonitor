@@ -116,6 +116,14 @@ class Database:
             'unique_servers': row[3],
         }
 
+    def games_server_count(self):
+        cursor = self.conn.cursor()
+        cursor.execute(self.transform('SELECT game_id, COUNT(*) FROM servers GROUP BY game_id'))
+        server_count = {str(row[0]): int(row[1]) for row in cursor.fetchall()}
+        cursor.close()
+
+        return server_count
+
     def all_servers(self, channel_id: int = None, guild_id: int = None, message_id: int = None, game_id: str = None, filter_secret: bool = False):
         """Get all servers"""
         cursor = self.conn.cursor()

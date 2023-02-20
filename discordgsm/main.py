@@ -903,7 +903,8 @@ async def tasks_query():
     """Query servers (Scheduled)"""
     distinct_servers = database.distinct_servers()
     tasks = filtered_tasks(distinct_servers)
-    Logger.info(f'Query servers: Tasks = {len(tasks)} servers. {len(distinct_servers) - len(tasks)} servers were filtered.')
+    disabled = len(distinct_servers) - len(tasks)
+    Logger.debug(f'Query servers: Tasks = {len(tasks)} servers. {disabled} servers are disabled for queries.')
 
     servers: List[Server] = []
 
@@ -914,15 +915,20 @@ async def tasks_query():
 
     failed = sum(server.status is False for server in servers)
     success = len(servers) - failed
-    Logger.info(f'Query servers: Total = {len(servers)}, Success = {success}, Failed = {failed} ({len(servers) > 0 and int(failed / len(servers) * 100) or 0}% fail)')
+    percent = len(servers) > 0 and int(failed / len(servers) * 100) or 0
+    Logger.info(f'Query servers: Total = {len(servers)}, Success = {success}, Failed = {failed} ({percent}% fail) ({disabled} disabled)')
 
     # Run the tasks after the server queries
     await asyncio.gather(tasks_send_alert(), tasks_edit_messages(), tasks_presence_update(tasks_query.current_loop))
 
 
 def filtered_tasks(servers: List[Server]):
+    days = int(os.getenv('TASK_QUERY_DISABLE_AFTER_DAYS', '0'))
+
+    if days <= 0:
+        return [query_server(server) for server in servers]
+
     tasks = []
-    days = int(os.getenv('TASK_QUERY_DISABLE_DAYS', '30'))
 
     for server in servers:
         raw = server.result.get('raw', {})

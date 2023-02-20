@@ -206,6 +206,7 @@ redorchestra,Red Orchestra,unreal2,port=7758;port_query_offset=1
 redorchestraost,Red Orchestra: Ostfront 41-45,gamespy1,port=7757;port_query_offset=10
 redorchestra2,Red Orchestra 2,valve,port=7777;port_query=27015
 redline,Redline,gamespy1,port_query=25252
+redm, Red Dead Redemption - RedM (2016),redm,port=30120
 rtcw,Return to Castle Wolfenstein,quake3,port_query=27960
 ricochet,Ricochet,valve,port=27015
 riseofnations,Rise of Nations,gamespy1,port_query=6501

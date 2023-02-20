@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional
 
@@ -902,9 +902,9 @@ async def to_chunks(lst, n):
 async def tasks_query():
     """Query servers (Scheduled)"""
     distinct_servers = database.distinct_servers()
-    Logger.debug(f'Query servers: Tasks = {len(distinct_servers)} unique servers')
+    tasks = filtered_tasks(distinct_servers)
+    Logger.debug(f'Query servers: Tasks = {len(tasks)} servers. {len(distinct_servers) - len(tasks)} servers were filtered.')
 
-    tasks = [query_server(server) for server in distinct_servers]
     servers: List[Server] = []
 
     async for chunks in to_chunks(tasks, int(os.getenv('TASK_QUERY_CHUNK_SIZE', '50'))):
@@ -920,6 +920,20 @@ async def tasks_query():
     await asyncio.gather(tasks_send_alert(), tasks_edit_messages(), tasks_presence_update(tasks_query.current_loop))
 
 
+def filtered_tasks(servers: List[Server]):
+    tasks = []
+
+    for server in servers:
+        raw = server.result.get('raw')
+
+        if '__offline_since' in raw and datetime.utcnow().timestamp() - int(raw['__offline_since']) >= timedelta(days=int(os.getenv('TASK_QUERY_DISABLE_DAYS', '30'))):
+            continue
+
+        tasks.append(query_server(server))
+
+    return tasks
+
+
 async def query_server(server: Server):
     """Query server"""
     try:
@@ -932,8 +946,8 @@ async def query_server(server: Server):
         server.status = False
         raw = server.result.get('raw', {})
         server.result['raw']['__fail_query_count'] = int(raw.get('__fail_query_count', '0')) + 1
-        offline_since = int(datetime.utcnow().timestamp())
-        server.result['raw']['__offline_since'] = min(int(raw.get('__offline_since', offline_since)), offline_since)
+        timestamp = int(datetime.utcnow().timestamp())
+        server.result['raw']['__offline_since'] = min(int(raw.get('__offline_since', timestamp)), timestamp)
         Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Error: {e}')
 
     return server

@@ -107,7 +107,7 @@ forrest,The Forrest (2014),valve,port=27015;port_query_offset=1
 fs22,Farming Simulator 22 (2021),valve,port=27015
 
 garrysmod,Garry's Mod (2004),valve,port=27015
-gportal,GPORTAL,gportal
+gportal,GPORTAL,gportal,
 graw,Tom Clancy's Ghost Recon Advanced Warfighter (2006),gamespy2,port_query=15250
 graw2,Tom Clancy's Ghost Recon Advanced Warfighter 2 (2007),gamespy2,port_query=16250
 giantscitizenkabuto,Giants: Citizen Kabuto (2000),gamespy1,port_query=8911

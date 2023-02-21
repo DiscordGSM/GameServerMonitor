@@ -1,13 +1,15 @@
 import asyncio
 import csv
 import os
+import sys
+from argparse import ArgumentParser
+from collections import OrderedDict
 from typing import List, TypedDict
-
-from discordgsm.protocols import Protocols
 
 if __name__ == '__main__':
     from server import Server
 else:
+    from discordgsm.protocols import Protocols
     from discordgsm.server import Server
 
 
@@ -17,7 +19,6 @@ class GamedigGame(TypedDict):
     fullname: str
     protocol: str
     options: dict
-    extra: dict
 
 
 class GamedigPlayer(TypedDict):
@@ -47,8 +48,8 @@ class InvalidGameException(Exception):
 
 class Gamedig:
     def __init__(self):
-        path = os.path.dirname(os.path.realpath(__file__))
-        self.games = Gamedig.__load_games(os.path.join(path, 'games.csv'))
+        self.path = os.path.dirname(os.path.realpath(__file__))
+        self.games = Gamedig.__load_games(os.path.join(self.path, 'games.csv'))
 
     @staticmethod
     def __load_games(path: str):
@@ -72,8 +73,7 @@ class Gamedig:
                 if len(row) > 0 and not row[0].startswith('#'):
                     id = row[0].split(';')[0]
                     options = len(row) > 3 and row_to_dict(row[3]) or {}
-                    extra = len(row) > 4 and row_to_dict(row[4]) or {}
-                    games[id] = GamedigGame(id=id, fullname=row[1], protocol=row[2], options=options, extra=extra)
+                    games[id] = GamedigGame(id=id, fullname=row[1], protocol=row[2], options=options)
 
         return games
 
@@ -133,13 +133,27 @@ class Gamedig:
 
 
 if __name__ == '__main__':
-    async def main():
-        r = await Gamedig().run({
-            'type': '',
-            'host': '',
-            'port': ''
-        })
+    parser = ArgumentParser()
+    subparsers = parser.add_subparsers(dest='subparser_name')
+    subparsers.add_parser('sort', description='Sort the games.csv')
 
-        print(r)
+    args = parser.parse_args()
 
-    asyncio.run(main())
+    if len(sys.argv) <= 1:
+        parser.print_help(sys.stderr)
+        sys.exit(-1)
+
+    if args.subparser_name == 'sort':
+        gamedig = Gamedig()
+        games = OrderedDict(sorted(gamedig.games.items()))
+
+        with open(os.path.join(gamedig.path, 'games.csv'), 'w', encoding='utf8') as f:
+            f.write('Id, Name, Protocol, Options\n')
+            first_char = ''
+
+            for game_id, game in games.items():
+                if first_char != game_id[0] and (first_char := game_id[0]):
+                    f.write('\n')
+
+                options = ';'.join([f'{k}={v}' for k, v in game['options'].items()])
+                f.write(f"{game_id},{game['fullname']},{game['protocol']},{options}\n")

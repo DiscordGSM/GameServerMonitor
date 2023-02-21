@@ -202,6 +202,7 @@ r6roguespear,Rainbow Six 2: Rogue Spear,gamespy1,port_query=2346
 r6ravenshield,Rainbow Six 3: Raven Shield,gamespy1,port=7777;port_query_offset=1000
 rallisportchallenge,RalliSport Challenge,gamespy1,port_query=17500
 rallymasters,Rally Masters,gamespy1,port_query=16666
+redm,Red Dead Redemption 2 - RedM,fivem,port=30120
 redorchestra,Red Orchestra,unreal2,port=7758;port_query_offset=1
 redorchestraost,Red Orchestra: Ostfront 41-45,gamespy1,port=7757;port_query_offset=10
 redorchestra2,Red Orchestra 2,valve,port=7777;port_query=27015

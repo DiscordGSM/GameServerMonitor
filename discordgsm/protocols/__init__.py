@@ -42,8 +42,6 @@ class Protocols:
             return Raknet(address, query_port)
         elif kv['type'] == 'discord':
             return Discord(address)
-        elif kv['type'] == 'fivem':
-            return FiveM(address, query_port)
         elif kv['type'] == 'hexen2':
             return Hexen2(address, query_port)
         elif kv['type'] == 'gportal':
@@ -65,6 +63,8 @@ class Protocols:
             return GameSpy2(address, query_port)
         elif protocol_name == 'gamespy3':
             return GameSpy3(address, query_port)
+        elif protocol_name == 'fivem':
+            return FiveM(address, query_port)
         elif protocol_name == 'quake1':
             return Quake1(address, query_port)
         elif protocol_name == 'quake2':

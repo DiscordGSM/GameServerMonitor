@@ -321,6 +321,9 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
             if await resend_channel_messages(interaction):
                 await interaction.delete_original_response()
         else:
+            # Reactivate disabled server
+            database.update_servers([server])
+
             content = t('function.query_server_modal.success', interaction.locale)
             await interaction.followup.send(content, embed=style.embed())
 

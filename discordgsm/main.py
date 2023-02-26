@@ -176,7 +176,7 @@ class Alert(Enum):
 def alert_embed(server: Server, alert: Alert):
     """Returns alert embed"""
     locale = str(server.style_data.get('locale', 'en-US'))
-    title = (server.result['password'] and ':lock: ' or '') + server.result['name']
+    title = (server.result['password'] and '🔒 ' or '') + server.result['name']
 
     if alert == Alert.TEST:
         description = t('embed.alert.description.test', locale)

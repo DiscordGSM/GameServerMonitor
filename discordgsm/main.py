@@ -7,13 +7,14 @@ from typing import Dict, List, Optional
 
 import aiohttp
 import discord
-from discord import (ActivityType, AutoShardedClient, ButtonStyle, Client,
-                     Embed, Interaction, Locale, Message, SelectOption,
-                     Webhook, app_commands)
+from discord import (AutoShardedClient, ButtonStyle, Client, Embed,
+                     Interaction, Locale, Message, SelectOption, Webhook,
+                     app_commands)
 from discord.ext import tasks
 from discord.ui import Button, Modal, Select, TextInput, View
 from dotenv import load_dotenv
 
+from discordgsm.environment import AdvertiseType, env
 from discordgsm.gamedig import GamedigGame
 from discordgsm.logger import Logger
 from discordgsm.server import Server
@@ -67,10 +68,10 @@ async def on_ready():
     if not tasks_query.is_running():
         tasks_query.start()
 
-    if not cache_guilds.is_running() and os.getenv('WEB_API_ENABLE', '').lower() == 'true':
+    if not cache_guilds.is_running() and env('WEB_API_ENABLE'):
         cache_guilds.start()
 
-    if not heroku_query.is_running() and os.getenv('HEROKU_APP_NAME') is not None:
+    if not heroku_query.is_running() and env('HEROKU_APP_NAME'):
         heroku_query.start()
 
 
@@ -148,7 +149,7 @@ def is_administrator(interaction: Interaction) -> bool:
 
 def custom_command_query_check(interaction: Interaction) -> bool:
     """Query command check"""
-    if os.getenv('COMMAND_QUERY_PUBLIC', '').lower() == 'true':
+    if env('COMMAND_QUERY_PUBLIC'):
         return True
 
     return is_administrator(interaction)
@@ -159,7 +160,7 @@ def cooldown_for_everyone_except_administrator(interaction: Interaction) -> Opti
     if is_administrator(interaction):
         return None
 
-    return app_commands.Cooldown(1, float(os.getenv('COMMAND_QUERY_COOLDOWN', '5')))
+    return app_commands.Cooldown(1, env('COMMAND_QUERY_COOLDOWN'))
 # endregion
 
 
@@ -901,7 +902,7 @@ async def to_chunks(lst, n):
 
 
 # region Application tasks
-@tasks.loop(seconds=max(15.0, float(os.getenv('TASK_QUERY_SERVER', '60'))))
+@tasks.loop(seconds=max(15.0, env('TASK_QUERY_SERVER')))
 async def tasks_query():
     """Query servers (Scheduled)"""
     distinct_servers = database.distinct_servers()
@@ -982,7 +983,7 @@ async def tasks_send_alert():
 
         return server
 
-    fail_query_count = max(2, int(120 / float(os.getenv('TASK_QUERY_SERVER', '60'))))
+    fail_query_count = max(2, int(120 / env('TASK_QUERY_SERVER')))
 
     def should_send_alert(server: Server):
         if server.status:
@@ -1068,31 +1069,33 @@ async def tasks_presence_update(current_loop: int):
     name = None
     status = discord.Status.online
 
-    if activity_name := os.getenv('APP_ACTIVITY_NAME'):
+    if activity_name := env('APP_ACTIVITY_NAME'):
         # Activity name override
         name = activity_name
-    elif os.getenv('APP_PRESENCE_ADVERTISE', '').lower() == 'true':
-        # Advertise online servers one by one
-        if servers := database.all_servers():
-            online_servers = [server for server in servers if server.status]
-
-            if len(online_servers) > 0:
-                server = online_servers[current_loop % len(online_servers)]
-                name = Style.get_players_display_string(server) + f' {server.result["name"]}'
-    else:
-        # Display number of server monitoring
-        unique_servers = int(database.statistics()['unique_servers'])
-
-        if unique_servers == 1:
-            # Display server status on presence when one server only
-            if servers := database.all_servers():
-                server = servers[0]
-                status = discord.Status.online if server.status else discord.Status.do_not_disturb
-                name = Style.get_players_display_string(server)
-        else:
+    elif advertise_type := env('APP_ADVERTISE_TYPE'):
+        if advertise_type == AdvertiseType.server_count:
+            # Display number of server monitoring
+            unique_servers = int(database.statistics()['unique_servers'])
             name = f'{unique_servers} servers'
+        elif advertise_type == AdvertiseType.individually:
+            # Advertise online servers one by one
+            if servers := database.all_servers():
+                online_servers = [server for server in servers if server.status]
 
-    activity = discord.Activity(name=name, type=ActivityType(int(os.getenv('APP_ACTIVITY_TYPE', '3'))))
+                if len(online_servers) > 0:
+                    server = online_servers[current_loop % len(online_servers)]
+                    name = Style.get_players_display_string(server) + f' {server.result["name"]}'
+        elif advertise_type == AdvertiseType.player_stats:
+            # Display servers players stats
+            if servers := database.all_servers():
+                players, bots, maxplayers = map(sum, zip(*[Style.get_player_data(server) for server in servers]))
+                name = Style.to_players_string(players, bots, maxplayers)
+
+                # Sync bot status to server status when one server only
+                if len(servers) == 1:
+                    status = discord.Status.online if servers[0].status else discord.Status.do_not_disturb
+
+    activity = discord.Activity(name=name, type=env('APP_ACTIVITY_TYPE'))
     await client.change_presence(status=status, activity=activity)
 
 

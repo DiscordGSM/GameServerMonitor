@@ -156,6 +156,11 @@ class Style(ABC):
 
     @staticmethod
     def get_players_display_string(server: Server):
+        players, bots, maxplayers = Style.get_player_data(server)
+        return Style.to_players_string(players, bots, maxplayers)
+
+    @staticmethod
+    def get_player_data(server: Server):
         if 'numplayers' in server.result:
             players = int(server.result['numplayers'])
         else:
@@ -166,12 +171,16 @@ class Style(ABC):
         else:
             bots = int(server.result.get('raw', {}).get('numbots', len(server.result['bots'])))
 
+        maxplayers = int(server.result['maxplayers'])
+
+        return players, bots, maxplayers
+
+    @staticmethod
+    def to_players_string(players: int, bots: int, maxplayers: int):
         players_string = str(players)  # example: 20
 
         if bots > 0:
             players_string += f' ({bots})'  # example: 20 (2)
-
-        maxplayers = int(server.result['maxplayers'])
 
         if maxplayers > 0:
             percentage = 0 if maxplayers <= 0 else int(players / maxplayers * 100)

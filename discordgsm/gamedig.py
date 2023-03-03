@@ -9,6 +9,7 @@ from typing import List, TypedDict
 if __name__ == '__main__':
     from server import Server
 else:
+    from discordgsm.environment import env
     from discordgsm.protocols import Protocols
     from discordgsm.server import Server
 
@@ -127,7 +128,7 @@ class Gamedig:
 
     async def run(self, kv: dict):
         if protocol := Protocols.get(self.games[kv['type']]['protocol'], kv):
-            return await asyncio.wait_for(protocol.query(), timeout=float(os.getenv('TASK_QUERY_SERVER_TIMEOUT', '15')))
+            return await asyncio.wait_for(protocol.query(), timeout=env('TASK_QUERY_SERVER_TIMEOUT'))
 
         raise Exception('No protocol supported')
 

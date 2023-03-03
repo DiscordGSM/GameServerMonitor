@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 
 from discordgsm.database import Database
+from discordgsm.environment import env, environment
 from discordgsm.main import tree
 from discordgsm.service import gamedig, invite_link, public, whitelist_guilds
 from discordgsm.translator import Locale, translations
@@ -47,6 +48,10 @@ if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
     @app.route('/api/v1/commands')
     def commands():
         return jsonify(cmd)
+
+    @app.route('/api/v1/environment-variables')
+    def environment_variables():
+        return jsonify(environment.dict)
 
     @app.route('/api/v1/locales')
     @app.route('/api/v1/locales/<locale>')
@@ -91,4 +96,4 @@ if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
         return jsonify(database.all_servers(channel_id=int(channel_id), filter_secret=True))
 
 if __name__ == '__main__':
-    app.run(debug=os.getenv('APP_DEBUG', '').lower() == 'true')
+    app.run(debug=env('APP_DEBUG'))

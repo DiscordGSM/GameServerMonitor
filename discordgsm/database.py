@@ -45,7 +45,7 @@ class Database:
             self.conn = sqlite3.connect(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'data', 'servers.db'))
 
     def create_table_if_not_exists(self):
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
 
         if self.type == 'pgsql':
             cursor.execute('''
@@ -88,6 +88,16 @@ class Database:
     def close(self):
         self.conn.close()
 
+    def cursor(self):
+        try:
+            cursor = self.conn.cursor()
+        except psycopg2.InterfaceError:  # connection already closed
+            # Reconnect
+            self.connect()
+            cursor = self.conn.cursor()
+
+        return cursor
+
     def transform(self, sql: str):
         if self.type == 'pgsql':
             return sql.replace('?', '%s').replace('IFNULL', 'COALESCE')
@@ -103,7 +113,7 @@ class Database:
             (SELECT COUNT(*) FROM (SELECT DISTINCT game_id, address, query_port, query_extra FROM servers) x) as unique_servers
         FROM servers'''
 
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.execute(self.transform(sql))
         row = cursor.fetchone()
         cursor.close()
@@ -117,7 +127,7 @@ class Database:
         }
 
     def games_servers_count(self):
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.execute(self.transform('SELECT game_id, COUNT(*) FROM servers GROUP BY game_id'))
         servers_count = {str(row[0]): int(row[1]) for row in cursor.fetchall()}
         cursor.close()
@@ -126,7 +136,7 @@ class Database:
 
     def all_servers(self, channel_id: int = None, guild_id: int = None, message_id: int = None, game_id: str = None, filter_secret: bool = False):
         """Get all servers"""
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
 
         if channel_id:
             cursor.execute(self.transform('SELECT * FROM servers WHERE channel_id = ? ORDER BY position'), (channel_id,))
@@ -173,7 +183,7 @@ class Database:
 
     def distinct_servers(self):
         """Get distinct servers (Query server purpose) (Only fetch game_id, address, query_port, query_extra, status, result)"""
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.execute('SELECT DISTINCT game_id, address, query_port, query_extra, status, result FROM servers')
         servers = [Server.from_distinct_query(row) for row in cursor.fetchall()]
         cursor.close()
@@ -186,7 +196,7 @@ class Database:
         VALUES ((SELECT IFNULL(MAX(position + 1), 0) FROM servers WHERE channel_id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
         try:
-            cursor = self.conn.cursor()
+            cursor = self.cursor()
             cursor.execute(self.transform(sql), (s.channel_id, s.guild_id, s.channel_id, s.game_id, s.address, s.query_port, stringify(s.query_extra), s.status, stringify(s.result), s.style_id, stringify(s.style_data)))
             self.conn.commit()
         except psycopg2.Error as e:
@@ -200,7 +210,7 @@ class Database:
     def update_servers_message_id(self, servers: List[Server]):
         sql = 'UPDATE servers SET message_id = ? WHERE id = ?'
         parameters = [(server.message_id, server.id) for server in servers]
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.executemany(self.transform(sql), parameters)
         self.conn.commit()
         cursor.close()
@@ -209,35 +219,34 @@ class Database:
         """Update servers status and result"""
         parameters = [(server.status, stringify(server.result), server.game_id, server.address, server.query_port, stringify(server.query_extra)) for server in servers]
         sql = 'UPDATE servers SET status = ?, result = ? WHERE game_id = ? AND address = ? AND query_port = ? AND query_extra = ?'
-
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.executemany(self.transform(sql), parameters)
         self.conn.commit()
         cursor.close()
 
     def delete_server(self, server: Server):
         sql = 'DELETE FROM servers WHERE id = ?'
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.execute(self.transform(sql), (server.id,))
         self.conn.commit()
         cursor.close()
 
     def factory_reset(self, guild_id: int):
         sql = 'DELETE FROM servers WHERE guild_id = ?'
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.execute(self.transform(sql), (guild_id,))
         self.conn.commit()
         cursor.close()
 
     def delete_servers(self, channel_id: int):
         sql = 'DELETE FROM servers WHERE channel_id = ?'
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.execute(self.transform(sql), (channel_id,))
         self.conn.commit()
         cursor.close()
 
     def find_server(self, channel_id: int, address: str = None, query_port: str = None, message_id: int = None):
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
 
         if message_id is not None:
             sql = 'SELECT * FROM servers WHERE channel_id = ? AND message_id = ?'
@@ -265,7 +274,7 @@ class Database:
 
     def swap_servers_positon(self, server1: Server, server2: Server):
         sql = 'UPDATE servers SET position = case when position = ? then ? else ? end, message_id = case when message_id = ? then ? else ? end WHERE id IN (?, ?)'
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.execute(self.transform(sql), (server1.position, server2.position, server1.position, server1.message_id, server2.message_id, server1.message_id, server1.id, server2.id))
         self.conn.commit()
         cursor.close()
@@ -277,7 +286,7 @@ class Database:
 
     def server_exists(self, channel_id: int, address: str, query_port: str):
         sql = 'SELECT id FROM servers WHERE channel_id = ? AND address = ? AND query_port = ?'
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.execute(self.transform(sql), (channel_id, address, query_port))
         exists = True if cursor.fetchone() else False
         cursor.close()
@@ -286,14 +295,14 @@ class Database:
 
     def update_server_style_id(self, server: Server):
         sql = 'UPDATE servers SET style_id = ? WHERE id = ?'
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.execute(self.transform(sql), (server.style_id, server.id))
         self.conn.commit()
         cursor.close()
 
     def update_server_style_data(self, server: Server):
         sql = 'UPDATE servers SET style_data = ? WHERE id = ?'
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.execute(self.transform(sql), (stringify(server.style_data), server.id))
         self.conn.commit()
         cursor.close()
@@ -301,7 +310,7 @@ class Database:
     def update_servers_style_data(self, servers: List[Server]):
         sql = 'UPDATE servers SET style_data = ? WHERE id = ?'
         parameters = [(stringify(server.style_data), server.id) for server in servers]
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.executemany(self.transform(sql), parameters)
         self.conn.commit()
         cursor.close()
@@ -309,13 +318,13 @@ class Database:
     def update_servers_channel_id(self, servers: List[Server]):
         sql = 'UPDATE servers SET channel_id = ?, position = (SELECT IFNULL(MAX(position + 1), 0) FROM servers WHERE channel_id = ?) WHERE id = ?'
         parameters = [(server.channel_id, server.channel_id, server.id) for server in servers]
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.executemany(self.transform(sql), parameters)
         self.conn.commit()
         cursor.close()
 
     def export(self):
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         cursor.execute('SELECT * FROM servers')
         file = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'data', 'servers.sql')
 

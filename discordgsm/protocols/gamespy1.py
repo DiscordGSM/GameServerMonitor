@@ -18,6 +18,10 @@ class GameSpy1(Protocol):
         info = status['info']
         players = status['players']
 
+        # Fix bf1942 0 numplayers still contains player on player list issue
+        if info['gamename'] == 'bfield1942':
+            players = players[:int(info['numplayers'])]
+
         result: GamedigResult = {
             'name': info['hostname'],
             'map': info['mapname'],

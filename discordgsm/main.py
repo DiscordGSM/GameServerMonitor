@@ -920,7 +920,8 @@ async def tasks_query():
     failed = sum(server.status is False for server in servers)
     success = len(servers) - failed
     percent = len(servers) > 0 and int(failed / len(servers) * 100) or 0
-    Logger.info(f'Query servers: Total = {len(servers)}, Success = {success}, Failed = {failed} ({percent}% fail) ({disabled} disabled)')
+    disabled_string = '' if disabled <= 0 else f' ({disabled} disabled)'
+    Logger.info(f'Query servers: Total = {len(servers)}, Success = {success}, Failed = {failed} ({percent}% fail){disabled_string}')
 
     # Run the tasks after the server queries
     await asyncio.gather(tasks_send_alert(), tasks_edit_messages(), tasks_presence_update(tasks_query.current_loop))

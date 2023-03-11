@@ -1,9 +1,10 @@
 # Discord Game Server Monitor
-[![Discord Shield](https://discordapp.com/api/guilds/680159496584429582/widget.png?style=shield)](https://discordgsm.com/discord)
-[![GitHub license](https://img.shields.io/github/license/DiscordGSM/GameServerMonitor)](https://github.com/DiscordGSM/GameServerMonitor/blob/main/LICENSE)
-[![GitHub release](https://img.shields.io/github/release/DiscordGSM/GameServerMonitor)](https://github.com/DiscordGSM/GameServerMonitor/releases/)
 [![Python Package](https://github.com/DiscordGSM/GameServerMonitor/actions/workflows/python-package.yml/badge.svg)](https://github.com/DiscordGSM/GameServerMonitor/actions/workflows/python-package.yml)
 [![Docker Image](https://github.com/DiscordGSM/GameServerMonitor/actions/workflows/docker-image.yml/badge.svg)](https://github.com/DiscordGSM/GameServerMonitor/actions/workflows/docker-image.yml)
+[![Discord Shield](https://discordapp.com/api/guilds/680159496584429582/widget.png?style=shield)](https://discordgsm.com/discord)
+[![Docker Pulls](https://img.shields.io/docker/pulls/discordgsm/discord-game-server-monitor.svg)](https://hub.docker.com/r/discordgsm/discord-game-server-monitor)
+[![GitHub release](https://img.shields.io/github/release/DiscordGSM/GameServerMonitor)](https://github.com/DiscordGSM/GameServerMonitor/releases/)
+[![GitHub license](https://img.shields.io/github/license/DiscordGSM/GameServerMonitor)](https://github.com/DiscordGSM/GameServerMonitor/blob/main/LICENSE)
 
 📺 A discord bot that monitors your game server and tracks the live data of your game servers.
 

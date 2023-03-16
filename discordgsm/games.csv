@@ -215,6 +215,7 @@ rune,Rune,gamespy1,port=7777;port_query_offset=1
 rust,Rust,source,port=28015
 
 samp,San Andreas Multiplayer,samp,port=7777
+satisfactory,Satisfactory (2019),satisfactory,port_query=15777
 scum,SCUM (2018),scum,port=27015
 shatteredhorizon,Shattered Horizon,source,port=27015
 ship,The Ship,source,port=27015

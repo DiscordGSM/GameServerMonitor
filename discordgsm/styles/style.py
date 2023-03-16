@@ -107,6 +107,11 @@ class Style(ABC):
 
         return title, description, color
 
+    def add_status_field(self, embed: Embed):
+        name = t('embed.field.status.name', self.locale)
+        value = t(f'embed.field.status.value.{"online" if self.server.status else "offline"}', self.locale)
+        embed.add_field(name=name, value=value, inline=True)
+
     def add_address_field(self, embed: Embed):
         game_port = gamedig.game_port(self.server.result)
 

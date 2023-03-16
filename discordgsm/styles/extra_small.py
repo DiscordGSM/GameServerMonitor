@@ -20,7 +20,7 @@ class ExtraSmall(Style):
         embed = Embed(description=description if description else None, color=color)
         embed.set_author(name=title)
 
-        self.add_game_field(embed)
+        self.add_status_field(embed)
         self.add_address_field(embed)
         self.add_players_field(embed)
         self.set_image_and_thumbnail(embed)

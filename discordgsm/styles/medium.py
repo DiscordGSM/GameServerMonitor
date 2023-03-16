@@ -35,10 +35,7 @@ class Medium(Style):
         title, description, color = self.embed_data()
         embed = Embed(title=title, description=description, color=color)
 
-        name = t('embed.field.status.name', self.locale)
-        value = t(f'embed.field.status.value.{"online" if self.server.status else "offline"}', self.locale)
-        embed.add_field(name=name, value=value, inline=True)
-
+        self.add_status_field(embed)
         self.add_address_field(embed)
 
         flag_emoji = ('country' in self.server.style_data) and (':flag_' + self.server.style_data['country'].lower() + f': {self.server.style_data["country"]}') or ':united_nations: Unknown'

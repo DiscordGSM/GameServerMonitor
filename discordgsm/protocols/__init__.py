@@ -16,6 +16,7 @@ from .quake2 import Quake2
 from .quake3 import Quake3
 from .raknet import Raknet
 from .samp import Samp
+from .satisfactory import Satisfactory
 from .scum import Scum
 from .source import Source
 from .teamspeak3 import Teamspeak3
@@ -69,6 +70,8 @@ class Protocols:
             return Raknet(address, query_port)
         elif protocol_name == 'samp':
             return Samp(address, query_port)
+        elif protocol_name == 'satisfactory':
+            return Satisfactory(address, query_port)
         elif protocol_name == 'scum':
             return Scum(address, query_port)
         elif protocol_name == 'source':

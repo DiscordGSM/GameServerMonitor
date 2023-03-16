@@ -135,7 +135,7 @@ class Gamedig:
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    subparsers = parser.add_subparsers(dest='subparser_name')
+    subparsers = parser.add_subparsers(dest='choice')
     subparsers.add_parser('sort', description='Sort the games.csv')
 
     args = parser.parse_args()
@@ -144,7 +144,7 @@ if __name__ == '__main__':
         parser.print_help(sys.stderr)
         sys.exit(-1)
 
-    if args.subparser_name == 'sort':
+    if args.choice == 'sort':
         gamedig = Gamedig()
         games = OrderedDict(sorted(gamedig.games.items()))
 
@@ -158,3 +158,5 @@ if __name__ == '__main__':
 
                 options = ';'.join([f'{k}={v}' for k, v in game['options'].items()])
                 f.write(f"{game_id},{game['fullname']},{game['protocol']},{options}\n")
+
+        print('Sorted games.csv.')

@@ -25,7 +25,7 @@ class GameSpy1(Protocol):
         result: GamedigResult = {
             'name': info['hostname'],
             'map': info['mapname'],
-            'password': str(info['password']).lower() != 'false',
+            'password': str(info.get('password', 'false')).lower() != 'false',
             'numplayers': int(info['numplayers']),
             'numbots': 0,
             'maxplayers': int(info['maxplayers']),

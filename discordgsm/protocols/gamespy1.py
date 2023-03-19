@@ -17,6 +17,7 @@ class GameSpy1(Protocol):
         ping = int((time.time() - start) * 1000)
         info = status['info']
         players = status['players']
+        password = str(info.get('password', '0')).lower()
 
         # Fix bf1942 0 numplayers still contains player on player list issue
         if info['gamename'] == 'bfield1942':
@@ -25,7 +26,7 @@ class GameSpy1(Protocol):
         result: GamedigResult = {
             'name': info['hostname'],
             'map': info['mapname'],
-            'password': str(info.get('password', 'false')).lower() != 'false',
+            'password': password == 'true' or password == '1',
             'numplayers': int(info['numplayers']),
             'numbots': 0,
             'maxplayers': int(info['maxplayers']),

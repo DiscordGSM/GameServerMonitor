@@ -263,14 +263,19 @@ class Database:
 
         return Server.from_list(row)
 
-    def modify_server_position(self, server: Server, direction: bool):
-        servers = self.all_servers(channel_id=server.channel_id)
-        indices = [i for i, s in enumerate(servers) if s.id == server.id]
+    def modify_server_position(self, server1: Server, direction: bool):
+        servers = self.all_servers(channel_id=server1.channel_id)
+        indices = [i for i, s in enumerate(servers) if s.id == server1.id]
 
         if len(indices) <= 0 or (direction and indices[0] == 0) or (not direction and indices[0] == len(servers) - 1):
             return []
 
-        return self.swap_servers_positon(server, servers[indices[0] + 1 * (-1 if direction else 1)])
+        server2 = servers[indices[0] + 1 * (-1 if direction else 1)]
+
+        if server1.message_id is None or server2.message_id is None:
+            return []
+
+        return self.swap_servers_positon(server1, server2)
 
     def swap_servers_positon(self, server1: Server, server2: Server):
         sql = 'UPDATE servers SET position = case when position = ? then ? else ? end, message_id = case when message_id = ? then ? else ? end WHERE id IN (?, ?)'

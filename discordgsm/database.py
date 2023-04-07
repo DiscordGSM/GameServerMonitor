@@ -267,11 +267,13 @@ class Database:
         servers = self.all_servers(channel_id=server1.channel_id)
         indices = [i for i, s in enumerate(servers) if s.id == server1.id]
 
+        # Ignore when the position is the most top and bottom
         if len(indices) <= 0 or (direction and indices[0] == 0) or (not direction and indices[0] == len(servers) - 1):
             return []
 
         server2 = servers[indices[0] + 1 * (-1 if direction else 1)]
 
+        # Ignore when message id is NULL
         if server1.message_id is None or server2.message_id is None:
             return []
 

@@ -1,3 +1,4 @@
+# flake8: noqa
 from .ase import ASE
 from .assettocorsa import AssettoCorsa
 from .battlefield import Battlefield

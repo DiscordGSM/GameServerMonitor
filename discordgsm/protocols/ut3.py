@@ -10,8 +10,11 @@ if TYPE_CHECKING:
 
 
 class UT3(Protocol):
+    name = 'ut3'
+
     async def query(self):
-        gamespy4 = opengsq.GameSpy4(self.address, self.query_port, self.timeout)
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        gamespy4 = opengsq.GameSpy4(host, port, self.timeout)
         start = time.time()
         status = await gamespy4.get_status()
         ping = int((time.time() - start) * 1000)
@@ -27,7 +30,7 @@ class UT3(Protocol):
             'maxplayers': int(info['maxplayers']),
             'players': [{'name': player['player'], 'raw': player} for player in players],
             'bots': [],
-            'connect': f"{self.address}:{info.get('hostport', self.query_port)}",
+            'connect': f"{host}:{info.get('hostport', port)}",
             'ping': ping,
             'raw': info
         }

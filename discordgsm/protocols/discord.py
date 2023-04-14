@@ -3,16 +3,16 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 
+from discordgsm.protocols.protocol import Protocol
+
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
 
-class Discord:
-    def __init__(self, guild_id: str):
-        self.guild_id = guild_id
-
+class Discord(Protocol):
     async def query(self):
-        url = f'https://discord.com/api/guilds/{self.guild_id}/widget.json?v={int(time.time())}'
+        guild_id = str(self.kv['host'])
+        url = f'https://discord.com/api/guilds/{guild_id}/widget.json?v={int(time.time())}'
         start = time.time()
 
         async with aiohttp.ClientSession() as session:

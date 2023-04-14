@@ -10,9 +10,12 @@ if TYPE_CHECKING:
 
 
 class Minecraft(Protocol):
+    name = 'minecraft'
+
     async def query(self):
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
         start = time.time()
-        minecraft = opengsq.Minecraft(self.address, self.query_port, self.timeout)
+        minecraft = opengsq.Minecraft(host, port, self.timeout)
         status = await minecraft.get_status(strip_color=True)
         ping = int((time.time() - start) * 1000)
         name = ''
@@ -39,7 +42,7 @@ class Minecraft(Protocol):
             'maxplayers': int(status.get('players', {}).get('max', '0')),
             'players': players,
             'bots': [],
-            'connect': f'{self.address}:{self.query_port}',
+            'connect': f'{host}:{port}',
             'ping': ping,
             'raw': status
         }

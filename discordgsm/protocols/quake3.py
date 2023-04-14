@@ -10,12 +10,15 @@ if TYPE_CHECKING:
 
 
 class Quake3(Protocol):
+    name = 'quake3'
+
     async def query(self):
-        quake3 = opengsq.Quake3(self.address, self.query_port, self.timeout)
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        quake3 = opengsq.Quake3(host, port, self.timeout)
         start = time.time()
         status = await quake3.get_status(strip_color=True)
         ping = int((time.time() - start) * 1000)
-        info = status['info']
+        info = dict(status['info'])
         players = []
         bots = []
 
@@ -31,7 +34,7 @@ class Quake3(Protocol):
             'maxplayers': int(info.get('sv_maxclients', '0')),
             'players': players,
             'bots': bots,
-            'connect': f'{self.address}:{self.query_port}',
+            'connect': f'{host}:{port}',
             'ping': ping,
             'raw': info
         }

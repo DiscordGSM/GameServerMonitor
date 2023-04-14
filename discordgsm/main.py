@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 from discordgsm.environment import AdvertiseType, env
 from discordgsm.gamedig import GamedigGame
 from discordgsm.logger import Logger
+from discordgsm.protocols import Protocol, protocols
 from discordgsm.server import Server
 from discordgsm.service import (database, gamedig, invite_link, public,
                                 timezones, tz, whitelist_guilds)
@@ -147,8 +148,8 @@ def is_administrator(interaction: Interaction) -> bool:
     return interaction.user.guild_permissions.administrator
 
 
-def custom_command_query_check(interaction: Interaction) -> bool:
-    """Query command check"""
+def custom_command_queryserver_check(interaction: Interaction) -> bool:
+    """Query server command check"""
     if env('COMMAND_QUERY_PUBLIC'):
         return True
 
@@ -356,9 +357,9 @@ async def command_sponsor(interaction: Interaction):
 @tree.command(name='queryserver', description='command.queryserver.description', guilds=whitelist_guilds)
 @app_commands.guild_only()
 @app_commands.describe(game_id='command.option.game_id')
-@app_commands.check(custom_command_query_check)
+@app_commands.check(custom_command_queryserver_check)
 @app_commands.checks.dynamic_cooldown(cooldown_for_everyone_except_administrator)
-async def command_query(interaction: Interaction, game_id: str):
+async def command_queryserver(interaction: Interaction, game_id: str):
     """Query server"""
     Logger.command(interaction, game_id=game_id)
 
@@ -734,7 +735,7 @@ async def command_setalert(interaction: Interaction, address: str, query_port: a
         await interaction.response.send_message(content, view=view, ephemeral=True)
 
 
-@command_query.error
+@command_queryserver.error
 @command_addserver.error
 @command_delserver.error
 @command_refresh.error
@@ -905,14 +906,24 @@ async def to_chunks(lst, n):
 @tasks.loop(seconds=max(15.0, env('TASK_QUERY_SERVER')))
 async def tasks_query():
     """Query servers (Scheduled)"""
-    distinct_servers = database.distinct_servers()
-    tasks = filtered_tasks(distinct_servers)
-    disabled = len(distinct_servers) - len(tasks)
-    Logger.debug(f'Query servers: Tasks = {len(tasks)} servers. {disabled} servers are disabled for queries.')
+    # Pre query servers, some servers cannot be queried one by one
+    games_servers_count = database.games_servers_count()
+    pre_query_tasks = [pre_query(protocol({})) for name, protocol in protocols.items() if protocol.pre_query_required and games_servers_count.get(name, 0) > 0]
+    Logger.debug(f'Pre query servers: Tasks = {len(pre_query_tasks)}.')
+    pre_query_results = await asyncio.gather(*pre_query_tasks)
+    failed = sum(result is False for result in pre_query_results)
+    success = len(pre_query_results) - failed
+    percent = len(pre_query_results) > 0 and int(failed / len(pre_query_results) * 100) or 0
+    Logger.debug(f'Pre query servers: Total = {len(pre_query_results)}, Success = {success}, Failed = {failed} ({percent}% fail)')
 
+    # Query servers
+    distinct_servers = database.distinct_servers()
+    query_tasks = filtered_tasks(distinct_servers)
+    disabled = len(distinct_servers) - len(query_tasks)
+    Logger.debug(f'Query servers: Tasks = {len(query_tasks)} servers. {disabled} servers are disabled for queries.')
     servers: List[Server] = []
 
-    async for chunks in to_chunks(tasks, int(os.getenv('TASK_QUERY_CHUNK_SIZE', '50'))):
+    async for chunks in to_chunks(query_tasks, int(os.getenv('TASK_QUERY_CHUNK_SIZE', '50'))):
         servers += await asyncio.gather(*chunks)
 
     database.update_servers(servers)
@@ -944,6 +955,19 @@ def filtered_tasks(servers: List[Server]):
         tasks.append(query_server(server))
 
     return tasks
+
+
+async def pre_query(protocol: Protocol):
+    """Pre query"""
+    try:
+        if await asyncio.shield(protocol.pre_query()):
+            Logger.debug(f'Pre query servers: [{protocol.name}] Success.')
+            return True
+    except Exception as e:
+        Logger.debug(f'Pre query servers: [{protocol.name}] Fail to query. Error: {e}')
+        return False
+
+    return None
 
 
 async def query_server(server: Server):

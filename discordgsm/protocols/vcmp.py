@@ -11,8 +11,11 @@ if TYPE_CHECKING:
 
 
 class Vcmp(Protocol):
+    name = 'vcmp'
+
     async def query(self):
-        samp = opengsq.Vcmp(self.address, self.query_port, self.timeout)
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        samp = opengsq.Vcmp(host, port, self.timeout)
 
         async def get_players():
             try:
@@ -34,7 +37,7 @@ class Vcmp(Protocol):
             'maxplayers': status['maxplayers'],
             'players': players,
             'bots': [],
-            'connect': f'{self.address}:{self.query_port}',
+            'connect': f'{host}:{port}',
             'ping': ping,
             'raw': status
         }

@@ -10,15 +10,18 @@ if TYPE_CHECKING:
 
 
 class Hexen2(Protocol):
+    name = 'hexen2'
+
     async def query(self):
-        quake1 = opengsq.Quake1(self.address, self.query_port, self.timeout)
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        quake1 = opengsq.Quake1(host, port, self.timeout)
         quake1._request_header = b'\xFFstatus\x0a'
         quake1._response_header = b'\xFFn'
 
         start = time.time()
         status = await quake1.get_status()
         ping = int((time.time() - start) * 1000)
-        info = status['info']
+        info = dict(status['info'])
         players = []
         bots = []
 
@@ -34,7 +37,7 @@ class Hexen2(Protocol):
             'maxplayers': int(info.get('sv_maxclients', info.get('maxclients', '0'))),
             'players': players,
             'bots': bots,
-            'connect': f'{self.address}:{self.query_port}',
+            'connect': f'{host}:{port}',
             'ping': ping,
             'raw': info
         }

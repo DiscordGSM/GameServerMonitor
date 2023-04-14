@@ -25,6 +25,7 @@ avp2010,Aliens vs. Predator (2010),source,port=27015
 baldursgate,Baldur's Gate (1998),gamespy1,port=6073;port_query=1470
 barotrauma,Barotrauma (2019),source,port=27015;port_query_offset=1
 bat1944,Battalion 1944 (2018),source,port=7777;port_query_offset=3
+beammp,BeamMP,beammp,port=30814
 beyondthewire,Beyond the Wire,source,port=7887;port_query=27165
 bf1942,Battlefield 1942 (2002),gamespy1,port=14567;port_query=23000
 bf2,Battlefield 2 (2005),gamespy3,port=16567;port_query=29900
@@ -176,8 +177,8 @@ nolf2,No One Lives Forever 2: A Spy in H.A.R.M.'s Way (2002),gamespy1,port_query
 ns,Natural Selection (2002),source,port=27015
 ns2,Natural Selection 2 (2012),source,port_query_offset=1
 nucleardawn,Nuclear Dawn (2011),source,port=27015
-nwn,Neverwinter Nights (2002),gamespy2,port_query=5121
-nwn2,Neverwinter Nights 2 (2006),gamespy2,port=5121;port_query=6500
+nwn1,Neverwinter Nights (2002),nwn1,port=5121
+nwn2,Neverwinter Nights 2 (2006),nwn2,port=5121
 
 openarena,OpenArena (2005),quake3,port_query=27960
 

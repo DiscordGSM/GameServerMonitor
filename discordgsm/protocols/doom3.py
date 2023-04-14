@@ -10,6 +10,8 @@ if TYPE_CHECKING:
 
 
 class Doom3(Protocol):
+    name = 'doom3'
+
     async def query(self):
         doom3 = opengsq.Doom3(self.address, self.query_port, self.timeout)
         start = time.time()

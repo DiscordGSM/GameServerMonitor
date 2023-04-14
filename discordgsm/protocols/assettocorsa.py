@@ -11,7 +11,10 @@ if TYPE_CHECKING:
 
 
 class AssettoCorsa(Protocol):
+    name = 'assettocorsa'
+
     async def query(self):
+        host = str(self.kv['host'])
         start = time.time()
         info, data = await asyncio.gather(self.query_info(), self.query_json())
         ping = int((time.time() - start) * 1000)
@@ -26,7 +29,7 @@ class AssettoCorsa(Protocol):
             'maxplayers': info['maxclients'],
             'players': players,
             'bots': [],
-            'connect': f'{self.address}:{info["port"]}',
+            'connect': f'{host}:{info["port"]}',
             'ping': ping,
             'raw': {
                 'Info': info,
@@ -37,14 +40,16 @@ class AssettoCorsa(Protocol):
         return result
 
     async def query_info(self):
-        url = f'http://{self.address}:{self.query_port}/INFO?v={int(time.time())}'
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        url = f'http://{host}:{port}/INFO?v={int(time.time())}'
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 return await response.json(content_type=None)
 
     async def query_json(self):
-        url = f'http://{self.address}:{self.query_port}/JSON|{int(time.time())}'
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        url = f'http://{host}:{port}/JSON|{int(time.time())}'
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:

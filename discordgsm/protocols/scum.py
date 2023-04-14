@@ -10,11 +10,11 @@ if TYPE_CHECKING:
 
 
 class Scum(Protocol):
-    def __init__(self, address: str, query_port: int):
-        super().__init__(address, query_port)
+    name = 'scum'
 
     async def query(self):
-        url = f'https://api.hellbz.de/scum/api.php?address={self.address}'
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        url = f'https://api.hellbz.de/scum/api.php?address={host}'
         start = time.time()
 
         async with aiohttp.ClientSession() as session:
@@ -27,7 +27,7 @@ class Scum(Protocol):
 
         servers = data['data']
 
-        if server := next((x for x in servers if int(x['q_port']) == self.query_port), None):
+        if server := next((x for x in servers if int(x['q_port']) == port), None):
             result: GamedigResult = {
                 'name': server['name'],
                 'map': '',
@@ -37,7 +37,7 @@ class Scum(Protocol):
                 'maxplayers': server['players_max'],
                 'players': [],
                 'bots': [],
-                'connect': f"{self.address}:{server['port']}",
+                'connect': f"{host}:{server['port']}",
                 'ping': int((end - start) * 1000),
                 'raw': server
             }

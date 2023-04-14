@@ -11,8 +11,11 @@ if TYPE_CHECKING:
 
 
 class Source(Protocol):
+    name = 'source'
+
     async def query(self):
-        source = opengsq.Source(self.address, self.query_port, self.timeout)
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        source = opengsq.Source(host, port, self.timeout)
 
         async def get_players():
             try:
@@ -37,7 +40,7 @@ class Source(Protocol):
             'maxplayers': info['MaxPlayers'],
             'players': [{'name': player['Name'], 'raw': {'score': player['Score'], 'time': player['Duration']}} for player in players],
             'bots': [{'name': bot['Name'], 'raw': {'score': bot['Score'], 'time': bot['Duration']}} for bot in bots],
-            'connect': f"{self.address}:{info.get('GamePort', self.query_port)}",
+            'connect': f"{host}:{info.get('GamePort', port)}",
             'ping': ping,
             'raw': info
         }

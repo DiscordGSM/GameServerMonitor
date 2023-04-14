@@ -11,12 +11,11 @@ if TYPE_CHECKING:
 
 
 class Teamspeak3(Protocol):
-    def __init__(self, address: str, query_port: int, voice_port: int):
-        super().__init__(address, query_port)
-        self.voice_port = voice_port
+    name = 'teamspeak3'
 
     async def query(self):
-        teamspeak3 = opengsq.Teamspeak3(self.address, self.query_port, self.voice_port, self.timeout)
+        host, port, voice_port = str(self.kv['host']), int(str(self.kv['teamspeakQueryPort'])), int(str(self.kv['port'])),
+        teamspeak3 = opengsq.Teamspeak3(host, port, voice_port, self.timeout)
         start = time.time()
         info, clients, channels = await asyncio.gather(teamspeak3.get_info(), teamspeak3.get_clients(), teamspeak3.get_channels())
         ping = int((time.time() - start) * 1000)
@@ -31,7 +30,7 @@ class Teamspeak3(Protocol):
             'maxplayers': int(info.get('virtualserver_maxclients', '0')),
             'players': players,
             'bots': [],
-            'connect': f'{self.address}:{self.query_port}',
+            'connect': f'{host}:{port}',
             'ping': ping,
             'raw': {
                 'info': info,

@@ -10,8 +10,11 @@ if TYPE_CHECKING:
 
 
 class Raknet(Protocol):
+    name = 'raknet'
+
     async def query(self):
-        raknet = opengsq.Raknet(self.address, self.query_port, self.timeout)
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        raknet = opengsq.Raknet(host, port, self.timeout)
         start = time.time()
         status = await raknet.get_status()
         ping = int((time.time() - start) * 1000)
@@ -25,7 +28,7 @@ class Raknet(Protocol):
             'maxplayers': int(status.get('max_players', '')),
             'players': [],
             'bots': [],
-            'connect': f"{self.address}:{status.get('port_ipv4', self.query_port)}",
+            'connect': f"{host}:{status.get('port_ipv4', port)}",
             'ping': ping,
             'raw': status
         }

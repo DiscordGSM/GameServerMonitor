@@ -10,12 +10,11 @@ if TYPE_CHECKING:
 
 
 class Terraria(Protocol):
-    def __init__(self, address: str, query_port: int, token: str):
-        super().__init__(address, query_port)
-        self.token = token
+    name = 'terraria'
 
     async def query(self):
-        url = f'http://{self.address}:{self.query_port}/v2/server/status?players=true&rules=false&token={self.token}'
+        host, port, token = str(self.kv['host']), int(str(self.kv['port'])), str(self.kv['_token'])
+        url = f'http://{host}:{port}/v2/server/status?players=true&rules=false&token={token}'
         start = time.time()
 
         async with aiohttp.ClientSession() as session:
@@ -32,7 +31,7 @@ class Terraria(Protocol):
             'maxplayers': data['maxplayers'],
             'players': [{'name': player['nickname'], 'raw': player} for player in data['players']],
             'bots': [],
-            'connect': f"{self.address}:{data['port']}",
+            'connect': f"{host}:{data['port']}",
             'ping': int((end - start) * 1000),
             'raw': {}
         }

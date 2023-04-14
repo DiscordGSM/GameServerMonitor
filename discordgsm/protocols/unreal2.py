@@ -10,8 +10,11 @@ if TYPE_CHECKING:
 
 
 class Unreal2(Protocol):
+    name = 'unreal2'
+
     async def query(self):
-        unreal2 = opengsq.Unreal2(self.address, self.query_port, self.timeout)
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        unreal2 = opengsq.Unreal2(host, port, self.timeout)
         start = time.time()
         details = await unreal2.get_details()
         ping = int((time.time() - start) * 1000)
@@ -27,7 +30,7 @@ class Unreal2(Protocol):
             'maxplayers': int(details['MaxPlayers']),
             'players': [{'name': player['Name'], 'raw': player} for player in players],
             'bots': [],
-            'connect': f"{self.address}:{details.get('GamePort', self.query_port)}",
+            'connect': f"{host}:{details.get('GamePort', port)}",
             'ping': ping,
             'raw': details
         }

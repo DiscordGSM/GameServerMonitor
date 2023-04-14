@@ -11,8 +11,11 @@ if TYPE_CHECKING:
 
 
 class Battlefield(Protocol):
+    name = 'battlefield'
+
     async def query(self):
-        battlefield = opengsq.Battlefield(self.address, self.query_port, self.timeout)
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        battlefield = opengsq.Battlefield(host, port, self.timeout)
         start = time.time()
         info, players = await asyncio.gather(battlefield.get_info(), battlefield.get_players())
         ping = int((time.time() - start) * 1000)

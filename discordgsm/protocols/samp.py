@@ -11,8 +11,11 @@ if TYPE_CHECKING:
 
 
 class Samp(Protocol):
+    name = 'samp'
+
     async def query(self):
-        samp = opengsq.Samp(self.address, self.query_port, self.timeout)
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        samp = opengsq.Samp(host, port, self.timeout)
 
         async def get_players():
             try:
@@ -34,7 +37,7 @@ class Samp(Protocol):
             'maxplayers': status['maxplayers'],
             'players': [{'name': player['name'], 'raw': player} for player in players],
             'bots': [],
-            'connect': f'{self.address}:{self.query_port}',
+            'connect': f'{host}:{port}',
             'ping': ping,
             'raw': {
                 'info': status,

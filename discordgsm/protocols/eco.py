@@ -11,8 +11,11 @@ if TYPE_CHECKING:
 
 
 class Eco(Protocol):
+    name = 'eco'
+
     async def query(self):
-        url = f'http://{self.address}:{self.query_port}/info'
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        url = f'http://{host}:{port}/info'
         start = time.time()
 
         async with aiohttp.ClientSession() as session:

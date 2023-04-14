@@ -10,8 +10,11 @@ if TYPE_CHECKING:
 
 
 class ASE(Protocol):
+    name = 'ase'
+
     async def query(self):
-        ase = opengsq.ASE(self.address, self.query_port, self.timeout)
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        ase = opengsq.ASE(host, port, self.timeout)
         start = time.time()
         status = await ase.get_status()
         ping = int((time.time() - start) * 1000)
@@ -25,7 +28,7 @@ class ASE(Protocol):
             'maxplayers': int(status['maxplayers']),
             'players': [{'name': player['name'], 'raw': player} for player in status['players']],
             'bots': [],
-            'connect': f"{self.address}:{status.get('gameport', self.query_port)}",
+            'connect': f"{host}:{status.get('gameport', port)}",
             'ping': ping,
             'raw': status
         }

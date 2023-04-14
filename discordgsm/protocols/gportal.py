@@ -10,12 +10,11 @@ if TYPE_CHECKING:
 
 
 class GPortal(Protocol):
-    def __init__(self, address: str, query_port: int, server_id: str):
-        super().__init__(address, query_port)
-        self.server_id = server_id
+    name = 'gportal'
 
     async def query(self):
-        url = f'https://api.g-portal.com/gameserver/query/{self.server_id}'
+        host, port, server_id = str(self.kv['host']), int(str(self.kv['port'])), str(self.kv['serverId'])
+        url = f'https://api.g-portal.com/gameserver/query/{server_id}'
         start = time.time()
 
         async with aiohttp.ClientSession() as session:
@@ -23,7 +22,7 @@ class GPortal(Protocol):
                 data = await response.json()
                 end = time.time()
 
-        if self.address != data['ipAddress'] or self.query_port != data['port']:
+        if host != data['ipAddress'] or port != data['port']:
             raise Exception('Invalid address or port')
 
         if not data['online']:

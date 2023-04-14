@@ -12,8 +12,11 @@ if TYPE_CHECKING:
 
 
 class FiveM(Protocol):
+    name = 'fivem'
+
     async def query(self):
-        quake3 = opengsq.Quake3(self.address, self.query_port, self.timeout)
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        quake3 = opengsq.Quake3(host, port, self.timeout)
         start = time.time()
         info, players = await asyncio.gather(quake3.get_info(strip_color=True), self.query_players())
         ping = int((time.time() - start) * 1000)
@@ -27,7 +30,7 @@ class FiveM(Protocol):
             'maxplayers': int(info.get('sv_maxclients', '0')),
             'players': [{'name': player['name'], 'raw': player} for player in players],
             'bots': [],
-            'connect': f'{self.address}:{self.query_port}',
+            'connect': f'{host}:{port}',
             'ping': ping,
             'raw': info
         }
@@ -35,14 +38,16 @@ class FiveM(Protocol):
         return result
 
     async def query_info(self):
-        url = f'http://{self.address}:{self.query_port}/info.json?v={int(time.time())}'
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        url = f'http://{host}:{port}/info.json?v={int(time.time())}'
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 return await response.json(content_type=None)
 
     async def query_players(self):
-        url = f'http://{self.address}:{self.query_port}/players.json?v={int(time.time())}'
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        url = f'http://{host}:{port}/players.json?v={int(time.time())}'
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:

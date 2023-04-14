@@ -10,8 +10,11 @@ if TYPE_CHECKING:
 
 
 class GameSpy3(Protocol):
+    name = 'gamespy3'
+
     async def query(self):
-        gamespy3 = opengsq.GameSpy3(self.address, self.query_port, self.timeout)
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        gamespy3 = opengsq.GameSpy3(host, port, self.timeout)
         start = time.time()
         status = await gamespy3.get_status()
         ping = int((time.time() - start) * 1000)
@@ -27,7 +30,7 @@ class GameSpy3(Protocol):
             'maxplayers': int(info['maxplayers']),
             'players': [{'name': player['player'], 'raw': player} for player in players],
             'bots': [],
-            'connect': f"{self.address}:{info.get('hostport', self.query_port)}",
+            'connect': f"{host}:{info.get('hostport', port)}",
             'ping': ping,
             'raw': info
         }

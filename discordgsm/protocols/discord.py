@@ -10,6 +10,8 @@ if TYPE_CHECKING:
 
 
 class Discord(Protocol):
+    name = 'discord'
+
     async def query(self):
         guild_id = str(self.kv['host'])
         url = f'https://discord.com/api/guilds/{guild_id}/widget.json?v={int(time.time())}'

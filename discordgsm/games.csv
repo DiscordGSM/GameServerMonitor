@@ -177,7 +177,7 @@ nolf2,No One Lives Forever 2: A Spy in H.A.R.M.'s Way (2002),gamespy1,port_query
 ns,Natural Selection (2002),source,port=27015
 ns2,Natural Selection 2 (2012),source,port_query_offset=1
 nucleardawn,Nuclear Dawn (2011),source,port=27015
-nwn1,Neverwinter Nights (2002),nwn1,port=5121
+nwn,Neverwinter Nights (2002),nwn1,port=5121
 nwn2,Neverwinter Nights 2 (2006),nwn2,port=5121
 
 openarena,OpenArena (2005),quake3,port_query=27960

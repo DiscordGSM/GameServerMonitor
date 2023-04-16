@@ -16,16 +16,15 @@ Path(log_path).mkdir(parents=True, exist_ok=True)
 # Set up TimedRotatingFileHandler
 file_handler = TimedRotatingFileHandler(os.path.join(log_path, 'discordgsm.log'), when='D', encoding='utf-8')
 file_handler.namer = lambda name: name.replace('.log', '') + '.log'
-utils.setup_logging(handler=file_handler, root=True)
+formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', '%Y-%m-%d %H:%M:%S', style='{')
+utils.setup_logging(handler=file_handler, formatter=formatter, root=True)
 
 # Set up logger
 handler = logging.StreamHandler()
 
+# If the console supports colour, then use colour formatter
 if isinstance(handler, logging.StreamHandler) and stream_supports_colour(handler.stream):
     formatter = _ColourFormatter()
-else:
-    dt_fmt = '%Y-%m-%d %H:%M:%S'
-    formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
 
 handler.setFormatter(formatter)
 

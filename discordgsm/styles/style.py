@@ -167,16 +167,16 @@ class Style(ABC):
     @staticmethod
     def get_player_data(server: Server):
         if 'numplayers' in server.result:
-            players = int(server.result['numplayers'])
+            players = int(server.result.get('numplayers', 0))
         else:
             players = int(server.result.get('raw', {}).get('numplayers', len(server.result['players'])))
 
         if 'numbots' in server.result:
-            bots = int(server.result['numbots'])
+            bots = int(server.result.get('numbots', 0))
         else:
             bots = int(server.result.get('raw', {}).get('numbots', len(server.result['bots'])))
 
-        maxplayers = int(server.result['maxplayers'])
+        maxplayers = int(server.result.get('maxplayers', 0))
 
         return players, bots, maxplayers
 

@@ -58,6 +58,14 @@ class Logger:
         logger.error(msg, *args, **kwargs)
 
     @staticmethod
+    def critical(msg, *args, **kwargs):
+        logger.critical(msg, *args, **kwargs)
+
+    @staticmethod
+    def exception(msg, *args, **kwargs):
+        logger.exception(msg, *args, **kwargs)
+
+    @staticmethod
     def debug(msg, *args, **kwargs):
         if os.getenv('APP_DEBUG', '').lower() == 'true':
             logger.debug(msg, *args, **kwargs)

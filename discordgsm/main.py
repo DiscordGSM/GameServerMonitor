@@ -53,12 +53,9 @@ async def on_ready():
     """Called when the client is done preparing the data received from Discord."""
     await client.wait_until_ready()
 
-    Logger.info(f'Starting Game Server Monitor {__version__}')
     Logger.info(f'Connected to {database.type} database')
     Logger.info(f'Logged on as {client.user}')
     Logger.info(f'Add to Server: {invite_link}')
-    Logger.info('Thank you for using Game Server Monitor, you may consider sponsoring us ♥.')
-    Logger.info('Github Sponsors: https://github.com/sponsors/DiscordGSM')
 
     if not public and not whitelist_guilds:
         Logger.warning('Environment variable WHITELIST_GUILDS is empty! Please set the environment variable.')

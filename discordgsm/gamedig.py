@@ -149,14 +149,16 @@ if __name__ == '__main__':
         games = OrderedDict(sorted(gamedig.games.items()))
 
         with open(os.path.join(gamedig.path, 'games.csv'), 'w', encoding='utf8') as f:
-            f.write('Id, Name, Protocol, Options\n')
+            f.write('Id,Name,Protocol,Options\n')
             first_char = ''
 
             for game_id, game in games.items():
+                game_id = game_id.strip()
+
                 if first_char != game_id[0] and (first_char := game_id[0]):
                     f.write('\n')
 
-                options = ';'.join([f'{k}={v}' for k, v in game['options'].items()])
-                f.write(f"{game_id},{game['fullname']},{game['protocol']},{options}\n")
+                options = ';'.join([f'{str(k).strip()}={str(v).strip()}' for k, v in game['options'].items()])
+                f.write(f"{game_id},{game['fullname'].strip()},{game['protocol'].strip()},{options}\n")
 
         print('Sorted games.csv.')

@@ -1,4 +1,4 @@
-Id, Name, Protocol, Options
+Id,Name,Protocol,Options
 
 7d2d,7 Days to Die (2013),source,port=26900;port_query_offset=1
 
@@ -138,8 +138,8 @@ insurgency,Insurgency (2014),source,port=27015
 insurgencysandstorm,Insurgency: Sandstorm (2018),source,port=27015;port_query_offset=1
 ironstorm,Iron Storm (2002),gamespy1,port_query=3505
 
-jabronibrawl, Jabroni Brawl: Episode 3 (2022),source, port=27015
 jamesbondnightfire,James Bond 007: Nightfire (2002),gamespy1,port_query=6550
+jbep3,Jabroni Brawl: Episode 3 (2022),source,port=27015
 jc3mp,Just Cause 3 - Multiplayer (2017),source,port=4200;port_query_offset=1
 
 killingfloor,Killing Floor (2009),unreal2,port=7707;port_query_offset=1

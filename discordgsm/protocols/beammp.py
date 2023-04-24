@@ -1,5 +1,4 @@
 import re
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -9,29 +8,6 @@ from discordgsm.protocols.protocol import Protocol
 
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
-
-
-@dataclass
-class Response:
-    players: str
-    playerslist: str
-    maxplayers: str
-    ip: str
-    location: str
-    port: str
-    dport: str
-    map: str
-    private: bool
-    sname: str
-    version: str
-    cversion: str
-    official: bool
-    owner: str
-    sdesc: str
-    pps: str
-    modlist: str
-    modstotal: str
-    modstotalsize: str
 
 
 class BeamMP(Protocol):
@@ -49,7 +25,7 @@ class BeamMP(Protocol):
             async with session.get(url) as response:
                 servers = await response.json()
 
-        master_servers = {f'{server["ip"]}:{server["port"]}': Response(**server) for server in servers}
+        master_servers = {f'{server["ip"]}:{server["port"]}': server for server in servers}
 
         # Temp fix the api bug, full update the BeamMP.master_servers when response servers > 1000
         if BeamMP.master_servers is None or len(servers) > 1000:
@@ -68,19 +44,19 @@ class BeamMP(Protocol):
         if key not in BeamMP.master_servers:
             raise Exception('Server not found')
 
-        server: Response = BeamMP.master_servers[key]
+        server = dict(BeamMP.master_servers[key])
         result: GamedigResult = {
-            'name': re.sub(r'\^[0-9|a-f|l-p|r]', '', server.sname),
-            'map': re.sub(r'\/?levels\/(.+)\/info\.json', r'\1', server.map).replace('_', ' ').title(),
-            'password': server.private,
-            'numplayers': int(server.players),
+            'name': re.sub(r'\^[0-9|a-f|l-p|r]', '', str(server['sname'])),
+            'map': re.sub(r'\/?levels\/(.+)\/info\.json', r'\1', str(server['map'])).replace('_', ' ').title(),
+            'password': bool(server.get('private', False)),
+            'numplayers': int(server['players']),
             'numbots': 0,
-            'maxplayers': int(server.maxplayers),
-            'players': [{'name': name, 'raw': {}} for name in server.playerslist.split(';')],
+            'maxplayers': int(server['maxplayers']),
+            'players': [{'name': name, 'raw': {}} for name in str(server['playerslist']).split(';')],
             'bots': [],
             'connect': key,
             'ping': 0,
-            'raw': server.__dict__
+            'raw': server
         }
 
         return result

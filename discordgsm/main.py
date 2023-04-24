@@ -300,7 +300,7 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
         except Exception as e:
             content = t('function.query_server_modal.fail_to_query', interaction.locale).format(game_id=game_id, address=address, query_port=query_port)
             await interaction.followup.send(content, ephemeral=True)
-            Logger.debug(f'Query servers: ({game_id})[{address}:{query_port}] Error: {e}')
+            Logger.debug(f'Query servers: ({game_id})[{address}:{query_port}] {type(e).__name__}: {e}')
             return
 
         # Create new server object
@@ -964,7 +964,7 @@ async def pre_query(protocol: Protocol):
             Logger.debug(f'Pre query servers: [{protocol.name}] Success.')
             return True
     except Exception as e:
-        Logger.debug(f'Pre query servers: [{protocol.name}] Fail to query. Error: {e}')
+        Logger.debug(f'Pre query servers: [{protocol.name}] Fail to query. {type(e).__name__}: {e}')
         return False
 
     return None
@@ -984,7 +984,7 @@ async def query_server(server: Server):
         server.result['raw']['__fail_query_count'] = int(raw.get('__fail_query_count', '0')) + 1
         timestamp = int(datetime.utcnow().timestamp())
         server.result['raw']['__offline_since'] = min(int(raw.get('__offline_since', timestamp)), timestamp)
-        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Error: {e}')
+        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] {type(e).__name__}: {e}')
 
     return server
 

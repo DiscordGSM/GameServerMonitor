@@ -97,6 +97,7 @@ etqw,Enemy Territory: Quake Wars (2007),doom3,port=3074;port_query=27733
 
 f12002,Formula One 2002 (2002),gamespy1,port_query=3297
 f1c9902,F1 Challenge '99-'02 (2002),gamespy1,port_query=34397
+factorio,Factorio (2016),factorio,port=34197
 farcry,Far Cry (2004),ase,port=49001;port_query_offset=123
 farcry2,Far Cry 2 (2008),ase,port_query=14001
 fear,F.E.A.R. (2005),gamespy2,port_query=27888

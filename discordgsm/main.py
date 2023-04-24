@@ -251,6 +251,9 @@ def query_server_modal(game: GamedigGame, locale: Locale):
     elif game['id'] == 'gportal':
         query_extra['serverId'] = TextInput(label='GPORTAL server id')
         modal.add_item(query_extra['serverId'])
+    elif game['id'] == 'factorio':
+        query_extra['gameId'] = TextInput(label='Factorio game id')
+        modal.add_item(query_extra['gameId'])
 
     if game['id'] == 'discord':
         query_param['host'].label = t('modal.text_input.guild_id.label', locale)

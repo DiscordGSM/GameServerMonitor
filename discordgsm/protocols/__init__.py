@@ -6,6 +6,7 @@ from .beammp import BeamMP
 from .discord import Discord
 from .doom3 import Doom3
 from .eco import Eco
+from .factorio import Factorio
 from .fivem import FiveM
 from .gamespy1 import GameSpy1
 from .gamespy2 import GameSpy2

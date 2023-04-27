@@ -73,6 +73,8 @@ environment = Environment([
     Variable('COMMAND_QUERY_COOLDOWN', 'The /queryserver command cooldown in seconds. (Administrator will not be affected)', float, default=5),
     Variable('HEROKU_APP_NAME', 'Heroku application name. (Heroku only)', str),
     Variable('WEB_API_ENABLE', 'Enable Web API feature. (Web server only)', bool, default=False),
+    Variable('FACTORIO_USERNAME', 'The factorio username associated with the auth token.', str),
+    Variable('FACTORIO_TOKEN', 'The factorio auth token.', str),
 ])
 
 

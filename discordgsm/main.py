@@ -20,7 +20,7 @@ from discordgsm.logger import Logger
 from discordgsm.protocols import Protocol, protocols
 from discordgsm.server import Server
 from discordgsm.service import (database, gamedig, invite_link, public,
-                                timezones, tz, whitelist_guilds)
+                                server_limit, timezones, tz, whitelist_guilds)
 from discordgsm.styles import Style, Styles
 from discordgsm.translator import Translator, t
 from discordgsm.version import __version__
@@ -379,7 +379,7 @@ async def command_addserver(interaction: Interaction, game_id: str):
 
     if game := await find_game(interaction, game_id):
         if public:
-            limit = int(os.getenv('APP_PUBLIC_SERVER_LIMIT', '10'))
+            limit = server_limit(interaction.user.id)
 
             if len(database.all_servers(guild_id=interaction.guild.id)) > limit:
                 content = t('command.addserver.limit_exceeded', interaction.locale).format(limit=limit)

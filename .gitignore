@@ -134,3 +134,4 @@ data/servers.db
 data/servers.sql
 node_modules
 public/static/guilds.json
+sponsors.json

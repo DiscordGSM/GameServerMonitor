@@ -36,12 +36,12 @@ timezones: set[str] = zoneinfo.available_timezones()
 def tz(timezone: str):
     return ZoneInfo(timezone)
 
+if public:
+    sponsors_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'sponsors.json')
 
-sponsors_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'sponsors.json')
-
-if not os.path.isfile(sponsors_file):
-    with open(sponsors_file, 'w', encoding='utf8') as f:
-        json.dump({'348921660361146380': {'id': 'OTg1OTU1Nzg0NTE1MDE4ODQy', 'limit': 30}}, f, indent=4)
+    if not os.path.isfile(sponsors_file):
+        with open(sponsors_file, 'w', encoding='utf8') as f:
+            json.dump({'348921660361146380': {'id': 'OTg1OTU1Nzg0NTE1MDE4ODQy', 'limit': 30}}, f, indent=4)
 
 
 def server_limit(user_id: int):

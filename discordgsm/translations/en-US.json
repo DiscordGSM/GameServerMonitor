@@ -49,7 +49,7 @@
     "function.find_servers.parameter_error": "`address` and `query_port` must be given together.",
     "function.query_server_modal.invalid_port": "The port number must be between 0 and 65535.",
     "function.query_server_modal.already_exists": "This server already exists in the channel.",
-    "function.query_server_modal.fail_to_query": "Fail to query `{game_id}` server `{address}:{query_port}`. Please try again.",
+    "function.query_server_modal.fail_to_query": "Your `{game_id}` server `{address}:{query_port}` is not queryable.",
     "function.query_server_modal.success": "Query successfully!",
     "missing_permission.manage_messages": "Missing Permission: `Manage Messages`",
     "missing_permission.send_messages": "Missing Permission: `Send Messages`",

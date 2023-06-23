@@ -48,9 +48,12 @@ class Source(Protocol):
         if tags := info.get('Keywords'):
             result['raw']['tags'] = str(tags).split(',')
 
-        if info.get('GameID') == 629760:  # mordhau
-            result['numplayers'] = int(next((tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'B:'), '0'))
-        elif info.get('GameID') == 252490:  # rust
-            result['maxplayers'] = int(next((tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'mp'), result['maxplayers']))
+        if game_id := info.get('GameID'):
+            if game_id == 629760:  # mordhau, fix numplayers
+                result['numplayers'] = int(next((tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'B:'), '0'))
+            elif game_id == 252490:  # rust, fix maxplayers
+                result['maxplayers'] = int(next((tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'mp'), result['maxplayers']))
+            elif game_id == 346110:  # arkse, fix numplayers
+                result['numplayers'] = len(result['players'])
 
         return result

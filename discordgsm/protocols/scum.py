@@ -1,7 +1,7 @@
-import time
 from typing import TYPE_CHECKING
 
-import aiohttp
+import opengsq
+from opengsq.socket_async import SocketAsync
 
 from discordgsm.protocols.protocol import Protocol
 
@@ -10,38 +10,38 @@ if TYPE_CHECKING:
 
 
 class Scum(Protocol):
+    pre_query_required = True
     name = 'scum'
+    master_servers = None
+
+    async def pre_query(self):
+        master_servers = await opengsq.Scum.query_master_servers()
+        Scum.master_servers = {f"{server['ip']}:{server['port']}": server for server in master_servers}
 
     async def query(self):
+        if Scum.master_servers is None:
+            await self.pre_query()
+
         host, port = str(self.kv['host']), int(str(self.kv['port']))
-        url = f'https://api.hellbz.de/scum/api.php?address={host}'
-        start = time.time()
+        ip = SocketAsync.gethostbyname(host)
+        host_address = f'{ip}:{port}'
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                data = await response.json()
-                end = time.time()
+        if host_address not in Scum.master_servers:
+            raise Exception('Server not found')
 
-        if not data['success']:
-            raise Exception(data['error'])
+        server = dict(Scum.master_servers[host_address])
+        result: GamedigResult = {
+            'name': server['name'],
+            'map': '',
+            'password': server['password'],
+            'numplayers': server['numplayers'],
+            'numbots': 0,
+            'maxplayers': server['maxplayers'],
+            'players': [],
+            'bots': [],
+            'connect': f"{host}:{server['port'] - 2}",
+            'ping': 0,
+            'raw': server
+        }
 
-        servers = data['data']
-
-        if server := next((x for x in servers if int(x['q_port']) == port), None):
-            result: GamedigResult = {
-                'name': server['name'],
-                'map': '',
-                'password': server['password'] == 1,
-                'numplayers': server['players'],
-                'numbots': 0,
-                'maxplayers': server['players_max'],
-                'players': [],
-                'bots': [],
-                'connect': f"{host}:{server['port']}",
-                'ping': int((end - start) * 1000),
-                'raw': server
-            }
-
-            return result
-
-        raise Exception('Invalid query port')
+        return result

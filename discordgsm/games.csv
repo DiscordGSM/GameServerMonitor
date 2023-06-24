@@ -116,7 +116,7 @@ gore,Gore: Ultimate Soldier (2002),gamespy1,port=27777;port_query_offset=1
 gportal,GPORTAL,gportal,
 graw,Tom Clancy's Ghost Recon Advanced Warfighter (2006),gamespy2,port_query=15250
 graw2,Tom Clancy's Ghost Recon Advanced Warfighter 2 (2007),gamespy2,port_query=16250
-groundbreach,Ground Breach (2018),source,port=27015
+groundbranch,Ground Branch (2018),source,port=27015
 gunmanchronicles,Gunman Chronicles (2000),source,port=27015
 
 had2,Hidden & Dangerous 2 (2003),gamespy1,port=11001;port_query_offset=3

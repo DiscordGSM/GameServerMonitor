@@ -1,4 +1,4 @@
-from discordgsm import Logger, __version__, client, env
+from discordgsm import Logger, __version__, env
 
 if __name__ == '__main__':
     Logger.info(f'Started Discord Game Server Monitor {__version__}')
@@ -15,6 +15,7 @@ if __name__ == '__main__':
         Logger.debug(f'Static token: {items[0]}.{items[1]}.{hmac_hide}')
 
         # Run the bot
+        from discordgsm.main import client
         client.run(token)
 
     Logger.info('Stopped Discord Game Server Monitor.')

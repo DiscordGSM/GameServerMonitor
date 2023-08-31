@@ -17,6 +17,7 @@ arma2oa,ARMA 2: Operation Arrowhead (2010),source,port=2302;port_query_offset=1
 arma3,ARMA 3 (2013),source,port=2302;port_query_offset=1
 armacwa,ARMA: Cold War Assault (2011),gamespy1,port=2302;port_query_offset=1
 armar,ARMA: Resistance (2011),gamespy1,port=2302;port_query_offset=1
+armareforger,Arma Reforger (2022),source,port=2001;port_query=17777
 assettocorsa,Assetto Corsa (2014),assettocorsa,port=9610
 atlas,Atlas (2018),source,port=5761;port_query_offset=51800
 avp2,Aliens versus Predator 2 (2001),gamespy1,port=27888

@@ -105,7 +105,7 @@ fear,F.E.A.R. (2005),gamespy2,port_query=27888
 fivem,Grand Theft Auto V - FiveM (2013),fivem,port=30120
 flashpoint,Operation Flashpoint: Cold War Crisis (2001),gamespy1,port=2302;port_query_offset=1
 flashpointresistance,Operation Flashpoint: Resistance (2002),gamespy1,port=2302;port_query_offset=1
-forrest,The Forrest (2014),source,port=27015;port_query_offset=1
+forest,The Forest (2014),source,port=27015;port_query_offset=1
 fortressforever,Fortress Forever (2007),source,port=27015
 fs22,Farming Simulator 22 (2021),source,port=27015
 

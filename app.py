@@ -4,6 +4,7 @@ import re
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
+from flask_cors import CORS
 
 from discordgsm.database import Database
 from discordgsm.environment import env, environment
@@ -15,6 +16,8 @@ from discordgsm.version import __version__
 load_dotenv()
 
 app = Flask(__name__, static_url_path='', static_folder='public/static', template_folder='public')
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+
 cmd = [command.to_dict() for command in tree.get_commands(guild=None if public or len(whitelist_guilds) <= 0 else whitelist_guilds[0])]
 
 

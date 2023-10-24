@@ -26,7 +26,14 @@ class Source(Protocol):
                 return []
 
         start = time.time()
-        info, players = await asyncio.gather(source.get_info(), get_players())
+
+        # The Front incorrect info server name fix
+        if self.kv['type'] == 'front':
+            info, players, rules = await asyncio.gather(source.get_info(), get_players(), source.get_rules())
+            info['Name'] = rules['ServerName_s']  # Override the info server name
+        else:
+            info, players = await asyncio.gather(source.get_info(), get_players())
+
         ping = int((time.time() - start) * 1000)
         players.sort(key=lambda x: x['Duration'], reverse=True)
         players, bots = players[info['Bots']:], players[:info['Bots']]
@@ -50,9 +57,11 @@ class Source(Protocol):
 
         if game_id := info.get('GameID'):
             if game_id == 629760:  # mordhau, fix numplayers
-                result['numplayers'] = int(next((tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'B:'), '0'))
+                result['numplayers'] = int(
+                    next((tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'B:'), '0'))
             elif game_id == 252490:  # rust, fix maxplayers
-                result['maxplayers'] = int(next((tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'mp'), result['maxplayers']))
+                result['maxplayers'] = int(next(
+                    (tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'mp'), result['maxplayers']))
             elif game_id == 346110:  # arkse, fix numplayers
                 result['numplayers'] = len(result['players'])
 

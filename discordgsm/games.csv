@@ -67,6 +67,7 @@ cs16,Counter-Strike 1.6 (2003),source,port=27015
 cscz,Counter-Strike: Condition Zero (2004),source,port=27015
 csgo,Counter-Strike: Global Offensive (2012),source,port=27015
 css,Counter-Strike: Source (2004),source,port=27015
+cs2,Counter-Strike 2 (2023),source,port=27015
 
 daikatana,Daikatana (2000),quake2,port=27982;port_query_offset=10
 darkesthour,Darkest Hour: Europe '44-'45 (2008),unreal2,port=7757;port_query_offset=1
@@ -107,6 +108,7 @@ flashpoint,Operation Flashpoint: Cold War Crisis (2001),gamespy1,port=2302;port_
 flashpointresistance,Operation Flashpoint: Resistance (2002),gamespy1,port=2302;port_query_offset=1
 forest,The Forest (2014),source,port=27015;port_query_offset=1
 fortressforever,Fortress Forever (2007),source,port=27015
+front,The Front (2023),source,port=27015
 fs22,Farming Simulator 22 (2021),source,port=27015
 
 garrysmod,Garry's Mod (2004),source,port=27015

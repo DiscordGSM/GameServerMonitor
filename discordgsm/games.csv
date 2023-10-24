@@ -256,7 +256,7 @@ synergy,Synergy,source,port=27015
 tacticalops,Tactical Ops,gamespy1,port=7777;port_query_offset=1
 takeonhelicopters,Take On Helicopters (2011),gamespy1,port=2302;port_query_offset=1
 teamfactor,Team Factor,gamespy1,port_query=57778
-teamspeak3,Teamspeak 3,teamspeak3,port=9987
+teamspeak3,Teamspeak 3,teamspeak3,port=10011
 terminus,Terminus,gamespy1,port_query=12286
 terraria,Terraria - TShock (2011),terraria,port=7777;port_query_offset=101
 tf2,Team Fortress 2,source,port=27015

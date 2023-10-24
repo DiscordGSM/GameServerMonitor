@@ -239,23 +239,19 @@ def query_server_modal(game: GamedigGame, locale: Locale):
     modal = Modal(title=title).add_item(query_param['host']).add_item(query_param['port'])
     query_extra: Dict[str, TextInput] = {}
 
-    if game['id'] == 'teamspeak2':
-        query_extra['teamspeakQueryPort'] = TextInput(label='TeamSpeak Query Port', max_length='5', default=51234)
-        modal.add_item(query_extra['teamspeakQueryPort'])
-    elif game['id'] == 'teamspeak3':
-        query_extra['teamspeakQueryPort'] = TextInput(label='TeamSpeak Query Port', max_length='5', default=10011)
-        modal.add_item(query_extra['teamspeakQueryPort'])
-    elif game['id'] == 'terraria':
+    if game['id'] == 'terraria':
         query_extra['_token'] = TextInput(label='REST user token')
         modal.add_item(query_extra['_token'])
     elif game['id'] == 'gportal':
         query_extra['serverId'] = TextInput(label='GPORTAL server id')
         modal.add_item(query_extra['serverId'])
-
-    if game['id'] == 'discord':
+    elif game['id'] == 'discord':
         query_param['host'].label = t('modal.text_input.guild_id.label', locale)
         modal.remove_item(query_param['port'])
         query_param['port']._value = '0'
+    elif game['id'] == 'teamspeak3':
+        query_extra['voice_port'] = TextInput(label='Voice Port', placeholder='Voice port', default=9987)
+        modal.add_item(query_extra['voice_port'])
 
     return modal, query_param, query_extra
 

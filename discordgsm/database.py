@@ -531,8 +531,11 @@ class Database:
 
     def __update_servers_channel_id(self, servers: list[Server], channel_id: int):
         if self.driver == Driver.MongoDB:
-            max_position = self.collection.find_one({'channel_id': channel_id}, sort=[
-                                                    ('position', -1)])["position"]
+            try:
+                max_position = self.collection.find_one({'channel_id': channel_id}, sort=[
+                                                        ('position', -1)])["position"]
+            except TypeError:
+                max_position = 0
 
             operations = []
 

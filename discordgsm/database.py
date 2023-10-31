@@ -302,7 +302,8 @@ class Database:
     def add_server(self, s: Server):
         if self.driver == Driver.MongoDB:
             try:
-                max_position = self.collection.find_one({'channel_id': s.channel_id}, sort=[('position', -1)])["position"]
+                max_position = self.collection.find_one({'channel_id': s.channel_id}, sort=[
+                                                        ('position', -1)])["position"]
             except TypeError:
                 max_position = 0
 
@@ -462,15 +463,17 @@ class Database:
     def __swap_servers_positon(self, server1: Server, server2: Server):
         if self.driver == Driver.MongoDB:
             # Update server1's position and message_id to server2's values
-            self.collection.update_one({"_id": server1.id}, {"$set": {"position": server2.position, "message_id": server2.message_id}})
+            self.collection.update_one({"_id": server1.id}, {
+                                       "$set": {"position": server2.position, "message_id": server2.message_id}})
 
             # Update server2's position and message_id to the original server1's values
-            self.collection.update_one({"_id": server2.id}, {"$set": {"position": server1.position, "message_id": server1.message_id}})
+            self.collection.update_one({"_id": server2.id}, {
+                                       "$set": {"position": server1.position, "message_id": server1.message_id}})
         else:
             sql = 'UPDATE servers SET position = case when position = ? then ? else ? end, message_id = case when message_id = ? then ? else ? end WHERE id IN (?, ?)'
             cursor = self.cursor()
             cursor.execute(self.transform(sql), (server1.position, server2.position, server1.position,
-                        server1.message_id, server2.message_id, server1.message_id, server1.id, server2.id))
+                                                 server1.message_id, server2.message_id, server1.message_id, server1.id, server2.id))
             self.conn.commit()
             cursor.close()
 
@@ -482,11 +485,13 @@ class Database:
 
     def server_exists(self, channel_id: int, address: str, query_port: str):
         if self.driver == Driver.MongoDB:
-            exists = self.collection.find_one({"channel_id": channel_id, "address": address, "query_port": query_port}) is not None
+            exists = self.collection.find_one(
+                {"channel_id": channel_id, "address": address, "query_port": query_port}) is not None
         else:
             sql = 'SELECT id FROM servers WHERE channel_id = ? AND address = ? AND query_port = ?'
             cursor = self.cursor()
-            cursor.execute(self.transform(sql), (channel_id, address, query_port))
+            cursor.execute(self.transform(
+                sql), (channel_id, address, query_port))
             exists = True if cursor.fetchone() else False
             cursor.close()
 
@@ -494,7 +499,8 @@ class Database:
 
     def update_server_style_id(self, server: Server):
         if self.driver == Driver.MongoDB:
-            self.collection.update_one({"_id": server.id}, {"$set": {"style_id": server.style_id}})
+            self.collection.update_one(
+                {"_id": server.id}, {"$set": {"style_id": server.style_id}})
             return
 
         sql = 'UPDATE servers SET style_id = ? WHERE id = ?'
@@ -525,7 +531,8 @@ class Database:
 
     def __update_servers_channel_id(self, servers: list[Server], channel_id: int):
         if self.driver == Driver.MongoDB:
-            max_position = self.collection.find_one({'channel_id': channel_id}, sort=[('position', -1)])["position"]
+            max_position = self.collection.find_one({'channel_id': channel_id}, sort=[
+                                                    ('position', -1)])["position"]
 
             operations = []
 
@@ -564,6 +571,8 @@ class Database:
         if to_driver == Driver.MongoDB.value:
             servers = self.all_servers()
             documents = [server.__dict__ for server in servers]
+            documents = [{k: v for k, v in doc.items() if k != 'id'}
+                         for doc in documents]
             file = os.path.join(export_path, 'servers.json')
 
             with open(file, 'w', encoding='utf-8') as f:

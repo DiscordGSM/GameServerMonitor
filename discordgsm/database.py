@@ -571,21 +571,20 @@ class Database:
         else:
             file = os.path.join(export_path, 'servers.sql')
 
-            if self.driver == Driver.SQLite.value:
+            if self.driver == Driver.SQLite:
                 # Export data to SQL file
                 with open(file, 'w', encoding='utf-8') as f:
                     for line in self.conn.iterdump():
                         f.write('%s\n' % line)
-            elif self.driver == Driver.PostgreSQL.value:
-                cursor = self.cursor()
+            elif self.driver == Driver.PostgreSQL:
+                DATABASE_URL: str = os.getenv('DATABASE_URL', '')
 
-                # Export data to SQL file
-                with open(file, 'w', encoding='utf-8') as f:
-                    cursor.copy_expert(
-                        "COPY servers TO STDOUT WITH CSV DELIMITER ';'", f)
+                # Define the command to export the table
+                cmd = f"pg_dump {DATABASE_URL} -f {file}"
 
-                cursor.close()
-            elif self.driver == Driver.MongoDB.value:
+                # Execute the command
+                os.system(cmd)
+            elif self.driver == Driver.MongoDB:
                 print("MongoDB does not support exporting to SQL file directly.")
                 return
 

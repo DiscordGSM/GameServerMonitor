@@ -46,8 +46,8 @@ class Large(Medium):
 
             # Replace Markdown
             # https://support.discord.com/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline-
-            name = name.replace('*', '\\*').replace('_', '\\_').replace('~',
-                                                                        '\\~').replace('`', '\\`').replace('>', '\\>')
+            name = name.replace('*', '\\*').replace('_', '\\_').replace('~', '\\~')
+            name = name.replace('`', '\\`').replace('>', '\\>') + '\n'
 
             index = i % len(values)
             counts[index] += len(name)
@@ -55,12 +55,12 @@ class Large(Medium):
             player_left = len(filtered_players) - player_count
             remaining_players_message = f'... {player_left} more player{"" if player_left <= 1 else "s"}'
 
-            # Embed must be 1024 or fewer in length. (Actually 1000)
-            if (counts[index] + len(remaining_players_message)) >= 1000:
+            # Embed must be 1024 or fewer in length.
+            if (counts[index] + len(remaining_players_message)) >= 1024:
                 values[index] += remaining_players_message
                 break
 
-            values[index] += f'{name}\n'
+            values[index] += name
             player_count += 1
 
         for i, name in enumerate([field_name, empty_value, empty_value]):

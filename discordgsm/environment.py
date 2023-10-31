@@ -67,7 +67,7 @@ environment = Environment([
     Variable('APP_ADVERTISE_TYPE', 'Presence advertise type. server_count = 0, individually = 1, player_stats = 2', AdvertiseType, default=0),
     Variable('TASK_QUERY_SERVER', 'Query servers task scheduled time in seconds.', float, default=60),
     Variable('TASK_QUERY_SERVER_TIMEOUT', 'Query servers task timeout in seconds.', float, default=15),
-    Variable('DB_CONNECTION', 'Database type. Accepted value: sqlite, pgsql', str, default='sqlite'),
+    Variable('DB_CONNECTION', 'Database type. Accepted value: sqlite, pgsql, mongodb', str, default='sqlite'),
     Variable('DATABASE_URL', 'Database connection url.', str),
     Variable('COMMAND_QUERY_PUBLIC', 'Whether the /queryserver command should be available to all users.', bool, default=False),
     Variable('COMMAND_QUERY_COOLDOWN', 'The /queryserver command cooldown in seconds. (Administrator will not be affected)', float, default=5),

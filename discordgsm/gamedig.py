@@ -120,6 +120,10 @@ class Gamedig:
         return 0 <= port_number <= 65535
 
     async def query(self, server: Server):
+        # Backward compatibility
+        if server.game_id == 'forrest':
+            server.game_id = 'forest'
+
         return await self.run({**{
             'type': server.game_id,
             'host': server.address,

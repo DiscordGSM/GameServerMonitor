@@ -4,6 +4,7 @@ Flask==3.0.0
 gunicorn==21.2.0
 opengsq==2.1.2
 psycopg2-binary==2.9.9
+pymongo==4.5.0
 python-dotenv==1.0.0
 pywin32==306;platform_system=="Windows"
 tzdata==2023.3

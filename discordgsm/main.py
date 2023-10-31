@@ -44,7 +44,7 @@ def cache_message(message: Message):
 intents = discord.Intents.default()
 shard_ids = [int(shard_id) for shard_id in os.getenv('APP_SHARD_IDS').replace(';', ',').split(',') if shard_id] if len(os.getenv('APP_SHARD_IDS', '')) > 0 else None
 shard_count = int(os.getenv('APP_SHARD_COUNT', '1'))
-client = Client(intents=intents) if not public else AutoShardedClient(intents=intents, shard_ids=shard_ids, shard_count=shard_count)
+client = AutoShardedClient(intents=intents, shard_ids=shard_ids, shard_count=shard_count)
 
 
 # region Application event
@@ -53,7 +53,7 @@ async def on_ready():
     """Called when the client is done preparing the data received from Discord."""
     await client.wait_until_ready()
 
-    Logger.info(f'Connected to {database.type} database')
+    Logger.info(f'Connected to {database.driver.value} database')
     Logger.info(f'Logged on as {client.user}')
     Logger.info(f'Add to Server: {invite_link}')
 
@@ -92,7 +92,7 @@ async def on_guild_join(guild: discord.Guild):
 @client.event
 async def on_guild_remove(guild: discord.Guild):
     """Remove all associated servers in database when discordgsm leaves"""
-    database.factory_reset(guild.id)
+    database.delete_servers(guild_id=guild.id)
     Logger.info(f'{client.user} left {guild.name}({guild.id}), associated servers were deleted.')
 
 
@@ -266,7 +266,7 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
         for item in params.values():
             item.default = item._value = str(item._value).strip()
 
-        game_id, address, query_port = game['id'], str(query_param['host']), str(query_param['port'])
+        game_id, address, query_port = game['id'], str(query_param['host']), int(str(query_param['port']))
 
         # Validate the port number
         for key in params.keys():
@@ -396,7 +396,7 @@ async def command_delserver(interaction: Interaction, address: str, query_port: 
 
     if server := await find_server(interaction, address, query_port):
         await interaction.response.defer(ephemeral=True)
-        database.delete_server(server)
+        database.delete_servers(servers=[server])
 
         if await resend_channel_messages(interaction):
             await interaction.delete_original_response()
@@ -428,7 +428,7 @@ async def command_factoryreset(interaction: Interaction):
     async def button_callback(interaction: Interaction):
         await interaction.response.defer(ephemeral=True)
         servers = database.all_servers(guild_id=interaction.guild.id)
-        database.factory_reset(interaction.guild.id)
+        database.delete_servers(guild_id=interaction.guild.id)
 
         async def purge_channel(channel_id: int):
             channel = client.get_channel(channel_id)
@@ -544,7 +544,7 @@ async def command_editstyledata(interaction: Interaction, address: str, query_po
         async def modal_on_submit(interaction: Interaction):
             await interaction.response.defer(ephemeral=True)
             server.style_data.update({k: str(v) for k, v in edit_fields.items()})
-            database.update_server_style_data(server)
+            database.update_servers_style_data([server])
             await refresh_channel_messages(interaction)
 
         modal.on_submit = modal_on_submit
@@ -567,11 +567,8 @@ async def command_switch(interaction: Interaction, channel: discord.TextChannel,
 
     if servers := await find_servers(interaction, address, query_port):
         await interaction.response.defer(ephemeral=True)
+        database.update_servers(servers, channel_id=channel.id)
 
-        for server in servers:
-            server.channel_id = channel.id
-
-        database.update_servers_channel_id(servers)
         await resend_channel_messages(None, interaction.channel.id)
         await resend_channel_messages(None, channel.id)
 
@@ -683,7 +680,7 @@ async def command_setalert(interaction: Interaction, address: str, query_port: a
                 webhook_url = str(text_input_webhook_url).strip()
                 content = str(text_input_webhook_content).strip()
                 server.style_data.update({'_alert_webhook_url': webhook_url, '_alert_content': content})
-                database.update_server_style_data(server)
+                database.update_servers_style_data([server])
 
             modal.on_submit = modal_on_submit
             await interaction.response.send_modal(modal)

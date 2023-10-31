@@ -64,10 +64,10 @@ crysis2,Crysis 2 (2011),gamespy3,port=64000
 crysiswars,Crysis Wars (2008),gamespy3,port=64100
 cs15,Counter-Strike 1.5 (2002),won,port=27015
 cs16,Counter-Strike 1.6 (2003),source,port=27015
+cs2,Counter-Strike 2 (2023),source,port=27015
 cscz,Counter-Strike: Condition Zero (2004),source,port=27015
 csgo,Counter-Strike: Global Offensive (2012),source,port=27015
 css,Counter-Strike: Source (2004),source,port=27015
-cs2,Counter-Strike 2 (2023),source,port=27015
 
 daikatana,Daikatana (2000),quake2,port=27982;port_query_offset=10
 darkesthour,Darkest Hour: Europe '44-'45 (2008),unreal2,port=7757;port_query_offset=1
@@ -127,12 +127,12 @@ halo,Halo (2003),gamespy2,port=2302
 halo2,Halo 2 (2007),gamespy2,port=2302
 heretic2,Heretic II (1998),gamespy1,port=27900;port_query_offset=1
 hexen2,Hexen II (1997),hexen2,port=26900;port_query_offset=50
+hfnaw,Holdfast: Nations at War (2020),source,port=27000
 hidden,The Hidden (2005),source,port=27015
 hl2dm,Half-Life 2: Deathmatch (2004),source,port=27015
 hldm,Half-Life Deathmatch (1998),source,port=27015
 hldms,Half-Life Deathmatch: Source (2005),source,port=27015
 hll,Hell Let Loose (2021),source,port=27015
-hfnaw,Holdfast: Nations at War (2020),source,port=27000
 homefront,Homefront (2011),source,port=27015
 homeworld2,Homeworld 2 (2003),gamespy1,port_query=6500
 hurtworld,Hurtworld (2015),source,port=12871;port_query=12881

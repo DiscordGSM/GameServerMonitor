@@ -1,5 +1,17 @@
 from __future__ import annotations
+
+import sys
+
+if sys.version_info < (3, 10):
+    from typing_extensions import ParamSpec
+else:
+    from typing import ParamSpec
+
+from typing import Awaitable, Callable, TypeVar
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
+from functools import partial, wraps
 
 import json
 import os
@@ -39,6 +51,26 @@ drivers = [driver.value for driver in Driver]
 
 class InvalidDriverError(Exception):
     pass
+
+R = TypeVar("R")
+P = ParamSpec("P")
+
+def run_in_executor(_func: Callable[P, R]) -> Callable[P, Awaitable[R]]:
+    @wraps(_func)
+    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        func = partial(_func, *args, **kwargs)
+        return await asyncio.get_running_loop().run_in_executor(executor=None, func=func)
+
+    return wrapper
+
+
+# def run_in_executor(func):
+#     @wraps(func)
+#     def wrapper(*args, **kwargs):
+#         with ThreadPoolExecutor() as executor:
+#             loop = asyncio.get_running_loop()
+#             return loop.run_in_executor(executor, func, *args, **kwargs)
+#     return wrapper
 
 
 class Database:
@@ -179,7 +211,8 @@ class Database:
             'unique_servers': row[3],
         }
 
-    def games_servers_count(self):
+    @run_in_executor
+    def count_servers_per_game(self):
         if self.driver == Driver.MongoDB:
             pipeline = [
                 {"$group": {"_id": "$game_id", "count": {"$sum": 1}}}
@@ -198,6 +231,27 @@ class Database:
 
         return servers_count
 
+    @run_in_executor
+    def count_servers_per_channel(self):
+        if self.driver == Driver.MongoDB:
+            pipeline = [
+                {"$group": {"_id": "$channel_id", "count": {"$sum": 1}}}
+            ]
+            results = self.collection.aggregate(pipeline)
+            servers_count = {str(row['_id']): int(row['count'])
+                             for row in results}
+            results.close()
+            return servers_count
+
+        cursor = self.cursor()
+        cursor.execute(self.transform(
+            'SELECT channel_id, COUNT(*) FROM servers GROUP BY channel_id'))
+        servers_count = {str(row[0]): int(row[1]) for row in cursor.fetchall()}
+        cursor.close()
+
+        return servers_count
+
+    @run_in_executor
     def all_servers(self, *, channel_id: int = None, guild_id: int = None, message_id: int = None, game_id: str = None, filter_secret=False):
         """Get all servers"""
         if self.driver == Driver.MongoDB:
@@ -244,33 +298,7 @@ class Database:
 
         return servers
 
-    def all_channels_servers(self, servers: list[Server] = None):
-        """Convert or get servers to dict grouped by channel id"""
-        all_servers = servers if servers is not None else self.all_servers()
-        channels_servers: dict[int, list[Server]] = {}
-
-        for server in all_servers:
-            if server.channel_id in channels_servers:
-                channels_servers[server.channel_id].append(server)
-            else:
-                channels_servers[server.channel_id] = [server]
-
-        return channels_servers
-
-    def all_messages_servers(self, servers: list[Server] = None):
-        """Convert or get servers to dict grouped by message id"""
-        all_servers = servers if servers is not None else self.all_servers()
-        messages_servers: dict[int, list[Server]] = {}
-
-        for server in all_servers:
-            if server.message_id:
-                if server.message_id in messages_servers:
-                    messages_servers[server.message_id].append(server)
-                else:
-                    messages_servers[server.message_id] = [server]
-
-        return messages_servers
-
+    @run_in_executor
     def distinct_servers(self):
         """Get distinct servers (Query server purpose) (Only fetch game_id, address, query_port, query_extra, status, result)"""
         if self.driver == Driver.MongoDB:
@@ -361,6 +389,7 @@ class Database:
         self.conn.commit()
         cursor.close()
 
+    @run_in_executor
     def update_servers(self, servers: list[Server], *, channel_id: int = None):
         if channel_id is not None:
             return self.__update_servers_channel_id(servers, channel_id)
@@ -444,8 +473,8 @@ class Database:
 
         return Server.from_list(row)
 
-    def modify_server_position(self, server1: Server, direction: bool):
-        servers = self.all_servers(channel_id=server1.channel_id)
+    async def modify_server_position(self, server1: Server, direction: bool):
+        servers = await self.all_servers(channel_id=server1.channel_id)
         indices = [i for i, s in enumerate(servers) if s.id == server1.id]
 
         # Ignore when the position is the most top and bottom
@@ -572,7 +601,7 @@ class Database:
         Path(export_path).mkdir(parents=True, exist_ok=True)
 
         if to_driver == Driver.MongoDB.value:
-            servers = self.all_servers()
+            servers = asyncio.run(self.all_servers())
             documents = [server.__dict__ for server in servers]
             documents = [{k: v for k, v in doc.items() if k != 'id'}
                          for doc in documents]
@@ -686,7 +715,7 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     if args.action == 'all':
-        for server in database.all_servers():
+        for server in asyncio.run(database.all_servers()):
             print(server)
     elif args.action == 'export':
         database.export(to_driver=args.to_driver)

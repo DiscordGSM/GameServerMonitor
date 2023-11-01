@@ -111,5 +111,6 @@ class Server:
             # Filter key started with _ and filter the description since it may contain secrets
             server.query_extra = {k: v for k, v in server.query_extra.items() if not str(k).startswith('_')}
             server.style_data = {k: v for k, v in server.style_data.items() if not str(k).startswith('_') and k != 'description'}
+            server.id = str(data['_id'])  # Convert ObjectId to str
 
         return server

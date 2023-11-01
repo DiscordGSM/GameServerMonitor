@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import asyncio
 import json
 import os
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Optional
 
 import aiohttp
 import discord
@@ -30,7 +32,7 @@ load_dotenv()
 # Create table here because it will cause thread issue on service.py
 database.create_table_if_not_exists()
 
-messages: Dict[int, Message] = {}
+messages: dict[int, Message] = {}
 """DiscordGSM messages cache"""
 
 
@@ -103,7 +105,7 @@ async def on_guild_channel_delete(channel: discord.abc.GuildChannel):
     Logger.info(f'Channel #{channel.name}({channel.id}) deleted, associated servers were deleted.')
 
 
-async def sync_commands(guilds: List[discord.Object]):
+async def sync_commands(guilds: list[discord.Object]):
     """Syncs the application commands to Discord."""
     if not public:
         for guild in guilds:
@@ -221,7 +223,7 @@ async def send_alert(server: Server, alert: Alert):
 
 def query_server_modal(game: GamedigGame, locale: Locale):
     """Query server modal"""
-    query_param: Dict[str, TextInput] = {
+    query_param: dict[str, TextInput] = {
         'host': TextInput(label=t('modal.text_input.address.label', locale), placeholder=t('command.option.address', locale)),
         'port': TextInput(
             label=t('modal.text_input.query_port.label', locale),
@@ -237,7 +239,7 @@ def query_server_modal(game: GamedigGame, locale: Locale):
         title = title[:-3] + '...'
 
     modal = Modal(title=title).add_item(query_param['host']).add_item(query_param['port'])
-    query_extra: Dict[str, TextInput] = {}
+    query_extra: dict[str, TextInput] = {}
 
     if game['id'] == 'terraria':
         query_extra['_token'] = TextInput(label='REST user token')
@@ -922,7 +924,7 @@ async def tasks_query():
     query_tasks = filtered_tasks(distinct_servers)
     disabled = len(distinct_servers) - len(query_tasks)
     Logger.debug(f'Query servers: Tasks = {len(query_tasks)} servers. {disabled} servers are disabled for queries.')
-    servers: List[Server] = []
+    servers: list[Server] = []
 
     async for chunks in to_chunks(query_tasks, int(os.getenv('TASK_QUERY_CHUNK_SIZE', '50'))):
         servers += await asyncio.gather(*chunks)
@@ -939,7 +941,7 @@ async def tasks_query():
     await asyncio.gather(tasks_send_alert(), tasks_edit_messages(), tasks_presence_update(tasks_query.current_loop))
 
 
-def filtered_tasks(servers: List[Server]):
+def filtered_tasks(servers: list[Server]):
     days = int(os.getenv('TASK_QUERY_DISABLE_AFTER_DAYS', '0'))
 
     if days <= 0:
@@ -1053,7 +1055,7 @@ async def tasks_edit_messages():
     Logger.debug(f'Edit messages: Tasks: {len(grouped_servers)} messages')
 
     tasks = [edit_message(servers) for servers in grouped_servers.values()]
-    results: List[bool] = []
+    results: list[bool] = []
 
     # Discord Rate limit: 50 requests per second
     async for chunks in to_chunks(tasks, 25):
@@ -1067,7 +1069,7 @@ async def tasks_edit_messages():
     Logger.info(f'Edit messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
 
 
-async def edit_message(servers: List[Server]):
+async def edit_message(servers: list[Server]):
     """Edit message"""
     if len(servers) <= 0:
         return True

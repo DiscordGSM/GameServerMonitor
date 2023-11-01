@@ -101,6 +101,10 @@ class Style(ABC):
 
     def embed_data(self):
         title = (self.server.result['password'] and '🔒 ' or '') + self.server.result['name']
+
+        if len(title) > 256:
+            title = title[:256][:-3] + '...'
+
         description = str(self.server.style_data.get('description', '')).strip()
         description = description if description else None
         color = Color.from_rgb(88, 101, 242) if self.server.status else Color.from_rgb(32, 34, 37)

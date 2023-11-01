@@ -8,6 +8,7 @@ from .doom3 import Doom3
 from .eco import Eco
 from .factorio import Factorio
 from .fivem import FiveM
+from .front import Front
 from .gamespy1 import GameSpy1
 from .gamespy2 import GameSpy2
 from .gamespy3 import GameSpy3

@@ -15,6 +15,7 @@ from discord import (AutoShardedClient, ButtonStyle, Embed,
 from discord.ext import tasks
 from discord.ui import Button, Modal, Select, TextInput, View
 from dotenv import load_dotenv
+from discordgsm.async_utils import to_chunks
 
 from discordgsm.environment import AdvertiseType, env
 from discordgsm.gamedig import GamedigGame
@@ -94,14 +95,14 @@ async def on_guild_join(guild: discord.Guild):
 @client.event
 async def on_guild_remove(guild: discord.Guild):
     """Remove all associated servers in database when discordgsm leaves"""
-    database.delete_servers(guild_id=guild.id)
+    await database.delete_servers(guild_id=guild.id)
     Logger.info(f'{client.user} left {guild.name}({guild.id}), associated servers were deleted.')
 
 
 @client.event
 async def on_guild_channel_delete(channel: discord.abc.GuildChannel):
     """Remove all associated servers in database when channel deletes"""
-    database.delete_servers(channel_id=channel.id)
+    await database.delete_servers(channel_id=channel.id)
     Logger.info(f'Channel #{channel.name}({channel.id}) deleted, associated servers were deleted.')
 
 
@@ -312,7 +313,7 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
                     webhook = Webhook.from_url(os.getenv('APP_PUBLIC_WEBHOOK_URL'), session=session)
                     await webhook.send(content, embed=style.embed())
 
-            server = database.add_server(server)
+            server = await database.add_server(server)
             Logger.info(f'Successfully added {game_id} server {address}:{query_port} to #{interaction.channel.name}({interaction.channel.id}).')
 
             if await resend_channel_messages(interaction):
@@ -379,7 +380,7 @@ async def command_addserver(interaction: Interaction, game_id: str):
         if public:
             limit = server_limit(interaction.user.id)
 
-            if len(await database.all_servers(guild_id=interaction.guild.id)) > limit:
+            if len(await database.all_servers(guild_id=interaction.guild.id)) >= limit:
                 content = t('command.addserver.limit_exceeded', interaction.locale).format(limit=limit)
                 await interaction.response.send_message(content, ephemeral=True)
                 return
@@ -398,7 +399,7 @@ async def command_delserver(interaction: Interaction, address: str, query_port: 
 
     if server := await find_server(interaction, address, query_port):
         await interaction.response.defer(ephemeral=True)
-        database.delete_servers(servers=[server])
+        await database.delete_servers(servers=[server])
 
         if await resend_channel_messages(interaction):
             await interaction.delete_original_response()
@@ -430,7 +431,7 @@ async def command_factoryreset(interaction: Interaction):
     async def button_callback(interaction: Interaction):
         await interaction.response.defer(ephemeral=True)
         servers = await database.all_servers(guild_id=interaction.guild.id)
-        database.delete_servers(guild_id=interaction.guild.id)
+        await database.delete_servers(guild_id=interaction.guild.id)
 
         async def purge_channel(channel_id: int):
             channel = client.get_channel(channel_id)
@@ -546,7 +547,7 @@ async def command_editstyledata(interaction: Interaction, address: str, query_po
         async def modal_on_submit(interaction: Interaction):
             await interaction.response.defer(ephemeral=True)
             server.style_data.update({k: str(v) for k, v in edit_fields.items()})
-            database.update_servers_style_data([server])
+            await database.update_servers_style_data([server])
             await refresh_channel_messages(interaction)
 
         modal.on_submit = modal_on_submit
@@ -602,7 +603,7 @@ async def command_settimezone(interaction: Interaction, timezone: str, address: 
         for server in servers:
             server.style_data.update({'timezone': timezone})
 
-        database.update_servers_style_data(servers)
+        await database.update_servers_style_data(servers)
         await refresh_channel_messages(interaction)
         await interaction.delete_original_response()
 
@@ -624,7 +625,7 @@ async def command_setclock(interaction: Interaction, clock_format: app_commands.
         for server in servers:
             server.style_data.update({'clock_format': clock_format.value})
 
-        database.update_servers_style_data(servers)
+        await database.update_servers_style_data(servers)
         await refresh_channel_messages(interaction)
         await interaction.delete_original_response()
 
@@ -650,7 +651,7 @@ async def command_setlocale(interaction: Interaction, locale: str, address: Opti
         for server in servers:
             server.style_data.update({'locale': locale})
 
-        database.update_servers_style_data(servers)
+        await database.update_servers_style_data(servers)
         await refresh_channel_messages(interaction)
         await interaction.delete_original_response()
 
@@ -682,7 +683,7 @@ async def command_setalert(interaction: Interaction, address: str, query_port: a
                 webhook_url = str(text_input_webhook_url).strip()
                 content = str(text_input_webhook_content).strip()
                 server.style_data.update({'_alert_webhook_url': webhook_url, '_alert_content': content})
-                database.update_servers_style_data([server])
+                await database.update_servers_style_data([server])
 
             modal.on_submit = modal_on_submit
             await interaction.response.send_modal(modal)
@@ -808,12 +809,12 @@ async def fetch_message(server: Server):
         # The specified message was not found.
         Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] fetch_message discord.NotFound {e}')
         server.message_id = None
-        database.update_servers_message_id([server])
+        await database.update_servers_message_id([server])
     except discord.Forbidden as e:
         # You do not have the permissions required to get a message.
         Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] fetch_message discord.Forbidden {e}')
         server.message_id = None
-        database.update_servers_message_id([server])
+        await database.update_servers_message_id([server])
     except discord.HTTPException as e:
         # Retrieving the message failed.
         Logger.error(f'({server.game_id})[{server.address}:{server.query_port}] fetch_message discord.HTTPException {e}')
@@ -874,7 +875,7 @@ async def resend_channel_messages(interaction: Optional[Interaction], channel_id
 
         cache_message(message)
 
-    database.update_servers_message_id(servers)
+    await database.update_servers_message_id(servers)
 
     return True
 
@@ -885,13 +886,6 @@ async def refresh_channel_messages(interaction: Interaction):
     grouped_servers = group_servers_by_message_id(servers)
     await asyncio.gather(*[edit_message(chunks) for chunks in grouped_servers.values()])
 
-
-# Credits: https://stackoverflow.com/questions/312443/how-do-i-split-a-list-into-equally-sized-chunks
-async def to_chunks(lst, n):
-    """Yield successive n-sized chunks from lst."""
-    for i in range(0, len(lst), n):
-        await asyncio.sleep(0.001)
-        yield lst[i:i + n]
 
 def group_servers_by_message_id(servers: list[Server]) -> dict[int, list[Server]]:
     """Group servers by message id"""

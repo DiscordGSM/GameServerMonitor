@@ -47,10 +47,11 @@ class Style(ABC):
         return {
             'description': TextInput(
                 label=t('embed.text_input.description.label', self.locale),
+                style=TextStyle.long,
                 placeholder=t('embed.text_input.description.placeholder', self.locale),
                 default=self.server.style_data.get('description', ''),
                 required=False,
-                style=TextStyle.long
+                max_length=1024
             ),
             'fullname': TextInput(
                 label=t('embed.text_input.fullname.label', self.locale),

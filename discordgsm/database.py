@@ -1,17 +1,7 @@
 from __future__ import annotations
 
-import sys
-
-if sys.version_info < (3, 10):
-    from typing_extensions import ParamSpec
-else:
-    from typing import ParamSpec
-
-from typing import Awaitable, Callable, TypeVar
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
-from functools import partial, wraps
 
 import json
 import os
@@ -28,9 +18,11 @@ from dotenv import load_dotenv
 if __name__ == '__main__':
     from server import Server
     from server import QueryServer
+    from async_utils import run_in_executor
 else:
     from discordgsm.server import Server
     from discordgsm.server import QueryServer
+    from discordgsm.async_utils import run_in_executor
 
 load_dotenv()
 
@@ -51,26 +43,6 @@ drivers = [driver.value for driver in Driver]
 
 class InvalidDriverError(Exception):
     pass
-
-R = TypeVar("R")
-P = ParamSpec("P")
-
-def run_in_executor(_func: Callable[P, R]) -> Callable[P, Awaitable[R]]:
-    @wraps(_func)
-    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-        func = partial(_func, *args, **kwargs)
-        return await asyncio.get_running_loop().run_in_executor(executor=None, func=func)
-
-    return wrapper
-
-
-# def run_in_executor(func):
-#     @wraps(func)
-#     def wrapper(*args, **kwargs):
-#         with ThreadPoolExecutor() as executor:
-#             loop = asyncio.get_running_loop()
-#             return loop.run_in_executor(executor, func, *args, **kwargs)
-#     return wrapper
 
 
 class Database:
@@ -327,6 +299,7 @@ class Database:
 
         return servers
 
+    @run_in_executor
     def add_server(self, s: Server):
         if self.driver == Driver.MongoDB:
             try:
@@ -368,6 +341,7 @@ class Database:
 
         return self.find_server(s.channel_id, s.address, s.query_port)
 
+    @run_in_executor
     def update_servers_message_id(self, servers: list[Server]):
         if self.driver == Driver.MongoDB:
             operations = [
@@ -417,6 +391,7 @@ class Database:
         self.conn.commit()
         cursor.close()
 
+    @run_in_executor
     def delete_servers(self, *, guild_id: int = None, channel_id: int = None, servers: list[Server] = None):
         if guild_id is None and channel_id is None and servers is None:
             return
@@ -512,20 +487,6 @@ class Database:
 
         return [server1, server2]
 
-    def server_exists(self, channel_id: int, address: str, query_port: str):
-        if self.driver == Driver.MongoDB:
-            exists = self.collection.find_one(
-                {"channel_id": channel_id, "address": address, "query_port": query_port}) is not None
-        else:
-            sql = 'SELECT id FROM servers WHERE channel_id = ? AND address = ? AND query_port = ?'
-            cursor = self.cursor()
-            cursor.execute(self.transform(
-                sql), (channel_id, address, query_port))
-            exists = True if cursor.fetchone() else False
-            cursor.close()
-
-        return exists
-
     def update_server_style_id(self, server: Server):
         if self.driver == Driver.MongoDB:
             self.collection.update_one(
@@ -538,6 +499,7 @@ class Database:
         self.conn.commit()
         cursor.close()
 
+    @run_in_executor
     def update_servers_style_data(self, servers: list[Server]):
         if self.driver == Driver.MongoDB:
             if operations := [

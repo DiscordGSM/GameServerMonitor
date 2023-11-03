@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 from enum import Enum
 
 import json
@@ -137,6 +136,7 @@ class Database:
 
         return sql  # sqlite
 
+    @run_in_executor
     def statistics(self):
         if self.driver == Driver.MongoDB:
             messages = len(self.collection.distinct("message_id"))
@@ -172,7 +172,7 @@ class Database:
 
         cursor = self.cursor()
         cursor.execute(self.transform(sql))
-        row = cursor.fetchone()
+        row: tuple[int] = cursor.fetchone()
         cursor.close()
         row = [0, 0, 0, 0] if row is None else row
 
@@ -225,6 +225,9 @@ class Database:
 
     @run_in_executor
     def all_servers(self, *, channel_id: int = None, guild_id: int = None, message_id: int = None, game_id: str = None, filter_secret=False):
+        return self.__all_servers(channel_id=channel_id, guild_id=guild_id, message_id=message_id, game_id=game_id, filter_secret=filter_secret)
+
+    def __all_servers(self, *, channel_id: int = None, guild_id: int = None, message_id: int = None, game_id: str = None, filter_secret=False):
         """Get all servers"""
         if self.driver == Driver.MongoDB:
             if channel_id:
@@ -322,7 +325,7 @@ class Database:
                 "style_data": s.style_data
             })
 
-            return self.find_server(s.channel_id, s.address, s.query_port)
+            return self.__find_server(s.channel_id, s.address, s.query_port)
 
         sql = '''
         INSERT INTO servers (position, guild_id, channel_id, game_id, address, query_port, query_extra, status, result, style_id, style_data)
@@ -339,7 +342,7 @@ class Database:
         finally:
             cursor.close()
 
-        return self.find_server(s.channel_id, s.address, s.query_port)
+        return self.__find_server(s.channel_id, s.address, s.query_port)
 
     @run_in_executor
     def update_servers_message_id(self, servers: list[Server]):
@@ -424,7 +427,11 @@ class Database:
             self.conn.commit()
             cursor.close()
 
+    @run_in_executor
     def find_server(self, channel_id: int, address: str = None, query_port: int = None):
+        return self.__find_server(channel_id=channel_id, address=address, query_port=query_port)
+
+    def __find_server(self, channel_id: int, address: str = None, query_port: int = None):
         if self.driver == Driver.MongoDB:
             result = self.collection.find_one(
                 {"channel_id": channel_id, "address": address, "query_port": query_port})
@@ -448,8 +455,9 @@ class Database:
 
         return Server.from_list(row)
 
-    async def modify_server_position(self, server1: Server, direction: bool):
-        servers = await self.all_servers(channel_id=server1.channel_id)
+    @run_in_executor
+    def modify_server_position(self, server1: Server, direction: bool):
+        servers = self.__all_servers(channel_id=server1.channel_id)
         indices = [i for i, s in enumerate(servers) if s.id == server1.id]
 
         # Ignore when the position is the most top and bottom
@@ -487,6 +495,7 @@ class Database:
 
         return [server1, server2]
 
+    @run_in_executor
     def update_server_style_id(self, server: Server):
         if self.driver == Driver.MongoDB:
             self.collection.update_one(
@@ -563,7 +572,7 @@ class Database:
         Path(export_path).mkdir(parents=True, exist_ok=True)
 
         if to_driver == Driver.MongoDB.value:
-            servers = asyncio.run(self.all_servers())
+            servers = self.__all_servers()
             documents = [server.__dict__ for server in servers]
             documents = [{k: v for k, v in doc.items() if k != 'id'}
                          for doc in documents]
@@ -677,7 +686,7 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     if args.action == 'all':
-        for server in asyncio.run(database.all_servers()):
+        for server in database.__all_servers():
             print(server)
     elif args.action == 'export':
         database.export(to_driver=args.to_driver)

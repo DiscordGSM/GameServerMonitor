@@ -283,7 +283,7 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
         # Check is the server already exists in database
         if is_add_server:
             try:
-                database.find_server(interaction.channel.id, address, query_port)
+                await database.find_server(interaction.channel.id, address, query_port)
                 content = t('function.query_server_modal.already_exists', interaction.locale)
                 await interaction.followup.send(content, ephemeral=True)
                 return
@@ -485,7 +485,7 @@ async def action_move(interaction: Interaction, address: str, query_port: int, d
 
     if server := await find_server(interaction, address, query_port):
         await interaction.response.defer(ephemeral=True)
-        database.modify_server_position(server, direction)
+        await database.modify_server_position(server, direction)
         await refresh_channel_messages(interaction)
         await interaction.delete_original_response()
 
@@ -515,7 +515,7 @@ async def command_changestyle(interaction: Interaction, address: str, query_port
 
             await interaction.response.defer(ephemeral=True)
             server.style_id = select.values[0]
-            database.update_server_style_id(server)
+            await database.update_server_style_id(server)
             await refresh_channel_messages(interaction)
 
         select.callback = select_callback
@@ -764,7 +764,7 @@ async def find_game(interaction: Interaction, game_id: str):
 async def find_server(interaction: Interaction, address: str, query_port: int):
     """Find server by channel id, and return server"""
     try:
-        server = database.find_server(interaction.channel.id, address, query_port)
+        server = await database.find_server(interaction.channel.id, address, query_port)
         return server
     except database.ServerNotFoundError:
         content = t('function.find_server.not_found', interaction.locale).format(address=address, query_port=query_port)
@@ -1100,7 +1100,8 @@ async def tasks_presence_update(current_loop: int):
     elif advertise_type := env('APP_ADVERTISE_TYPE'):
         if advertise_type == AdvertiseType.server_count:
             # Display number of server monitoring
-            unique_servers = int(database.statistics()['unique_servers'])
+            statistics = await database.statistics()
+            unique_servers = statistics['unique_servers']
             name = f'{unique_servers} servers'
         elif advertise_type == AdvertiseType.individually:
             # Advertise online servers one by one

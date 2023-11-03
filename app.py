@@ -40,11 +40,11 @@ if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
         return jsonify(gamedig.games)
 
     @app.route('/api/v1/info')
-    def info():
+    async def info():
         return jsonify({
             'version': __version__,
             'invite_link': invite_link,
-            'statistics': Database().statistics(),
+            'statistics': await Database().statistics(),
         })
 
     @app.route('/api/v1/commands')

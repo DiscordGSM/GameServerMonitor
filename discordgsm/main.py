@@ -269,8 +269,6 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
         for item in params.values():
             item.default = item._value = str(item._value).strip()
 
-        game_id, address, query_port = game['id'], str(query_param['host']), int(str(query_param['port']))
-
         # Validate the port number
         for key in params.keys():
             if 'port' in key.lower() and not gamedig.is_port_valid(str(params[key])):
@@ -279,6 +277,8 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
                 return
 
         await interaction.response.defer(ephemeral=is_add_server, thinking=True)
+
+        game_id, address, query_port = game['id'], str(query_param['host']), int(str(query_param['port']))
 
         # Check is the server already exists in database
         if is_add_server:

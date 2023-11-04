@@ -26,8 +26,8 @@ class Satisfactory(Protocol):
             'numplayers': 0,
             'numbots': 0,
             'maxplayers': 0,
-            'players': [],
-            'bots': [],
+            'players': None,
+            'bots': None,
             'connect': f'{host}:{port}',
             'ping': ping,
             'raw': status

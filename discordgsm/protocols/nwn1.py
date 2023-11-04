@@ -67,8 +67,8 @@ class NWN1(Protocol):
             'numplayers': int(server.active_player_count),
             'numbots': 0,
             'maxplayers': int(server.maximum_player_count),
-            'players': [],
-            'bots': [],
+            'players': None,
+            'bots': None,
             'connect': key,
             'ping': 0,
             'raw': server.__dict__

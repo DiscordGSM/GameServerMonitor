@@ -41,7 +41,7 @@ class Minecraft(Protocol):
             'numbots': 0,
             'maxplayers': int(status.get('players', {}).get('max', '0')),
             'players': players,
-            'bots': [],
+            'bots': None,
             'connect': f'{host}:{port}',
             'ping': ping,
             'raw': status

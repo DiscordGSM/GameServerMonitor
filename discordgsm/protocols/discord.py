@@ -30,7 +30,7 @@ class Discord(Protocol):
             'numbots': 0,
             'maxplayers': -1,
             'players': [{'name': player['username'], 'raw': player} for player in data['members']],
-            'bots': [],
+            'bots': None,
             'connect': data['instant_invite'],
             'ping': ping,
             'raw': {}

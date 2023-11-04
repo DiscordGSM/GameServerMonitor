@@ -13,7 +13,8 @@ class Doom3(Protocol):
     name = 'doom3'
 
     async def query(self):
-        doom3 = opengsq.Doom3(self.address, self.query_port, self.timeout)
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        doom3 = opengsq.Doom3(host, port, self.timeout)
         start = time.time()
         info = await doom3.get_info()
         ping = int((time.time() - start) * 1000)
@@ -27,8 +28,8 @@ class Doom3(Protocol):
             'numbots': 0,
             'maxplayers': int(info.get('si_maxplayers', info.get('si_maxPlayers', '0'))),
             'players': [{'name': player['name'], 'raw': player} for player in players],
-            'bots': [],
-            'connect': f'{self.address}:{self.query_port}',
+            'bots': None,
+            'connect': f'{host}:{port}',
             'ping': ping,
             'raw': info
         }

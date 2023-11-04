@@ -28,7 +28,7 @@ class Battlefield(Protocol):
             'numbots': 0,
             'maxplayers': info['maxplayers'],
             'players': [{'name': player['name'], 'raw': player} for player in players],
-            'bots': [],
+            'bots': None,
             'connect': info['ip_port'],
             'ping': ping,
             'raw': info

@@ -33,7 +33,7 @@ class Teamspeak3(Protocol):
             'numbots': 0,
             'maxplayers': int(info.get('virtualserver_maxclients', '0')),
             'players': players,
-            'bots': [],
+            'bots': None,
             'connect': f'{host}:{voice_port}',
             'ping': ping,
             'raw': {

@@ -28,6 +28,10 @@ class Large(Medium):
         return embed
 
     def add_player_list_fields(self, embed: Embed, field_name: str, players: List[GamedigPlayer]):
+        if players is None:
+            embed.add_field(name=field_name, value='The game does not support this feature.')
+            return embed
+
         empty_value = '*​*'
         filtered_players = [
             player for player in players if player['name'].strip()]
@@ -39,7 +43,7 @@ class Large(Medium):
         player_count = 0
 
         for i, player in enumerate(filtered_players):
-            name = player['name'].ljust(23)[:23]
+            name = player['name'][:23]
 
             if len(player['name']) > 23:
                 name = name[:-3] + '...'

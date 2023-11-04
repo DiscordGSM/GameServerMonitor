@@ -29,7 +29,7 @@ class FiveM(Protocol):
             'numbots': 0,
             'maxplayers': int(info.get('sv_maxclients', '0')),
             'players': [{'name': player['name'], 'raw': player} for player in players],
-            'bots': [],
+            'bots': None,
             'connect': f'{host}:{port}',
             'ping': ping,
             'raw': info

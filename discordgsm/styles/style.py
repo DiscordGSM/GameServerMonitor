@@ -155,8 +155,8 @@ class Style(ABC):
         embed.set_footer(text=f'DiscordGSM {__version__} | {advertisement} | {last_update}', icon_url=icon_url)
 
     def set_image_and_thumbnail(self, embed: Embed):
-        image_url = self.server.style_data.get('image_url', '')
-        thumbnail_url = self.server.style_data.get('thumbnail_url', '')
+        image_url = str(self.server.style_data.get('image_url', ''))
+        thumbnail_url = str(self.server.style_data.get('thumbnail_url', ''))
 
         if image_url.startswith('http://') or image_url.startswith('https://'):
             embed.set_image(url=image_url)

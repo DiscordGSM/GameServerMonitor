@@ -29,7 +29,7 @@ class Unreal2(Protocol):
             'numbots': 0,
             'maxplayers': int(details['MaxPlayers']),
             'players': [{'name': player['Name'], 'raw': player} for player in players],
-            'bots': [],
+            'bots': None,
             'connect': f"{host}:{details.get('GamePort', port)}",
             'ping': ping,
             'raw': details

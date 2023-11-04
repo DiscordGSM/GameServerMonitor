@@ -27,7 +27,7 @@ class ASE(Protocol):
             'numbots': 0,
             'maxplayers': int(status['maxplayers']),
             'players': [{'name': player['name'], 'raw': player} for player in status['players']],
-            'bots': [],
+            'bots': None,
             'connect': f"{host}:{status.get('gameport', port)}",
             'ping': ping,
             'raw': status

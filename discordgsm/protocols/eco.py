@@ -35,7 +35,7 @@ class Eco(Protocol):
             'numbots': 0,
             'maxplayers': data['MaxActivePlayers'],
             'players': [{'name': player, 'raw': player} for player in data['OnlinePlayersNames']],
-            'bots': [],
+            'bots': None,
             'connect': data['JoinUrl'],
             'ping': ping,
             'raw': data

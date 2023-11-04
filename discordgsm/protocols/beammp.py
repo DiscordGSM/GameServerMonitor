@@ -53,7 +53,7 @@ class BeamMP(Protocol):
             'numbots': 0,
             'maxplayers': int(server['maxplayers']),
             'players': [{'name': name, 'raw': {}} for name in str(server['playerslist']).split(';')],
-            'bots': [],
+            'bots': None,
             'connect': key,
             'ping': 0,
             'raw': server

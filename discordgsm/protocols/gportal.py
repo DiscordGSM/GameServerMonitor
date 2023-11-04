@@ -35,8 +35,8 @@ class GPortal(Protocol):
             'numplayers': data['currentPlayers'],
             'numbots': 0,
             'maxplayers': data['maxPlayers'],
-            'players': [],
-            'bots': [],
+            'players': None,
+            'bots': None,
             'connect': f"{data['ipAddress']}:{data['port']}",
             'ping': int((end - start) * 1000),
             'raw': data

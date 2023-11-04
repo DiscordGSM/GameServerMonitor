@@ -34,7 +34,7 @@ class GameSpy1(Protocol):
             'numbots': 0,
             'maxplayers': int(info['maxplayers']),
             'players': [{'name': player['player'], 'raw': player} for player in players],
-            'bots': [],
+            'bots': None,
             'connect': f"{host}:{info.get('hostport', port)}",
             'ping': ping,
             'raw': info

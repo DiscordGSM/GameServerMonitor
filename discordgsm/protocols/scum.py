@@ -37,8 +37,8 @@ class Scum(Protocol):
             'numplayers': server['numplayers'],
             'numbots': 0,
             'maxplayers': server['maxplayers'],
-            'players': [],
-            'bots': [],
+            'players': None,
+            'bots': None,
             'connect': f"{host}:{server['port'] - 2}",
             'ping': 0,
             'raw': server

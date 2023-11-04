@@ -36,7 +36,7 @@ class Vcmp(Protocol):
             'numbots': 0,
             'maxplayers': status['maxplayers'],
             'players': players,
-            'bots': [],
+            'bots': None,
             'connect': f'{host}:{port}',
             'ping': ping,
             'raw': status

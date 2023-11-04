@@ -61,7 +61,7 @@ class Factorio(Protocol):
             'numbots': 0,
             'maxplayers': server['max_players'],
             'players': [{'name': player, 'raw': player} for player in players],
-            'bots': [],
+            'bots': None,
             'connect': server['host_address'],
             'ping': 0,
             'raw': server

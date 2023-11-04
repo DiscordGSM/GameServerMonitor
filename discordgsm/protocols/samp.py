@@ -36,7 +36,7 @@ class Samp(Protocol):
             'numbots': 0,
             'maxplayers': status['maxplayers'],
             'players': [{'name': player['name'], 'raw': player} for player in players],
-            'bots': [],
+            'bots': None,
             'connect': f'{host}:{port}',
             'ping': ping,
             'raw': {

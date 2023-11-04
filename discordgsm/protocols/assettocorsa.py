@@ -28,7 +28,7 @@ class AssettoCorsa(Protocol):
             'numbots': 0,
             'maxplayers': info['maxclients'],
             'players': players,
-            'bots': [],
+            'bots': None,
             'connect': f'{host}:{info["port"]}',
             'ping': ping,
             'raw': {

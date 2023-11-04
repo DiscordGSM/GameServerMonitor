@@ -86,8 +86,8 @@ class Front(Protocol):
             'numplayers': server.online,
             'numbots': 0,
             'maxplayers': server.info.get('maxplayer'),
-            'players': [],
-            'bots': [],
+            'players': None,
+            'bots': None,
             'connect': host_address,
             'ping': ping,
             'raw': server.__dict__

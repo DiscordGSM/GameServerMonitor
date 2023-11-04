@@ -26,8 +26,8 @@ class Raknet(Protocol):
             'numplayers': int(status.get('num_players', '')),
             'numbots': 0,
             'maxplayers': int(status.get('max_players', '')),
-            'players': [],
-            'bots': [],
+            'players': None,
+            'bots': None,
             'connect': f"{host}:{status.get('port_ipv4', port)}",
             'ping': ping,
             'raw': status

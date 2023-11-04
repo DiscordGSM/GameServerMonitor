@@ -30,7 +30,7 @@ class Terraria(Protocol):
             'numbots': 0,
             'maxplayers': data['maxplayers'],
             'players': [{'name': player['nickname'], 'raw': player} for player in data['players']],
-            'bots': [],
+            'bots': None,
             'connect': f"{host}:{data['port']}",
             'ping': int((end - start) * 1000),
             'raw': {}

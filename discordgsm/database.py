@@ -8,6 +8,7 @@ from pathlib import Path
 import sqlite3
 import sys
 from argparse import ArgumentParser
+import time
 
 from pymongo import DeleteOne, MongoClient, UpdateMany, UpdateOne
 import psycopg2
@@ -62,8 +63,7 @@ class Database:
 
         if DATABASE_URL.startswith('postgres://') or DATABASE_URL.startswith('postgresql://') or DB_CONNECTION == Driver.PostgreSQL.value:
             self.driver = Driver.PostgreSQL
-            self.conn = psycopg2.connect(
-                DATABASE_URL, sslmode=os.getenv('POSTGRES_SSL_MODE', 'require'))
+            self.conn = self.__connect_psycopg2(DATABASE_URL)
         elif DB_CONNECTION == Driver.MongoDB.value:
             self.driver = Driver.MongoDB
             self.conn = MongoClient(DATABASE_URL)
@@ -72,6 +72,26 @@ class Database:
             self.driver = Driver.SQLite
             self.conn = sqlite3.connect(os.path.join(os.path.dirname(
                 os.path.realpath(__file__)), '..', 'data', 'servers.db'))
+
+    def __connect_psycopg2(self, database_url: str, max_retries=3):
+        conn = None
+        retries = 0
+
+        while not conn and retries < max_retries:
+            time.sleep(1)
+
+            try:
+                conn = psycopg2.connect(database_url, sslmode=os.getenv(
+                    'POSTGRES_SSL_MODE', 'require'))
+            except psycopg2.OperationalError as e:
+                if retries >= max_retries:
+                    raise e
+
+                retries += 1
+                print(
+                    f"Connection failed. Retry attempt {retries}/{max_retries}. Retrying in 1 second...")
+
+        return conn
 
     def create_table_if_not_exists(self):
         if self.driver == Driver.MongoDB:

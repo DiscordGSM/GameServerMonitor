@@ -74,24 +74,21 @@ class Database:
                 os.path.realpath(__file__)), '..', 'data', 'servers.db'))
 
     def __connect_psycopg2(self, database_url: str, max_retries=3):
-        conn = None
         retries = 0
+        sslmode = os.getenv('POSTGRES_SSL_MODE', 'require')
 
-        while not conn and retries < max_retries:
+        while True:
             time.sleep(1)
 
             try:
-                conn = psycopg2.connect(database_url, sslmode=os.getenv(
-                    'POSTGRES_SSL_MODE', 'require'))
+                conn = psycopg2.connect(database_url, sslmode=sslmode)
+                return conn
             except psycopg2.OperationalError as e:
                 if retries >= max_retries:
                     raise e
 
                 retries += 1
-                print(
-                    f"Connection failed. Retry attempt {retries}/{max_retries}. Retrying in 1 second...")
-
-        return conn
+                print(f"Connection failed. Retry attempt {retries}/{max_retries}. Retrying in 1 second...")
 
     def create_table_if_not_exists(self):
         if self.driver == Driver.MongoDB:

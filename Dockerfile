@@ -16,6 +16,9 @@ RUN pip install virtualenv
 RUN python -m venv venv
 ENV PATH="/usr/src/app/venv/bin:$PATH"
 
+# Upgrade pip in the virtual environment
+RUN pip install --upgrade pip
+
 # Install any needed packages specified in requirements.txt
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt

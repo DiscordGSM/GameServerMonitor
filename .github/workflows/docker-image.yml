@@ -32,7 +32,5 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: |
-            # set latest tag for main branch
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+          tags: ${{ github.ref == 'refs/heads/main' && 'latest' || github.ref }}
           labels: ${{ steps.meta.outputs.labels }}

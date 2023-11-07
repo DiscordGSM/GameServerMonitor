@@ -5,10 +5,9 @@ import re
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 
-from discordgsm.database import Database
 from discordgsm.environment import env, environment
 from discordgsm.main import tree
-from discordgsm.service import gamedig, invite_link, public, whitelist_guilds
+from discordgsm.service import database, gamedig, invite_link, public, whitelist_guilds
 from discordgsm.translator import Locale, translations
 from discordgsm.version import __version__
 
@@ -44,7 +43,7 @@ if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
         return jsonify({
             'version': __version__,
             'invite_link': invite_link,
-            'statistics': await Database().statistics(),
+            'statistics': await database.statistics(),
         })
 
     @app.route('/api/v1/commands')
@@ -75,13 +74,13 @@ if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
     async def servers(game_id: str = None):
         if game_id is None:
             servers_count = {game_id: 0 for game_id in gamedig.games}
-            servers_count.update(await Database().count_servers_per_game())
+            servers_count.update(await database.count_servers_per_game())
             return jsonify(servers_count)
 
         if game_id not in gamedig.games:
             return jsonify({'error': 'Invalid game id'})
 
-        servers = await Database().all_servers(game_id=game_id, filter_secret=True)
+        servers = await database.all_servers(game_id=game_id, filter_secret=True)
         return jsonify(servers)
 
     @app.route('/api/v1/channels')
@@ -90,10 +89,8 @@ if os.getenv('WEB_API_ENABLE', '').lower() == 'true':
         if channel_id is not None and not channel_id.isdigit():
             return jsonify({'error': 'Invalid channel id'})
 
-        database = Database()
-
         if channel_id is None:
-            servers_count = await Database().count_servers_per_channel()
+            servers_count = await database.count_servers_per_channel()
             return jsonify(servers_count)
 
         servers = await database.all_servers(channel_id=int(channel_id), filter_secret=True)

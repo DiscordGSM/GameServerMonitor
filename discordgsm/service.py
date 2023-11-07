@@ -23,7 +23,7 @@ load_dotenv()
 database = Database()
 gamedig = Gamedig()
 
-client_id = base64.b64decode(os.environ['APP_TOKEN'].strip().split('.')[0] + '===').decode()
+client_id = base64.b64decode(os.environ['APP_TOKEN'].strip().split('.')[0] + '===').decode('utf-8', 'ignore')
 permissions = '137439242320'  # Manage Channels, Send Messages, Manage Messages, Embed Links, Use External Emojis, Use External Stickers, Add Reactions
 invite_link = f'https://discord.com/api/oauth2/authorize?client_id={client_id}&permissions={permissions}&scope=applications.commands%20bot'
 

@@ -78,12 +78,13 @@ class Asa(Protocol):
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
-        body = {
-            "criteria": [
-                {"key": "attributes.ADDRESS_s", "op": "EQUAL", "value": host},
-                {"key": "attributes.ADDRESSBOUND_s", "op": "EQUAL", "value": f"{host}:{port}"}
-            ]
-        }
+
+        criteria = [
+            {"key": "attributes.ADDRESS_s", "op": "EQUAL", "value": host},
+            {"key": "attributes.ADDRESSBOUND_s", "op": "CONTAINS", "value": f":{port}"}
+        ]
+
+        body = {"criteria": criteria}
 
         async with aiohttp.ClientSession() as session:
             async with session.post(url, headers=headers, json=body) as response:

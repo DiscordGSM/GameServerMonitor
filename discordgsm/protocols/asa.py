@@ -1,5 +1,3 @@
-import asyncio
-import time
 from discordgsm.protocols.protocol import Protocol
 import requests
 import base64
@@ -79,7 +77,7 @@ class Asa(Protocol):
         body = {
             "criteria": [
                 {"key": "attributes.ADDRESS_s", "op": "EQUAL", "value": host},
-                {"key": "attributes.ADDRESSBOUND_s", "op": "EQUAL", "value": f"{host}:{port}"}
+                {"key": "attributes.ADDRESSBOUND_s", "op": "EQUAL", "value": f"0.0.0.0:{port}"}
             ]
         }
         response = requests.post(url, headers=headers, json=body)

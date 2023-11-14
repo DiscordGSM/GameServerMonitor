@@ -11,6 +11,7 @@ americasarmy3,America's Army 3 (2009),source,port=8777;port_query=27020
 americasarmypg,America's Army: Proving Grounds (2015),source,port=8777;port_query=27020
 aoe2,Age of Empires 2 (1999),ase,port_query=27224
 arkse,Ark: Survival Evolved (2017),source,port=7777;port_query=27015
+asa,Ark: Survival Ascended (2023),asa,port=7777
 arma,ARMA: Armed Assault (2007),gamespy2,port=2302
 arma2,ARMA 2 (2009),source,port=2302;port_query_offset=1
 arma2oa,ARMA 2: Operation Arrowhead (2010),source,port=2302;port_query_offset=1

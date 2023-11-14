@@ -1,6 +1,7 @@
 from discordgsm.protocols.protocol import Protocol
-import requests
+import aiohttp
 import base64
+import asyncio
 
 class Asa(Protocol):
     name = 'asa'
@@ -15,8 +16,8 @@ class Asa(Protocol):
     async def query(self):
         host, port = str(self.kv['host']), int(str(self.kv['port']))
         try:
-            access_token = self.get_access_token()
-            server_info = self.query_server_info(access_token, host, port)
+            access_token = await self.get_access_token()
+            server_info = await self.query_server_info(access_token, host, port)
 
             sessions = server_info.get('sessions', [])
             if not sessions:
@@ -55,7 +56,7 @@ class Asa(Protocol):
 
         return result
 
-    def get_access_token(self):
+    async def get_access_token(self):
         url = f"{self.epic_api}/auth/v1/oauth/token"
         auth = base64.b64encode(f"{self.client_id}:{self.client_secret}".encode()).decode()
         headers = {
@@ -63,11 +64,14 @@ class Asa(Protocol):
             "Content-Type": "application/x-www-form-urlencoded"
         }
         body = f"grant_type=client_credentials&deployment_id={self.deployment_id}"
-        response = requests.post(url, headers=headers, data=body)
-        response.raise_for_status()
-        return response.json()['access_token']
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers=headers, data=body) as response:
+                response.raise_for_status()
+                data = await response.json()
+                return data['access_token']
 
-    def query_server_info(self, access_token, host, port):
+    async def query_server_info(self, access_token, host, port):
         url = f"{self.epic_api}/matchmaking/v1/{self.deployment_id}/filter"
         headers = {
             "Authorization": f"Bearer {access_token}",
@@ -77,9 +81,11 @@ class Asa(Protocol):
         body = {
             "criteria": [
                 {"key": "attributes.ADDRESS_s", "op": "EQUAL", "value": host},
-                {"key": "attributes.ADDRESSBOUND_s", "op": "EQUAL", "value": f"0.0.0.0:{port}"}
+                {"key": "attributes.ADDRESSBOUND_s", "op": "EQUAL", "value": f"{host}:{port}"}
             ]
         }
-        response = requests.post(url, headers=headers, json=body)
-        response.raise_for_status()
-        return response.json()
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers=headers, json=body) as response:
+                response.raise_for_status()
+                return await response.json()

@@ -924,6 +924,7 @@ async def tasks_query():
         servers += await asyncio.gather(*chunks)
 
     await database.update_servers(servers)
+    await database.update_metrics(servers)
 
     failed = sum(server.status is False for server in servers)
     success = len(servers) - failed

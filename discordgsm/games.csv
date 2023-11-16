@@ -154,6 +154,7 @@ kingpin,Kingpin: Life of Crime (1999),gamespy1,port=31510;port_query_offset=-10
 kisspc,Kiss: Psycho Circus: The Nightmare Child (2000),gamespy1,port=7777;port_query_offset=1
 kzmod,Kreedz Climbing (2017),source,port=27015
 
+leadandgold,Lead and Gold: Gangs of the Wild West (2010),source,port=27015;port_query_offset=1
 left4dead,Left 4 Dead (2008),source,port=27015
 left4dead2,Left 4 Dead 2 (2009),source,port=27015
 

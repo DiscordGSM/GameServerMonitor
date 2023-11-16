@@ -29,6 +29,11 @@ class Style(ABC):
         return str(self.server.style_data.get('locale', 'en-US'))
 
     @property
+    def standalone(self) -> str:
+        """Whether the embed should be within a single discord message"""
+        return False
+
+    @property
     @abstractmethod
     def display_name(self) -> str:
         raise NotImplementedError()

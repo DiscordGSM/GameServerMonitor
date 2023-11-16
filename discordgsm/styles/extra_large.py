@@ -8,6 +8,10 @@ class ExtraLarge(Large):
     """Extra Large style"""
 
     @property
+    def standalone(self) -> str:
+        return True
+
+    @property
     def display_name(self) -> str:
         return t('style.extra_large.display_name', self.locale)
 

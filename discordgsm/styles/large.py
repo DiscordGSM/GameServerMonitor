@@ -11,6 +11,10 @@ class Large(Medium):
     """Large style"""
 
     @property
+    def standalone(self) -> str:
+        return True
+
+    @property
     def display_name(self) -> str:
         return t('style.large.display_name', self.locale)
 

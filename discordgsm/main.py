@@ -516,7 +516,7 @@ async def command_changestyle(interaction: Interaction, address: str, query_port
             await interaction.response.defer(ephemeral=True)
             server.style_id = select.values[0]
             await database.update_server_style_id(server)
-            await refresh_channel_messages(interaction)
+            await resend_channel_messages(interaction)
 
         select.callback = select_callback
         view = View()
@@ -822,6 +822,29 @@ async def fetch_message(server: Server):
     return None
 
 
+async def embeds_chunks(servers: list[Server], n=10):
+    buffer = []
+
+    for server in servers:
+        style = Styles.get(server)
+
+        if style.standalone:
+            if buffer:
+                yield buffer
+                buffer = []
+
+            yield [server]
+        else:
+            buffer.append(server)
+
+            if len(buffer) == n:
+                yield buffer
+                buffer = []
+
+    if buffer:
+        yield buffer
+
+
 async def resend_channel_messages(interaction: Optional[Interaction], channel_id: Optional[int] = None):
     """Resend channel messages"""
     channel = client.get_channel(channel_id if channel_id else interaction.channel.id)
@@ -848,7 +871,7 @@ async def resend_channel_messages(interaction: Optional[Interaction], channel_id
 
         return False
 
-    async for chunks in to_chunks(servers, 10):
+    async for chunks in embeds_chunks(servers):
         try:
             message = await channel.send(embeds=[Styles.get(server).embed() for server in chunks])
         except discord.Forbidden as e:

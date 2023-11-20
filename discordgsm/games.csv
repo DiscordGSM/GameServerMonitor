@@ -236,6 +236,7 @@ sinep,SiN Episodes,source,port=27015
 sof,Soldier of Fortune,quake1,port_query=28910
 sof2,Soldier of Fortune 2,quake3,port_query=20100
 soldat,Soldat,ase,port=13073;port_query_offset=123
+sonsforest,Sons Of The Forest (2023),source,port=27015;port_query_offset=1
 spaceengineers,Space Engineers,source,port=27015
 squad,Squad,source,port=7787;port_query=27165
 ss,Serious Sam,gamespy1,port=25600;port_query_offset=1

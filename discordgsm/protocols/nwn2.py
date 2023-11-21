@@ -53,7 +53,7 @@ class NWN2(Protocol):
             await self.pre_query()
 
         host, port = str(self.kv['host']), int(str(self.kv['port']))
-        ip = SocketAsync.gethostbyname(host)
+        ip = await SocketAsync.gethostbyname(host)
         key = f'{ip}:{port}'
 
         if key not in NWN2.master_servers:

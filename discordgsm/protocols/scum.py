@@ -23,7 +23,7 @@ class Scum(Protocol):
             await self.pre_query()
 
         host, port = str(self.kv['host']), int(str(self.kv['port']))
-        ip = SocketAsync.gethostbyname(host)
+        ip = await SocketAsync.gethostbyname(host)
         host_address = f'{ip}:{port}'
 
         if host_address not in Scum.master_servers:

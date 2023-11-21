@@ -71,7 +71,7 @@ class Front(Protocol):
         info = await source.get_info()
         ping = int((time.time() - start) * 1000)
 
-        ip = SocketAsync.gethostbyname(host)
+        ip = await SocketAsync.gethostbyname(host)
         host_address = f'{ip}:{info["GamePort"]}'
 
         if host_address not in Front.master_servers:

@@ -8,15 +8,7 @@ ENV PYTHONUNBUFFERED 1
 # Set work directory
 WORKDIR /usr/src/app
 
-# Install pip and venv
-RUN pip install --upgrade pip
-RUN pip install virtualenv
-
-# Create a virtual environment and activate it
-RUN python -m venv venv
-ENV PATH="/usr/src/app/venv/bin:$PATH"
-
-# Upgrade pip in the virtual environment
+# Upgrade pip
 RUN pip install --upgrade pip
 
 # Install any needed packages specified in requirements.txt

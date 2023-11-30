@@ -14,6 +14,7 @@ import time
 from pymongo import DeleteOne, MongoClient, UpdateMany, UpdateOne
 import psycopg2
 import psycopg2.pool
+from psycopg2.extensions import connection
 from dotenv import load_dotenv
 
 
@@ -147,7 +148,13 @@ class Database:
     def cursor(self):
         if self.driver == Driver.PostgreSQL:
             try:
-                conn = self.pool.getconn()
+                conn: connection = self.pool.getconn()
+
+                # Fix the issue so many ROLLBACKs
+                # The connection pool issues connection.rollback() when a connection is returned.
+                # https://docs.sqlalchemy.org/en/14/faq/connections.html#why-does-sqlalchemy-issue-so-many-rollbacks
+                conn.autocommit = True
+
                 cursor = conn.cursor()
             except psycopg2.InterfaceError:  # connection already closed
                 # Reconnect
@@ -162,14 +169,14 @@ class Database:
             return conn, cursor
 
     def close(self, conn: sqlite3.Connection, cursor: sqlite3.Cursor, *, commit=False):
-        if commit:
-            conn.commit()
-
         cursor.close()
 
         if self.driver == Driver.PostgreSQL:
             self.pool.putconn(conn)
         else:
+            if commit:
+                conn.commit()
+
             conn.close()
 
     def transform(self, sql: str):

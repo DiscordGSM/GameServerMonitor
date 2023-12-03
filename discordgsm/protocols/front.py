@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 import json
 import time
@@ -31,10 +32,34 @@ class FrontServer:
 
 
 class Front(Protocol):
-    pre_query_required = True
+    pre_query_required = False
     name = 'front'
     master_servers = None
 
+    async def query(self):
+        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        start = time.time()
+        source = opengsq.Source(host, port, self.timeout)
+        info, rules = await asyncio.gather(source.get_info(), source.get_rules())
+        ping = int((time.time() - start) * 1000)
+
+        result: GamedigResult = {
+            'name': rules.get('ServerName_s'),
+            'map': info['Map'],
+            'password': info['Visibility'] != 0,
+            'numplayers': info['Players'],
+            'numbots': info['Bots'],
+            'maxplayers': info['MaxPlayers'],
+            'players': None,
+            'bots': None,
+            'connect': f'{host}:{info["GamePort"]}',
+            'ping': ping,
+            'raw': info
+        }
+
+        return result
+
+    # Requires AccessKeyId
     async def pre_query(self):
         url = 'https://privatelist.playthefront.com/private_list'
 
@@ -60,7 +85,7 @@ class Front(Protocol):
 
         return Front.master_servers
 
-    async def query(self):
+    async def _query(self):
         if Front.master_servers is None:
             await self.pre_query()
             assert Front.master_servers is not None, "Front.master_servers is still None after pre_query"
@@ -97,8 +122,6 @@ class Front(Protocol):
 
 
 if __name__ == '__main__':
-    import asyncio
-
     async def main():
         front = Front({'host': '', 'port': 27015})
         print(await front.query())

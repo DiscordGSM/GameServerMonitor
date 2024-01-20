@@ -25,6 +25,7 @@ from .quake3 import Quake3
 from .raknet import Raknet
 from .samp import Samp
 from .satisfactory import Satisfactory
+from .scpsl import SCP_SL
 from .scum import Scum
 from .source import Source
 from .teamspeak3 import Teamspeak3

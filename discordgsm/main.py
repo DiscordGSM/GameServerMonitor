@@ -245,6 +245,14 @@ def query_server_modal(game: GamedigGame, locale: Locale):
     if game['id'] == 'terraria':
         query_extra['_token'] = TextInput(label='REST user token')
         modal.add_item(query_extra['_token'])
+    elif game['id'] == 'scpsl':
+        query_extra['_servername'] = TextInput(label='Server name')
+        query_extra['_token'] = TextInput(label='API Key')
+        query_extra['_accountid'] = TextInput(label='Account ID')
+        modal.add_item(query_extra['_token']).add_item(query_extra['_accountid']).add_item(query_extra['_servername'])
+        modal.remove_item(query_param['port']).remove_item(query_param['host'])
+        query_param['port']._value = '0'
+        query_param['host']._value = 'api.scpslgame.com'
     elif game['id'] == 'gportal':
         query_extra['serverId'] = TextInput(label='GPORTAL server id')
         modal.add_item(query_extra['serverId'])

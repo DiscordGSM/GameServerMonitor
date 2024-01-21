@@ -142,6 +142,7 @@ igi2,I.G.I.-2: Covert Strike (2003),gamespy1,port_query=26001
 il2,IL-2 Sturmovik (2001),gamespy1,port_query=21000
 insurgency,Insurgency (2014),source,port=27015
 insurgencysandstorm,Insurgency: Sandstorm (2018),source,port=27015;port_query_offset=1
+iosoccer,IOSoccer (2018),source,port=27015
 ironstorm,Iron Storm (2002),gamespy1,port_query=3505
 
 jamesbondnightfire,James Bond 007: Nightfire (2002),gamespy1,port_query=6550

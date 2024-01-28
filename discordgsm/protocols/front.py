@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 import opengsq
-from opengsq.socket_async import SocketAsync
+from opengsq.protocol_socket import Socket
 
 if __name__ == '__main__':
     from protocol import Protocol
@@ -96,7 +96,7 @@ class Front(Protocol):
         info = await source.get_info()
         ping = int((time.time() - start) * 1000)
 
-        ip = await SocketAsync.gethostbyname(host)
+        ip = await Socket.gethostbyname(host)
         host_address = f'{ip}:{info["GamePort"]}'
 
         if host_address not in Front.master_servers:

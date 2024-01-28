@@ -18,12 +18,12 @@ class Quake1(Protocol):
         start = time.time()
         status = await quake1.get_status()
         ping = int((time.time() - start) * 1000)
-        info = dict(status['info'])
+        info = status.info
         players = []
         bots = []
 
-        for player in status['players']:
-            (bots if player['ping'] == 0 else players).append({'name': player['name'], 'raw': player})
+        for player in status.players:
+            (bots if player.ping == 0 else players).append({'name': player.name, 'raw': player.__dict__})
 
         result: GamedigResult = {
             'name': info.get('hostname', info.get('sv_hostname', '')),

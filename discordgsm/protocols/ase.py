@@ -20,17 +20,17 @@ class ASE(Protocol):
         ping = int((time.time() - start) * 1000)
 
         result: GamedigResult = {
-            'name': status['hostname'],
-            'map': status['map'] if status['map'] != 'None' else '',
-            'password': int(status['password']) != 0,
-            'numplayers': int(status['numplayers']),
+            'name': status.hostname,
+            'map': status.map if status.map != 'None' else '',
+            'password': status.password,
+            'numplayers': status.num_players,
             'numbots': 0,
-            'maxplayers': int(status['maxplayers']),
-            'players': [{'name': player['name'], 'raw': player} for player in status['players']],
+            'maxplayers': status.max_players,
+            'players': [{'name': player.name, 'raw': player.__dict__} for player in status.players],
             'bots': None,
-            'connect': f"{host}:{status.get('gameport', port)}",
+            'connect': f"{host}:{status.game_port}",
             'ping': ping,
-            'raw': status
+            'raw': status.__dict__
         }
 
         return result

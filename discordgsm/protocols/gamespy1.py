@@ -18,8 +18,8 @@ class GameSpy1(Protocol):
         start = time.time()
         status = await gamespy1.get_status()
         ping = int((time.time() - start) * 1000)
-        info = dict(status['info'])
-        players = status['players']
+        info = status.info
+        players = status.players
         password = str(info.get('password', '0')).lower()
 
         # Fix bf1942 0 numplayers still contains player on player list issue

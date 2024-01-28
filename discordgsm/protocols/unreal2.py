@@ -18,21 +18,20 @@ class Unreal2(Protocol):
         start = time.time()
         details = await unreal2.get_details()
         ping = int((time.time() - start) * 1000)
-        numplayers = int(details['NumPlayers'])
-        players = await unreal2.get_players() if numplayers > 0 else []
+        players = await unreal2.get_players() if details.num_players > 0 else []
 
         result: GamedigResult = {
-            'name': details['ServerName'],
-            'map': details['MapName'],
+            'name': details.server_name,
+            'map': details.map_name,
             'password': False,
-            'numplayers': numplayers,
+            'numplayers': details.num_players,
             'numbots': 0,
-            'maxplayers': int(details['MaxPlayers']),
-            'players': [{'name': player['Name'], 'raw': player} for player in players],
+            'maxplayers': details.max_players,
+            'players': [{'name': player.name, 'raw': player.__dict__} for player in players],
             'bots': None,
-            'connect': f"{host}:{details.get('GamePort', port)}",
+            'connect': f"{host}:{details.game_port}",
             'ping': ping,
-            'raw': details
+            'raw': details.__dict__
         }
 
         return result

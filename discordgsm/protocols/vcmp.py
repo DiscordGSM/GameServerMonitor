@@ -15,31 +15,31 @@ class Vcmp(Protocol):
 
     async def query(self):
         host, port = str(self.kv['host']), int(str(self.kv['port']))
-        samp = opengsq.Vcmp(host, port, self.timeout)
+        vcmp = opengsq.Vcmp(host, port, self.timeout)
 
         async def get_players():
             try:
-                return await samp.get_players()
+                return await vcmp.get_players()
             except Exception:
                 # Server may not response when numplayers > 100
                 return []
 
         start = time.time()
-        status, players = await asyncio.gather(samp.get_status(), get_players())
+        status, players = await asyncio.gather(vcmp.get_status(), get_players())
         ping = int((time.time() - start) * 1000)
 
         result: GamedigResult = {
-            'name': status['servername'],
-            'map': status.get('language', ''),
-            'password': status['password'] == 1,
+            'name': status.server_name,
+            'map': status.language,
+            'password': status.password,
             'numplayers': len(players),
             'numbots': 0,
-            'maxplayers': status['maxplayers'],
+            'maxplayers': status.max_players,
             'players': players,
             'bots': None,
             'connect': f'{host}:{port}',
             'ping': ping,
-            'raw': status
+            'raw': status.__dict__
         }
 
         return result

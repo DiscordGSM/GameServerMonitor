@@ -14,21 +14,21 @@ class Raknet(Protocol):
 
     async def query(self):
         host, port = str(self.kv['host']), int(str(self.kv['port']))
-        raknet = opengsq.Raknet(host, port, self.timeout)
+        raknet = opengsq.RakNet(host, port, self.timeout)
         start = time.time()
         status = await raknet.get_status()
         ping = int((time.time() - start) * 1000)
 
         result: GamedigResult = {
-            'name': status.get('motd_line_1', ''),
-            'map': status.get('motd_line_2', ''),
+            'name': status.motd_line1,
+            'map': status.motd_line2,
             'password': False,
-            'numplayers': int(status.get('num_players', '')),
+            'numplayers': status.num_players,
             'numbots': 0,
-            'maxplayers': int(status.get('max_players', '')),
+            'maxplayers': status.max_players,
             'players': None,
             'bots': None,
-            'connect': f"{host}:{status.get('port_ipv4', port)}",
+            'connect': f"{host}:{status.port_ipv4}",
             'ping': ping,
             'raw': status
         }

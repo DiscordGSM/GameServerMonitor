@@ -21,17 +21,17 @@ class Battlefield(Protocol):
         ping = int((time.time() - start) * 1000)
 
         result: GamedigResult = {
-            'name': info['hostname'],
-            'map': info['map'],
-            'password': info['password'],
-            'numplayers': info['numplayers'],
+            'name': info.hostname,
+            'map': info.map,
+            'password': info.password,
+            'numplayers': info.num_players,
             'numbots': 0,
-            'maxplayers': info['maxplayers'],
+            'maxplayers': info.max_players,
             'players': [{'name': player['name'], 'raw': player} for player in players],
             'bots': None,
-            'connect': info['ip_port'],
+            'connect': info.ip_port,
             'ping': ping,
-            'raw': info
+            'raw': info.__dict__
         }
 
         return result

@@ -19,7 +19,7 @@ class Teamspeak3(Protocol):
         else:
             host, port, voice_port = str(self.kv['host']), int(str(self.kv['port'])), int(str(self.kv['voice_port']))
 
-        teamspeak3 = opengsq.Teamspeak3(host, port, voice_port, self.timeout)
+        teamspeak3 = opengsq.TeamSpeak3(host, port, voice_port, self.timeout)
         start = time.time()
         info, clients, channels = await asyncio.gather(teamspeak3.get_info(), teamspeak3.get_clients(), teamspeak3.get_channels())
         ping = int((time.time() - start) * 1000)

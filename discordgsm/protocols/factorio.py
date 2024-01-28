@@ -2,7 +2,7 @@ import re
 from typing import TYPE_CHECKING
 
 import aiohttp
-from opengsq.socket_async import SocketAsync
+from opengsq.protocol_socket import Socket
 
 from discordgsm.environment import env
 from discordgsm.protocols.protocol import Protocol
@@ -40,7 +40,7 @@ class Factorio(Protocol):
             await self.pre_query()
 
         host, port = str(self.kv['host']), int(str(self.kv['port']))
-        ip = await SocketAsync.gethostbyname(host)
+        ip = await Socket.gethostbyname(host)
         host_address = f'{ip}:{port}'
 
         if host_address not in Factorio.master_servers:

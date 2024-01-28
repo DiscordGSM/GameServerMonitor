@@ -2,7 +2,7 @@ import re
 from typing import TYPE_CHECKING
 
 import aiohttp
-from opengsq.socket_async import SocketAsync
+from opengsq.protocol_socket import Socket
 
 from discordgsm.protocols.protocol import Protocol
 
@@ -38,7 +38,7 @@ class BeamMP(Protocol):
             await self.pre_query()
 
         host, port = str(self.kv['host']), int(str(self.kv['port']))
-        ip = await SocketAsync.gethostbyname(host)
+        ip = await Socket.gethostbyname(host)
         key = f'{ip}:{port}'
 
         if key not in BeamMP.master_servers:

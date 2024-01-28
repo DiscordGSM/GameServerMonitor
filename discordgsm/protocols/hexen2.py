@@ -21,11 +21,11 @@ class Hexen2(Protocol):
         start = time.time()
         status = await quake1.get_status()
         ping = int((time.time() - start) * 1000)
-        info = dict(status['info'])
+        info = status.info
         players = []
         bots = []
 
-        for player in status['players']:
+        for player in status.players:
             (bots if player['ping'] == 0 else players).append({'name': player['name'], 'raw': player})
 
         result: GamedigResult = {

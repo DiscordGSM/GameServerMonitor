@@ -29,18 +29,18 @@ class Samp(Protocol):
         ping = int((time.time() - start) * 1000)
 
         result: GamedigResult = {
-            'name': status['servername'],
+            'name': status.server_name,
             'map': rules.get('mapname', ''),
-            'password': status['password'] == 1,
+            'password': status.password,
             'numplayers': len(players),
             'numbots': 0,
-            'maxplayers': status['maxplayers'],
-            'players': [{'name': player['name'], 'raw': player} for player in players],
+            'maxplayers': status.max_players,
+            'players': [{'name': player.name, 'raw': player.__dict__} for player in players],
             'bots': None,
             'connect': f'{host}:{port}',
             'ping': ping,
             'raw': {
-                'info': status,
+                'info': status.__dict__,
                 'rules': rules
             }
         }

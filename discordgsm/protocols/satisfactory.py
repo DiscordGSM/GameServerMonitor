@@ -30,7 +30,7 @@ class Satisfactory(Protocol):
             'bots': None,
             'connect': f'{host}:{port}',
             'ping': ping,
-            'raw': status
+            'raw': status.__dict__
         }
 
         return result

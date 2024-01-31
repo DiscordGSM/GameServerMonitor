@@ -229,7 +229,7 @@ rust,Rust (2018),source,port=28015
 
 samp,San Andreas Multiplayer (2006),samp,port=7777
 satisfactory,Satisfactory (2019),satisfactory,port_query=15777
-scpsl,SCP: Secret Laboratory (2017),scpsl
+scpsl,SCP: Secret Laboratory (2017),scpsl,
 scum,SCUM (2018),scum,port=27015
 shatteredhorizon,Shattered Horizon (2009),source,port=27015
 ship,The Ship (2006),source,port=27015

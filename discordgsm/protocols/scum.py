@@ -16,7 +16,7 @@ class Scum(Protocol):
 
     async def pre_query(self):
         master_servers = await opengsq.Scum.query_master_servers()
-        Scum.master_servers = {f"{server['ip']}:{server['port']}": server for server in master_servers}
+        Scum.master_servers = {f"{server.ip}:{server.port}": server for server in master_servers}
 
     async def query(self):
         if Scum.master_servers is None:

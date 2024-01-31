@@ -130,7 +130,7 @@ class Gamedig:
             'port': server.query_port,
         }, **server.query_extra})
 
-    async def run(self, kv: dict):
+    async def run(self, kv: dict) -> GamedigResult:
         if protocol := protocols.get(self.games[kv['type']]['protocol']):
             return await asyncio.wait_for(protocol(kv).query(), timeout=env('TASK_QUERY_SERVER_TIMEOUT'))
 

@@ -18,6 +18,7 @@ from .hexen2 import Hexen2
 from .minecraft import Minecraft
 from .nwn1 import NWN1
 from .nwn2 import NWN2
+from .palworld import Palworld
 from .protocol import Protocol
 from .quake1 import Quake1
 from .quake2 import Quake2

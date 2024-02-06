@@ -195,6 +195,7 @@ openarena,OpenArena (2005),quake3,port_query=27960
 operationharsh,Operation: Harsh Doorstop (2023),source,port_query=27005
 
 painkiller,Painkiller (2004),ase,port=3455;port_query_offset=123
+palworld,Palworld (2024),palworld,port=8211
 pixark,PixARK (2018),source,port=7777;port_query=27015
 postal2,Postal 2 (2003),gamespy1,port=7777;port_query_offset=1
 prbf2,Project Reality: Battlefield 2 (2005),gamespy3,port=16567;port_query=29900

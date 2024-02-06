@@ -31,6 +31,7 @@ from .scum import Scum
 from .source import Source
 from .teamspeak3 import Teamspeak3
 from .terraria import Terraria
+from .theisleevrima import TheIsleEvrima
 from .unreal2 import Unreal2
 from .ut3 import UT3
 from .vcmp import Vcmp

@@ -269,6 +269,7 @@ terraria,Terraria - TShock (2011),terraria,port=7777;port_query_offset=101
 tf2,Team Fortress 2,source,port=27015
 tfc,Team Fortress Classic,source,port=27015
 theisle,The Isle (2015),source,port_query=7778
+theisleevrima,The Isle - EVRIMA (2020),theisleevrima,port_query=7778
 thespecialists,The Specialists (2002),source,port=27015
 thps3,Tony Hawk's Pro Skater 3,gamespy1,port_query=6500
 thps4,Tony Hawk's Pro Skater 4,gamespy1,port_query=6500

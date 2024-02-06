@@ -32,11 +32,12 @@ class FrontServer:
 
 
 class Front(Protocol):
-    pre_query_required = False
+    pre_query_required = True
     name = "front"
     master_servers = None
 
-    async def query(self):
+    # old method
+    async def _query(self):
         host, port = str(self.kv["host"]), int(str(self.kv["port"]))
         start = time.time()
         source = opengsq.Source(host, port, self.timeout)
@@ -59,7 +60,8 @@ class Front(Protocol):
 
         return result
 
-    # Requires AccessKeyId
+    # Before Requires AccessKeyId
+    # 2/7/2024: No need AccessKeyId now
     async def pre_query(self):
         url = "https://privatelist.playthefront.com/private_list"
 
@@ -88,7 +90,7 @@ class Front(Protocol):
 
         return Front.master_servers
 
-    async def _query(self):
+    async def query(self):
         if Front.master_servers is None:
             await self.pre_query()
             assert (
@@ -96,13 +98,8 @@ class Front(Protocol):
             ), "Front.master_servers is still None after pre_query"
 
         host, port = str(self.kv["host"]), int(str(self.kv["port"]))
-        start = time.time()
-        source = opengsq.Source(host, port, self.timeout)
-        info = await source.get_info()
-        ping = int((time.time() - start) * 1000)
-
         ip = await Socket.gethostbyname(host)
-        host_address = f'{ip}:{info["GamePort"]}'
+        host_address = f"{ip}:{port}"
 
         if host_address not in Front.master_servers:
             raise Exception("Server not found")
@@ -112,14 +109,14 @@ class Front(Protocol):
         result: GamedigResult = {
             "name": server.server_name,
             "map": server.info.get("game_map"),
-            "password": info["Visibility"] != 0,
+            "password": server.info.get("HasPWD"),
             "numplayers": server.online,
             "numbots": 0,
             "maxplayers": server.info.get("maxplayer"),
             "players": None,
             "bots": None,
             "connect": host_address,
-            "ping": ping,
+            "ping": 0,
             "raw": server.__dict__,
         }
 

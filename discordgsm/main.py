@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 
@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 from discordgsm.async_utils import to_chunks
 
 from discordgsm.environment import AdvertiseType, env
-from discordgsm.gamedig import GamedigGame, GamedigResult
+from discordgsm.gamedig import GamedigGame
 from discordgsm.logger import Logger
 from discordgsm.protocols import Protocol, protocols
 from discordgsm.server import Server

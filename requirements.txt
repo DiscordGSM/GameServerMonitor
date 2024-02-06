@@ -3,7 +3,7 @@ backports.zoneinfo==0.2.1;python_version<"3.9"
 discord.py==2.3.2
 flask[async]==3.0.0
 gunicorn==21.2.0
-opengsq==3.0.3
+opengsq==3.0.6
 psycopg2-binary==2.9.9
 pymongo==4.6.0
 python-dotenv==1.0.0

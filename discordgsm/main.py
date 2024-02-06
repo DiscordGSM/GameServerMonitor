@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 from discordgsm.async_utils import to_chunks
 
 from discordgsm.environment import AdvertiseType, env
-from discordgsm.gamedig import GamedigGame
+from discordgsm.gamedig import GamedigGame, GamedigResult
 from discordgsm.logger import Logger
 from discordgsm.protocols import Protocol, protocols
 from discordgsm.server import Server
@@ -27,6 +27,7 @@ from discordgsm.service import (database, gamedig, invite_link, public,
 from discordgsm.styles import Style, Styles
 from discordgsm.translator import Translator, t
 from discordgsm.version import __version__
+from opengsq.protocol_socket import Socket
 
 load_dotenv()
 
@@ -246,11 +247,10 @@ def query_server_modal(game: GamedigGame, locale: Locale):
         query_extra['_token'] = TextInput(label='REST user token')
         modal.add_item(query_extra['_token'])
     elif game['id'] == 'scpsl':
-        query_extra['_api_key'] = TextInput(label='API Key')
-        query_extra['_account_id'] = TextInput(label='Account ID')
-        modal.add_item(query_extra['_api_key']).add_item(query_extra['_account_id'])
-        modal.remove_item(query_param['host']).remove_item(query_param['port'])
-        query_param['host']._value = 'api.scpslgame.com'
+        query_param['host'] = TextInput(label='Account ID', placeholder='API key for the account id')
+        query_extra['_api_key'] = TextInput(label='API Key', placeholder='Account ID of the server')
+        modal.add_item(query_extra['_api_key'])
+        modal.remove_item(query_param['port'])
         query_param['port']._value = '0'
     elif game['id'] == 'gportal':
         query_extra['serverId'] = TextInput(label='GPORTAL server id')
@@ -326,9 +326,6 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
             if await resend_channel_messages(interaction):
                 await interaction.delete_original_response()
         else:
-            # Reactivate disabled server
-            await database.update_servers([server])
-
             content = t('function.query_server_modal.success', interaction.locale)
             await interaction.followup.send(content, embed=style.embed())
 
@@ -944,45 +941,99 @@ async def tasks_query():
     Logger.debug(f'Pre query servers: Total = {len(pre_query_results)}, Success = {success}, Failed = {failed} ({percent}% fail)')
 
     # Query servers
-    distinct_servers = await database.distinct_servers()
-    query_tasks = filtered_tasks(distinct_servers)
-    disabled = len(distinct_servers) - len(query_tasks)
-    Logger.debug(f'Query servers: Tasks = {len(query_tasks)} servers. {disabled} servers are disabled for queries.')
-    servers: list[Server] = []
+    servers = await database.all_servers()
+    distinct_servers = await get_distinct_servers(servers)
+    queried_servers = await query_servers(distinct_servers)
 
-    async for chunks in to_chunks(query_tasks, int(os.getenv('TASK_QUERY_CHUNK_SIZE', '50'))):
-        servers += await asyncio.gather(*chunks)
+    await database.update_servers(queried_servers)
+    await database.update_metrics(queried_servers)
 
-    await database.update_servers(servers)
-    await database.update_metrics(servers)
-
-    failed = sum(server.status is False for server in servers)
-    success = len(servers) - failed
-    percent = len(servers) > 0 and int(failed / len(servers) * 100) or 0
-    disabled_string = '' if disabled <= 0 else f' ({disabled} disabled)'
-    Logger.info(f'Query servers: Total = {len(servers)}, Success = {success}, Failed = {failed} ({percent}% fail){disabled_string}')
+    failed = sum(server.status is False for server in queried_servers)
+    success = len(queried_servers) - failed
+    percent = len(queried_servers) > 0 and int(failed / len(queried_servers) * 100) or 0
+    Logger.info(f'Query servers: Total = {len(queried_servers)}, Success = {success}, Failed = {failed} ({percent}% fail)')
 
     # Run the tasks after the server queries
     await asyncio.gather(tasks_send_alert(), tasks_edit_messages(), tasks_presence_update(tasks_query.current_loop))
 
 
-def filtered_tasks(servers: list[Server]):
-    days = int(os.getenv('TASK_QUERY_DISABLE_AFTER_DAYS', '0'))
+async def query_servers(distinct_servers: dict[tuple[str, str, int, str], list[Server]]):
+    query_tasks = [query_distinct_server(servers) for servers in distinct_servers.values()]
 
-    if days <= 0:
-        return [query_server(server) for server in servers]
+    async for chunks in to_chunks(query_tasks, int(os.getenv('TASK_QUERY_CHUNK_SIZE', '50'))):
+        await asyncio.gather(*chunks)
 
-    tasks = []
+    servers: list[Server] = []
+
+    for server_list in distinct_servers.values():
+        servers.extend(server_list)
+
+    return servers
+
+async def query_distinct_server(servers: list[Server]):
+    """Query server"""
+    server = servers[0]
+
+    try:
+        result = await gamedig.query(server)
+        status = True
+        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Success. Ping: {result.get("ping", -1)}ms')
+    except Exception as e:
+        result = None
+        status = False
+        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] {type(e).__name__}: {e}')
 
     for server in servers:
-        raw = server.result.get('raw', {})
+        if status:
+            sent_offline_alert = bool(server.result['raw'].get('__sent_offline_alert', False))
+            server.result = result
+            server.result['raw']['__sent_offline_alert'] = sent_offline_alert
+        else:
+            raw = server.result.get('raw', {})
+            server.result['raw']['__fail_query_count'] = int(raw.get('__fail_query_count', '0')) + 1
+            timestamp = int(datetime.utcnow().timestamp())
+            server.result['raw']['__offline_since'] = min(int(raw.get('__offline_since', timestamp)), timestamp)
 
-        if '__offline_since' in raw and datetime.utcnow().timestamp() - int(raw['__offline_since']) >= timedelta(days=days).total_seconds():
-            continue
 
-        tasks.append(query_server(server))
+async def get_hash_code(server: Server):
+    if server.game_id in ['discord', 'scpsl']:
+        host = server.address
+    else:
+        try:
+            host = await Socket.gethostbyname(server.address)
+        except Exception as e:
+            Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] {type(e).__name__}: {e}')
+            return None
 
-    return tasks
+    return (server.game_id, host, server.query_port, str(server.query_extra))
+
+
+async def get_distinct_servers(servers: list[Server]) -> dict[tuple[str, str, int, str], list[Server]]:
+    distinct_dict: dict[tuple[str, str, int, str], list[Server]] = {}
+    failed_servers: list[Server] = []
+
+    # Create a list of tasks for all the DNS lookups
+    get_hash_code_tasks = [get_hash_code(server) for server in servers]
+
+    # Run all the tasks concurrently and wait for them to finish
+    hash_codes = await asyncio.gather(*get_hash_code_tasks)
+
+    for server, hash_code in zip(servers, hash_codes):
+        if hash_code is not None:
+            if hash_code not in distinct_dict:
+                distinct_dict[hash_code] = []
+
+            distinct_dict[hash_code].append(server)
+        else:
+            failed_servers.append(server)
+
+    total = len(servers)
+    distinct = len(distinct_dict)
+    duplicated = total - distinct
+    failed = len(failed_servers)
+    Logger.debug(f'Query servers: Total = {total}, Distinct = {distinct}, Duplicated = {duplicated}, DNS Failed = {failed}')
+
+    return distinct_dict
 
 
 async def pre_query(protocol: Protocol):
@@ -996,25 +1047,6 @@ async def pre_query(protocol: Protocol):
         return False
 
     return None
-
-
-async def query_server(server: Server):
-    """Query server"""
-    try:
-        sent_offline_alert = bool(server.result['raw'].get('__sent_offline_alert', False))
-        server.result = await gamedig.query(server)
-        server.result['raw']['__sent_offline_alert'] = sent_offline_alert
-        server.status = True
-        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] Success. Ping: {server.result.get("ping", -1)}ms')
-    except Exception as e:
-        server.status = False
-        raw = server.result.get('raw', {})
-        server.result['raw']['__fail_query_count'] = int(raw.get('__fail_query_count', '0')) + 1
-        timestamp = int(datetime.utcnow().timestamp())
-        server.result['raw']['__offline_since'] = min(int(raw.get('__offline_since', timestamp)), timestamp)
-        Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] {type(e).__name__}: {e}')
-
-    return server
 
 
 async def tasks_send_alert():

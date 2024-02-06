@@ -3,30 +3,10 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
+from opengsq.protocol_socket import Socket
 
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
-
-
-@dataclass
-class QueryServer:
-    game_id: str
-    address: str
-    query_port: int
-    query_extra: dict
-    status: bool
-    result: GamedigResult
-
-    @staticmethod
-    def create(row: tuple) -> QueryServer:
-        return QueryServer(
-            game_id=row[0],
-            address=row[1],
-            query_port=row[2],
-            query_extra=json.loads(row[3]),
-            status=row[4] == 1,
-            result=json.loads(row[5]),
-        )
 
 
 @dataclass

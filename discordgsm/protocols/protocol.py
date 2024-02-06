@@ -7,7 +7,7 @@ class Protocol(ABC):
 
     def __init__(self, kv: dict):
         self.kv = kv
-        self.timeout = float(os.getenv('TASK_QUERY_SERVER_TIMEOUT', '15'))
+        self.timeout = float(os.getenv("TASK_QUERY_SERVER_TIMEOUT", "15"))
 
     async def pre_query(self):
         pass

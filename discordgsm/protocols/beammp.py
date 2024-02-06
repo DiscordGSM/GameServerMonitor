@@ -12,20 +12,22 @@ if TYPE_CHECKING:
 
 class BeamMP(Protocol):
     pre_query_required = True
-    name = 'beammp'
+    name = "beammp"
     master_servers = None
 
     async def pre_query(self):
         # Known-bug: the api sometimes doesn't return full server list
         # (GET) https://backend.beammp.com/servers-info
         # (POST) https://backend.beammp.com/servers
-        url = 'https://backend.beammp.com/servers-info'
+        url = "https://backend.beammp.com/servers-info"
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 servers = await response.json()
 
-        master_servers = {f'{server["ip"]}:{server["port"]}': server for server in servers}
+        master_servers = {
+            f'{server["ip"]}:{server["port"]}': server for server in servers
+        }
 
         # Temp fix the api bug, full update the BeamMP.master_servers when response servers > 1000
         if BeamMP.master_servers is None or len(servers) > 1000:
@@ -37,26 +39,31 @@ class BeamMP(Protocol):
         if BeamMP.master_servers is None:
             await self.pre_query()
 
-        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        host, port = str(self.kv["host"]), int(str(self.kv["port"]))
         ip = await Socket.gethostbyname(host)
-        key = f'{ip}:{port}'
+        key = f"{ip}:{port}"
 
         if key not in BeamMP.master_servers:
-            raise Exception('Server not found')
+            raise Exception("Server not found")
 
         server = dict(BeamMP.master_servers[key])
         result: GamedigResult = {
-            'name': re.sub(r'\^[0-9|a-f|l-p|r]', '', str(server['sname'])),
-            'map': re.sub(r'\/?levels\/(.+)\/info\.json', r'\1', str(server['map'])).replace('_', ' ').title(),
-            'password': bool(server.get('private', False)),
-            'numplayers': int(server['players']),
-            'numbots': 0,
-            'maxplayers': int(server['maxplayers']),
-            'players': [{'name': name, 'raw': {}} for name in str(server['playerslist']).split(';')],
-            'bots': None,
-            'connect': key,
-            'ping': 0,
-            'raw': server
+            "name": re.sub(r"\^[0-9|a-f|l-p|r]", "", str(server["sname"])),
+            "map": re.sub(r"\/?levels\/(.+)\/info\.json", r"\1", str(server["map"]))
+            .replace("_", " ")
+            .title(),
+            "password": bool(server.get("private", False)),
+            "numplayers": int(server["players"]),
+            "numbots": 0,
+            "maxplayers": int(server["maxplayers"]),
+            "players": [
+                {"name": name, "raw": {}}
+                for name in str(server["playerslist"]).split(";")
+            ],
+            "bots": None,
+            "connect": key,
+            "ping": 0,
+            "raw": server,
         }
 
         return result

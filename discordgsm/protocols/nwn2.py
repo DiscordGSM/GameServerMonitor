@@ -36,42 +36,44 @@ class Response:
 
 class NWN2(Protocol):
     pre_query_required = True
-    name = 'nwn2'
+    name = "nwn2"
     master_servers = None
 
     async def pre_query(self):
-        url = 'https://nwnlist.herokuapp.com/servers/NWN2'
+        url = "https://nwnlist.herokuapp.com/servers/NWN2"
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 servers = await response.json(content_type=None)
 
-        NWN2.master_servers = {str(server["server_address"]): Response(**server) for server in servers}
+        NWN2.master_servers = {
+            str(server["server_address"]): Response(**server) for server in servers
+        }
 
     async def query(self):
         if NWN2.master_servers is None:
             await self.pre_query()
 
-        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        host, port = str(self.kv["host"]), int(str(self.kv["port"]))
         ip = await Socket.gethostbyname(host)
-        key = f'{ip}:{port}'
+        key = f"{ip}:{port}"
 
         if key not in NWN2.master_servers:
-            raise Exception('Server not found')
+            raise Exception("Server not found")
 
         server: Response = NWN2.master_servers[key]
         result: GamedigResult = {
-            'name': server.server_name,
-            'map': '',
-            'password': str(server.password_protected) == 'true',
-            'numplayers': int(server.active_player_count),
-            'numbots': 0,
-            'maxplayers': int(server.maximum_player_count),
-            'players': None,
-            'bots': None,
-            'connect': key,
-            'ping': 0,
-            'raw': server.__dict__
+            "name": server.server_name,
+            "map": "",
+            "password": str(server.password_protected) == "true",
+            "numplayers": int(server.active_player_count),
+            "numbots": 0,
+            "maxplayers": int(server.maximum_player_count),
+            "players": None,
+            "bots": None,
+            "connect": key,
+            "ping": 0,
+            "raw": server.__dict__,
         }
 
         return result

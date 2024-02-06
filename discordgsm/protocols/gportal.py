@@ -10,11 +10,15 @@ if TYPE_CHECKING:
 
 
 class GPortal(Protocol):
-    name = 'gportal'
+    name = "gportal"
 
     async def query(self):
-        host, port, server_id = str(self.kv['host']), int(str(self.kv['port'])), str(self.kv['serverId'])
-        url = f'https://api.g-portal.com/gameserver/query/{server_id}'
+        host, port, server_id = (
+            str(self.kv["host"]),
+            int(str(self.kv["port"])),
+            str(self.kv["serverId"]),
+        )
+        url = f"https://api.g-portal.com/gameserver/query/{server_id}"
         start = time.time()
 
         async with aiohttp.ClientSession() as session:
@@ -22,24 +26,24 @@ class GPortal(Protocol):
                 data = await response.json()
                 end = time.time()
 
-        if host != data['ipAddress'] or port != data['port']:
-            raise Exception('Invalid address or port')
+        if host != data["ipAddress"] or port != data["port"]:
+            raise Exception("Invalid address or port")
 
-        if not data['online']:
-            raise Exception('Server offline')
+        if not data["online"]:
+            raise Exception("Server offline")
 
         result: GamedigResult = {
-            'name': data['name'],
-            'map': '',
-            'password': False,
-            'numplayers': data['currentPlayers'],
-            'numbots': 0,
-            'maxplayers': data['maxPlayers'],
-            'players': None,
-            'bots': None,
-            'connect': f"{data['ipAddress']}:{data['port']}",
-            'ping': int((end - start) * 1000),
-            'raw': data
+            "name": data["name"],
+            "map": "",
+            "password": False,
+            "numplayers": data["currentPlayers"],
+            "numbots": 0,
+            "maxplayers": data["maxPlayers"],
+            "players": None,
+            "bots": None,
+            "connect": f"{data['ipAddress']}:{data['port']}",
+            "ping": int((end - start) * 1000),
+            "raw": data,
         }
 
         return result

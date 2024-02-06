@@ -11,10 +11,10 @@ if TYPE_CHECKING:
 
 
 class Vcmp(Protocol):
-    name = 'vcmp'
+    name = "vcmp"
 
     async def query(self):
-        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        host, port = str(self.kv["host"]), int(str(self.kv["port"]))
         vcmp = opengsq.Vcmp(host, port, self.timeout)
 
         async def get_players():
@@ -29,17 +29,17 @@ class Vcmp(Protocol):
         ping = int((time.time() - start) * 1000)
 
         result: GamedigResult = {
-            'name': status.server_name,
-            'map': status.language,
-            'password': status.password,
-            'numplayers': len(players),
-            'numbots': 0,
-            'maxplayers': status.max_players,
-            'players': players,
-            'bots': None,
-            'connect': f'{host}:{port}',
-            'ping': ping,
-            'raw': status.__dict__
+            "name": status.server_name,
+            "map": status.language,
+            "password": status.password,
+            "numplayers": status.num_players,
+            "numbots": 0,
+            "maxplayers": status.max_players,
+            "players": players,
+            "bots": None,
+            "connect": f"{host}:{port}",
+            "ping": ping,
+            "raw": status.__dict__,
         }
 
         return result

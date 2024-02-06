@@ -12,10 +12,10 @@ if TYPE_CHECKING:
 
 
 class Source(Protocol):
-    name = 'source'
+    name = "source"
 
     async def query(self):
-        host, port = str(self.kv['host']), int(str(self.kv['port']))
+        host, port = str(self.kv["host"]), int(str(self.kv["port"]))
         source = opengsq.Source(host, port, self.timeout)
 
         async def get_players():
@@ -29,9 +29,11 @@ class Source(Protocol):
         start = time.time()
 
         # The Front incorrect info server name fix
-        if self.kv['type'] == 'front':
-            info, players, rules = await asyncio.gather(source.get_info(), get_players(), source.get_rules())
-            info.name = rules['ServerName_s']  # Override the info server name
+        if self.kv["type"] == "front":
+            info, players, rules = await asyncio.gather(
+                source.get_info(), get_players(), source.get_rules()
+            )
+            info.name = rules["ServerName_s"]  # Override the info server name
         else:
             info, players = await asyncio.gather(source.get_info(), get_players())
 
@@ -48,32 +50,46 @@ class Source(Protocol):
 
         ping = int((time.time() - start) * 1000)
         players.sort(key=lambda x: x.duration, reverse=True)
-        players, bots = players[info.bots:], players[:info.bots]
+        players, bots = players[info.bots :], players[: info.bots]
 
         result: GamedigResult = {
-            'name': info.name,
-            'map': info.map,
-            'password': info.visibility == Visibility.Private,
-            'numplayers': info.players,
-            'numbots': info.bots,
-            'maxplayers': info.max_players,
-            'players': [{'name': player.name, 'raw': {'score': player.score, 'time': player.duration}} for player in players],
-            'bots': [{'name': bot.name, 'raw': {'score': bot.score, 'time': bot.duration}} for bot in bots],
-            'connect': connect,
-            'ping': ping,
-            'raw': info.__dict__
+            "name": info.name,
+            "map": info.map,
+            "password": info.visibility == Visibility.Private,
+            "numplayers": info.players,
+            "numbots": info.bots,
+            "maxplayers": info.max_players,
+            "players": [
+                {
+                    "name": player.name,
+                    "raw": {"score": player.score, "time": player.duration},
+                }
+                for player in players
+            ],
+            "bots": [
+                {"name": bot.name, "raw": {"score": bot.score, "time": bot.duration}}
+                for bot in bots
+            ],
+            "connect": connect,
+            "ping": ping,
+            "raw": info.__dict__,
         }
 
         if keywords:
-            result['raw']['tags'] = str(keywords).split(',')
+            result["raw"]["tags"] = str(keywords).split(",")
 
         if game_id == 629760:  # mordhau, fix numplayers
-            result['numplayers'] = int(
-                next((tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'B:'), '0'))
+            result["numplayers"] = int(
+                next((tag[2:] for tag in result["raw"]["tags"] if tag[:2] == "B:"), "0")
+            )
         elif game_id == 252490:  # rust, fix maxplayers
-            result['maxplayers'] = int(next(
-                (tag[2:] for tag in result['raw']['tags'] if tag[:2] == 'mp'), result['maxplayers']))
+            result["maxplayers"] = int(
+                next(
+                    (tag[2:] for tag in result["raw"]["tags"] if tag[:2] == "mp"),
+                    result["maxplayers"],
+                )
+            )
         elif game_id == 346110:  # arkse, fix numplayers
-            result['numplayers'] = len(result['players'])
+            result["numplayers"] = len(result["players"])
 
         return result

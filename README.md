@@ -70,3 +70,7 @@ Feel free to contribute! Learn more: [Contributor's Guide: Adding Translations](
 
 ## Support Server
 Got any questions or feedback? Join our Discord Server: https://discordgsm.com/discord
+
+## Stargazers over time
+[![Stargazers over time](https://starchart.cc/DiscordGSM/GameServerMonitor.svg?variant=adaptive)](https://starchart.cc/DiscordGSM/GameServerMonitor)
+

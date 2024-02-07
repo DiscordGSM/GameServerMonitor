@@ -984,6 +984,10 @@ async def query_distinct_server(servers: list[Server]):
         Logger.debug(f'Query servers: ({server.game_id})[{server.address}:{server.query_port}] {type(e).__name__}: {e}')
 
     for server in servers:
+        # Update the status
+        server.status = status
+
+        # Update the result
         if status:
             sent_offline_alert = bool(server.result['raw'].get('__sent_offline_alert', False))
             server.result = result

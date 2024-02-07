@@ -22,18 +22,18 @@ class Minecraft(Protocol):
 
         if isinstance(status["description"], str):
             name = status["description"]
+        else:
+            if "text" in status["description"] and isinstance(
+                status["description"]["text"], str
+            ):
+                name = status["description"]["text"]
 
-        if "text" in status["description"] and isinstance(
-            status["description"]["text"], str
-        ):
-            name = status["description"]["text"]
-
-        if "extra" in status["description"] and isinstance(
-            status["description"]["extra"], list
-        ):
-            name = "".join(
-                data.get("text", "") for data in status["description"]["extra"]
-            )
+            if "extra" in status["description"] and isinstance(
+                status["description"]["extra"], list
+            ):
+                name = "".join(
+                    data.get("text", "") for data in status["description"]["extra"]
+                )
 
         name = "\n".join(row.strip() for row in name.split("\n"))
         players = [

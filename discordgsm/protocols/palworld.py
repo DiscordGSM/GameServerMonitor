@@ -88,8 +88,8 @@ class Palworld(Protocol):
         settings = dict(info.get("settings", {}))
 
         result: GamedigResult = {
-            "name": attributes.get("NAME_s", "Unknown Server"),
-            "map": "",
+            "name": attributes.get("NAME_s", ""),
+            "map": attributes.get("MAPNAME_s", ""),
             "password": attributes.get("ISPASSWORD_b", False),
             "numplayers": attributes.get("PLAYERS_l", 0),
             "numbots": 0,

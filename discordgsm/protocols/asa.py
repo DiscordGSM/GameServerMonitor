@@ -48,15 +48,15 @@ class ASA(Protocol):
         settings = dict(info.get("settings", {}))
 
         result: GamedigResult = {
-            "name": attributes.get("CUSTOMSERVERNAME_s", "Unknown Server"),
-            "map": attributes.get("MAPNAME_s", "Unknown Map"),
+            "name": attributes.get("CUSTOMSERVERNAME_s", ""),
+            "map": attributes.get("MAPNAME_s", ""),
             "password": attributes.get("SERVERPASSWORD_b", False),
             "numplayers": info.get("totalPlayers", 0),
             "numbots": 0,
             "maxplayers": settings.get("maxPublicPlayers", 0),
             "players": None,
             "bots": None,
-            "connect": attributes.get("ADDRESS_s", "") + ":" + str(port),
+            "connect": f"{host}:{port}",
             "ping": ping,
             "raw": info,
         }

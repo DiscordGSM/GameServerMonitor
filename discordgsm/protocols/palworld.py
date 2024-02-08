@@ -81,10 +81,10 @@ class Palworld(Protocol):
                 raise ServerNotFoundException()
 
             info = matchmaking.sessions[0]
-            attributes = dict(info.get("attributes", {}))
 
         ping = int((time.time() - start) * 1000)
 
+        attributes = dict(info.get("attributes", {}))
         settings = dict(info.get("settings", {}))
 
         result: GamedigResult = {

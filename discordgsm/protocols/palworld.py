@@ -2,6 +2,8 @@ import time
 from typing import TYPE_CHECKING
 
 import opengsq
+from opengsq.protocol_socket import Socket
+from opengsq.exceptions.server_not_found_exception import ServerNotFoundException
 
 from discordgsm.protocols.protocol import Protocol
 
@@ -46,10 +48,43 @@ class Palworld(Protocol):
             host, port, self._deployment_id, Palworld._access_token, self.timeout
         )
         start = time.time()
-        info = await eos.get_info()
+
+        try:
+            # Filter the servers by ADDRESS_s and (ADDRESSBOUND_s or GAMESERVER_PORT_l)
+            # Most of the Palworld servers work
+            info = await eos.get_info()
+        except ServerNotFoundException:
+            # Get IP Address
+            address = await Socket.gethostbyname(host)
+
+            # Filter the servers by GAMESERVER_ADDRESS_s and GAMESERVER_PORT_l
+            matchmaking = await eos.get_matchmaking(
+                self._deployment_id,
+                self._access_token,
+                {
+                    "criteria": [
+                        {
+                            "key": "attributes.GAMESERVER_ADDRESS_s",
+                            "op": "EQUAL",
+                            "value": address,
+                        },
+                        {
+                            "key": "attributes.GAMESERVER_PORT_l",
+                            "op": "EQUAL",
+                            "value": port,
+                        },
+                    ]
+                },
+            )
+
+            if matchmaking.count <= 0:
+                raise ServerNotFoundException()
+
+            info = matchmaking.sessions[0]
+            attributes = dict(info.get("attributes", {}))
+
         ping = int((time.time() - start) * 1000)
 
-        attributes = dict(info.get("attributes", {}))
         settings = dict(info.get("settings", {}))
 
         result: GamedigResult = {
@@ -61,7 +96,7 @@ class Palworld(Protocol):
             "maxplayers": settings.get("maxPublicPlayers", 0),
             "players": None,
             "bots": None,
-            "connect": attributes.get("ADDRESS_s", "") + ":" + str(port),
+            "connect": f"{host}:{port}",
             "ping": ping,
             "raw": info,
         }

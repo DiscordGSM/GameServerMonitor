@@ -10,12 +10,14 @@ if __name__ == '__main__':
     # A valid token should contains 2 dots and 3 items
     if len(items) != 3:
         Logger.critical('Improper token has been passed, please change APP_TOKEN to a valid token. Learn more: https://discordgsm.com/guide/how-to-get-a-discord-bot-token')
-    else:
-        hmac_hide = '*' * len(items[2])  # Hide the secret
-        Logger.debug(f'Static token: {items[0]}.{items[1]}.{hmac_hide}')
+        exit(1)
 
-        # Run the bot
-        from discordgsm.main import client
-        client.run(token)
+    hmac_hide = '*' * len(items[2])  # Hide the secret
+    Logger.debug(f'Static token: {items[0]}.{items[1]}.{hmac_hide}')
 
-    Logger.info('Stopped Discord Game Server Monitor.')
+    # Run the bot
+    from discordgsm.main import client, exit_signal
+    client.run(token)
+
+    exit_signal.set()
+    Logger.info('Stopping Discord Game Server Monitor...')

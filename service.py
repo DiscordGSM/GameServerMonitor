@@ -20,7 +20,7 @@ import win32serviceutil  # noqa: E402
 # Set working directory
 os.chdir(path)
 
-from discordgsm import client  # noqa: E402
+from discordgsm.main import client  # noqa: E402
 
 
 class WindowsService(win32serviceutil.ServiceFramework):

@@ -164,6 +164,7 @@ medievalengineers,Medieval Engineers (2015),source,port=27015
 minecraft,Minecraft (2009),minecraft,port=25565
 minecraftpe,Minecraft: Bedrock Edition (2011),raknet,port=19132
 mnc,Monday Night Combat (2011),source,port=7777;port_query=27016
+moe,Myth of Empires(2021),source,port=11888;port_query_offset=1000
 moh2010,Medal of Honor (2010),battlefield,port=7673;port_query=48888
 mohaa,Medal of Honor: Allied Assault (2002),gamespy1,port=12203;port_query_offset=97
 mohab,Medal of Honor: Airborne (2007),gamespy1,port=12203;port_query_offset=97
@@ -237,6 +238,7 @@ ship,The Ship (2006),source,port=27015
 shogo,Shogo (1998),gamespy1,port_query=27888
 sin,SiN,gamespy1,port_query=22450
 sinep,SiN Episodes,source,port=27015
+silica,Silica (2023),source,port=27015,port_query_offset=1
 sof,Soldier of Fortune,quake1,port_query=28910
 sof2,Soldier of Fortune 2,quake3,port_query=20100
 soldat,Soldat,ase,port=13073;port_query_offset=123

@@ -445,7 +445,7 @@ class Database:
             ]
 
             if operations:
-                self.servers.bulk_write(operations)
+                self.servers.bulk_write(operations, ordered=False)
 
             return
 
@@ -471,7 +471,7 @@ class Database:
             ]
 
             if operations:
-                self.servers.bulk_write(operations)
+                self.servers.bulk_write(operations, ordered=False)
 
             return
 
@@ -516,7 +516,7 @@ class Database:
             ]
 
             if operations:
-                self.metrics.bulk_write(operations)
+                self.metrics.bulk_write(operations, ordered=False)
 
     @run_in_executor
     def delete_servers(
@@ -538,7 +538,7 @@ class Database:
                 operations = [DeleteOne({"_id": server.id}) for server in servers]
 
                 if operations:
-                    self.servers.bulk_write(operations)
+                    self.servers.bulk_write(operations, ordered=False)
         else:
             conn, cursor = self.cursor()
 
@@ -677,7 +677,7 @@ class Database:
                 )
                 for server in servers
             ]:
-                self.servers.bulk_write(operations)
+                self.servers.bulk_write(operations, ordered=False)
 
             return
 
@@ -709,7 +709,7 @@ class Database:
                 )
 
             if operations:
-                self.servers.bulk_write(operations)
+                self.servers.bulk_write(operations, ordered=False)
 
             return
 

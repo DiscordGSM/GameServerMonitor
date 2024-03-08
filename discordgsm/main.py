@@ -937,16 +937,23 @@ async def tasks_query_servers():
     """Query servers (Scheduled)"""
     global _tasks_query_servers_thread
 
-    if _tasks_query_servers_thread is not None:
+    if _tasks_query_servers_thread is None:
+        _tasks_query_servers_thread = threading.Thread(target=run_in_new_loop, args=(__tasks_query_servers,))
+        _tasks_query_servers_thread.start()
+    else:
+        # Wait until _tasks_query_servers_thread stops
         while _tasks_query_servers_thread.is_alive():
             await asyncio.sleep(1)
 
-    if _tasks_query_servers_thread is None or not _tasks_query_servers_thread.is_alive():
-        _tasks_query_servers_thread = threading.Thread(target=run_in_new_loop, args=(__tasks_query_servers, tasks_query_servers.current_loop))
-        _tasks_query_servers_thread.start()
+        servers = await database.all_servers()
+        await asyncio.gather(tasks_send_alert(servers), tasks_edit_messages(servers), tasks_presence_update(tasks_query_servers.current_loop))
+
+        _tasks_query_servers_thread = None
 
 
-async def __tasks_query_servers(current_loop: int):
+async def __tasks_query_servers():
+    Logger.debug('Query servers: Thread Started')
+
     # Pre query servers, some servers cannot be queried one by one
     games_servers_count = await database.count_servers_per_game()
     pre_query_tasks = [pre_query(protocol({})) for name, protocol in protocols.items() if protocol.pre_query_required and games_servers_count.get(name, 0) > 0]
@@ -962,6 +969,7 @@ async def __tasks_query_servers(current_loop: int):
     distinct_servers = await get_distinct_servers(servers)
     queried_servers = await query_servers(distinct_servers)
 
+    Logger.debug(f'Update servers: Tasks = {len(queried_servers)}.')
     await database.update_servers(queried_servers)
     await database.update_metrics(queried_servers)
 
@@ -969,9 +977,6 @@ async def __tasks_query_servers(current_loop: int):
     success = len(queried_servers) - failed
     percent = len(queried_servers) > 0 and int(failed / len(queried_servers) * 100) or 0
     Logger.info(f'Query servers: Total = {len(queried_servers)}, Success = {success}, Failed = {failed} ({percent}% fail)')
-
-    # Run the tasks after the server queries
-    await asyncio.gather(tasks_send_alert(), tasks_edit_messages(), tasks_presence_update(current_loop))
 
 
 async def query_servers(distinct_servers: dict[tuple[str, str, int, str], list[Server]]):
@@ -1075,10 +1080,8 @@ async def pre_query(protocol: Protocol):
     return None
 
 
-async def tasks_send_alert():
+async def tasks_send_alert(servers: list[Server]):
     """Send alerts tasks"""
-    all_servers = await database.all_servers()
-
     async def send_alert_webhook(server: Server):
         if server.status is False:
             server.result['raw']['__sent_offline_alert'] = True
@@ -1102,13 +1105,13 @@ async def tasks_send_alert():
         else:
             return int(server.result['raw'].get('__fail_query_count', '0')) == fail_query_count
 
-    servers = []
-    tasks = [send_alert_webhook(server) for server in all_servers if should_send_alert(server)]
+    alerted_servers = []
+    tasks = [send_alert_webhook(server) for server in servers if should_send_alert(server)]
 
     async for chunks in to_chunks(tasks, 25):
-        servers += await asyncio.gather(*chunks)
+        alerted_servers += await asyncio.gather(*chunks)
 
-    await database.update_servers(servers)
+    await database.update_servers(alerted_servers)
 
 
 async def tasks_fetch_messages():
@@ -1131,9 +1134,8 @@ async def tasks_fetch_messages():
     Logger.info(f'Fetch messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
 
 
-async def tasks_edit_messages():
+async def tasks_edit_messages(servers: list[Server]):
     """Edit messages tasks"""
-    servers = await database.all_servers()
     grouped_servers = group_servers_by_message_id(servers)
     Logger.debug(f'Edit messages: Tasks: {len(grouped_servers)} messages')
 

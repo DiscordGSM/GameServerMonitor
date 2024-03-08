@@ -13,7 +13,7 @@
     "command.queryserver.description": "Truy vấn server trò chơi (chỉ một lần)",
     "command.addserver.description": "Thêm một server vào kênh hiện tại",
     "command.addserver.text_channel_only": "Lệnh này chỉ được hỗ trợ trong text channel.",
-    "command.addserver.limit_exceeded": "Đã vượt quá giới hạn server. Giới hạn: {limit}."
+    "command.addserver.limit_exceeded": "Đã vượt quá giới hạn server. Giới hạn: {limit}.",
     "command.delserver.description": "Xóa server trong channel hiện tại",
     "command.refresh.description": "Làm mới thông tin server trong channel hiện tại",
     "command.factoryreset.description": "Xóa tất cả server trong guild hiện tại",
@@ -39,7 +39,7 @@
     "command.setalert.settings.button.label": "Cài đặt Cảnh Báo",
     "command.setalert.settings.modal.title": "Cài đặt Cảnh Báo",
     "command.setalert.test.button.label": "Gửi Cảnh Báo Thử Nghiệm",
-    "command.setalert.test.success": "Đã gửi webhook thử nghiệm."
+    "command.setalert.test.success": "Đã gửi webhook thử nghiệm.",
     "command.setalert.test.empty": "URL Webhook không được để trống.",
     "command.setalert.test.invalid": "URL Webhook không hợp lệ.",
     "command.setalert.test.not_found": "Không tìm thấy webhook này.",

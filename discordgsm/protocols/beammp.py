@@ -1,4 +1,5 @@
 import re
+import time
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -11,59 +12,37 @@ if TYPE_CHECKING:
 
 
 class BeamMP(Protocol):
-    pre_query_required = True
     name = "beammp"
-    master_servers = None
 
-    async def pre_query(self):
-        # Known-bug: the api sometimes doesn't return full server list
-        # (GET) https://backend.beammp.com/servers-info
-        # (POST) https://backend.beammp.com/servers
-        url = "https://backend.beammp.com/servers-info"
+    async def query(self):
+        host, port = str(self.kv["host"]), int(str(self.kv["port"]))
+        ip = await Socket.gethostbyname(host)
+        url = f"https://master-server.opengsq.com/beammp/search?host={ip}&port={port}"
+        start = time.time()
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
-                servers = await response.json()
+                response.raise_for_status()
+                data: dict = await response.json()
+                ping = int((time.time() - start) * 1000)
 
-        master_servers = {
-            f'{server["ip"]}:{server["port"]}': server for server in servers
-        }
-
-        # Temp fix the api bug, full update the BeamMP.master_servers when response servers > 1000
-        if BeamMP.master_servers is None or len(servers) > 1000:
-            BeamMP.master_servers = master_servers
-        else:
-            BeamMP.master_servers.update(master_servers)
-
-    async def query(self):
-        if BeamMP.master_servers is None:
-            await self.pre_query()
-
-        host, port = str(self.kv["host"]), int(str(self.kv["port"]))
-        ip = await Socket.gethostbyname(host)
-        key = f"{ip}:{port}"
-
-        if key not in BeamMP.master_servers:
-            raise Exception("Server not found")
-
-        server = dict(BeamMP.master_servers[key])
         result: GamedigResult = {
-            "name": re.sub(r"\^[0-9|a-f|l-p|r]", "", str(server["sname"])),
-            "map": re.sub(r"\/?levels\/(.+)\/info\.json", r"\1", str(server["map"]))
+            "name": re.sub(r"\^[0-9|a-f|l-p|r]", "", str(data["sname"])),
+            "map": re.sub(r"\/?levels\/(.+)\/info\.json", r"\1", str(data["map"]))
             .replace("_", " ")
             .title(),
-            "password": bool(server.get("private", False)),
-            "numplayers": int(server["players"]),
+            "password": bool(data.get("password", False)),
+            "numplayers": int(data["players"]),
             "numbots": 0,
-            "maxplayers": int(server["maxplayers"]),
+            "maxplayers": int(data["maxplayers"]),
             "players": [
                 {"name": name, "raw": {}}
-                for name in str(server["playerslist"]).split(";")
+                for name in str(data["playerslist"]).split(";")
             ],
             "bots": None,
-            "connect": key,
-            "ping": 0,
-            "raw": server,
+            "connect": f"{host}:{port}",
+            "ping": ping,
+            "raw": data,
         }
 
         return result

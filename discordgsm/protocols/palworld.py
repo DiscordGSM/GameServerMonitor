@@ -1,10 +1,8 @@
 import time
 from typing import TYPE_CHECKING
-import aiohttp
 
-import opengsq
+import aiohttp
 from opengsq.protocol_socket import Socket
-from opengsq.exceptions.server_not_found_exception import ServerNotFoundException
 
 from discordgsm.protocols.protocol import Protocol
 
@@ -24,6 +22,7 @@ class Palworld(Protocol):
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
+                response.raise_for_status()
                 data: dict = await response.json()
                 ping = int((time.time() - start) * 1000)
 

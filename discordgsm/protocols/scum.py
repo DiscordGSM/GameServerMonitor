@@ -35,7 +35,7 @@ class Scum(Protocol):
             "maxplayers": data.get("maxplayers", 0),
             "players": None,
             "bots": None,
-            "connect": f"{host}:{data.get("port", port) - 2}",
+            "connect": f"{host}:{data.get('port', port) - 2}",
             "ping": ping,
             "raw": data,
         }

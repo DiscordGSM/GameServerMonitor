@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 
 
 class Palworld(Protocol):
-    pre_query_required = True
     name = "palworld"
 
     async def query(self):

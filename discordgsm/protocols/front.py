@@ -1,6 +1,5 @@
 import asyncio
-from dataclasses import dataclass
-import json
+import os
 import time
 from typing import TYPE_CHECKING
 
@@ -17,24 +16,8 @@ if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
 
-@dataclass
-class FrontServer:
-    server_name: str
-    district_id: int
-    server_id: int
-    type: int
-    addr: str
-    port: int
-    info: dict
-    online: int
-    status: int
-    owner_type: int
-
-
 class Front(Protocol):
-    pre_query_required = True
     name = "front"
-    master_servers = None
 
     # old method
     async def _query(self):
@@ -60,71 +43,40 @@ class Front(Protocol):
 
         return result
 
-    # Before Requires AccessKeyId
-    # 2/7/2024: No need AccessKeyId now
-    async def pre_query(self):
-        url = "https://privatelist.playthefront.com/private_list"
+    async def query(self):
+        host, port = str(self.kv["host"]), int(str(self.kv["port"]))
+        ip = await Socket.gethostbyname(host)
+
+        base_url = os.getenv('OPENGSQ_MASTER_SERVER_URL', 'https://master-server.opengsq.com/').rstrip('/')
+        url = f"{base_url}/front/search?host={ip}&port={port}"
+        start = time.time()
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
-                data = await response.read()
-                json_data = json.loads(data)
-                server_list = json_data["server_list"]
+                response.raise_for_status()
+                data: dict = await response.json()
+                ping = int((time.time() - start) * 1000)
 
-                # Convert server_list to a list of FrontServer objects
-                Front.master_servers = {
-                    f"{server['addr']}:{server['port']}": FrontServer(
-                        server_name=server["server_name"],
-                        district_id=server["district_id"],
-                        server_id=server["server_id"],
-                        type=server["type"],
-                        addr=server["addr"],
-                        port=server["port"],
-                        info=json.loads(server["info"]),
-                        online=server["online"],
-                        status=server["status"],
-                        owner_type=server["owner_type"],
-                    )
-                    for server in server_list
-                }
-
-        return Front.master_servers
-
-    async def query(self):
-        if Front.master_servers is None:
-            await self.pre_query()
-            assert (
-                Front.master_servers is not None
-            ), "Front.master_servers is still None after pre_query"
-
-        host, port = str(self.kv["host"]), int(str(self.kv["port"]))
-        ip = await Socket.gethostbyname(host)
-        host_address = f"{ip}:{port}"
-
-        if host_address not in Front.master_servers:
-            raise Exception("Server not found")
-
-        server = Front.master_servers[host_address]
+        info = dict(data["info"])
 
         result: GamedigResult = {
-            "name": server.server_name,
-            "map": server.info.get("game_map"),
-            "password": server.info.get("HasPWD"),
-            "numplayers": server.online,
+            "name": data.get("server_name", ""),
+            "map": info.get("game_map", ""),
+            "password": info.get("HasPWD", False),
+            "numplayers": data.get("online", 0),
             "numbots": 0,
-            "maxplayers": server.info.get("maxplayer"),
+            "maxplayers": info.get("maxplayer", 0),
             "players": None,
             "bots": None,
-            "connect": host_address,
-            "ping": 0,
-            "raw": server.__dict__,
+            "connect": f"{host}:{port}",
+            "ping": ping,
+            "raw": data,
         }
 
         return result
 
 
 if __name__ == "__main__":
-
     async def main():
         front = Front({"host": "", "port": 27015})
         print(await front.query())

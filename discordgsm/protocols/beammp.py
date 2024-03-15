@@ -1,3 +1,4 @@
+import os
 import re
 import time
 from typing import TYPE_CHECKING
@@ -17,7 +18,9 @@ class BeamMP(Protocol):
     async def query(self):
         host, port = str(self.kv["host"]), int(str(self.kv["port"]))
         ip = await Socket.gethostbyname(host)
-        url = f"https://master-server.opengsq.com/beammp/search?host={ip}&port={port}"
+
+        base_url = os.getenv('OPENGSQ_MASTER_SERVER_URL', 'https://master-server.opengsq.com/').rstrip('/')
+        url = f"{base_url}/scum/search?host={ip}&port={port}"
         start = time.time()
 
         async with aiohttp.ClientSession() as session:

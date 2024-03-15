@@ -1,3 +1,4 @@
+import os
 import re
 import time
 from typing import TYPE_CHECKING
@@ -65,7 +66,8 @@ class Factorio(Protocol):
             data = dict(Factorio.master_servers[host_address])
             ping = 0
         else:
-            url = f"https://master-server.opengsq.com/factorio/search?host={ip}&port={port}"
+            base_url = os.getenv('OPENGSQ_MASTER_SERVER_URL', 'https://master-server.opengsq.com/').rstrip('/')
+            url = f"{base_url}/scum/search?host={ip}&port={port}"
             start = time.time()
 
             async with aiohttp.ClientSession() as session:

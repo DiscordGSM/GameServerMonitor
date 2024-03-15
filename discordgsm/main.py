@@ -958,13 +958,16 @@ async def __tasks_query_servers():
     games_servers_count = await database.count_servers_per_game()
     pre_query_tasks = [pre_query(protocol({})) for name, protocol in protocols.items() if protocol.pre_query_required and games_servers_count.get(name, 0) > 0]
     Logger.debug(f'Pre query servers: Tasks = {len(pre_query_tasks)}.')
+    start_time = datetime.now().timestamp()
     pre_query_results = await asyncio.gather(*pre_query_tasks)
     failed = sum(result is False for result in pre_query_results)
     success = len(pre_query_results) - failed
     percent = len(pre_query_results) > 0 and int(failed / len(pre_query_results) * 100) or 0
-    Logger.debug(f'Pre query servers: Total = {len(pre_query_results)}, Success = {success}, Failed = {failed} ({percent}% fail)')
+    execution_time = datetime.now().timestamp() - start_time
+    Logger.debug(f'Pre query servers: Total = {len(pre_query_results)}, Success = {success}, Failed = {failed} ({percent}% fail), Time used = {execution_time:.2f} seconds')
 
     # Query servers
+    start_time = datetime.now().timestamp()
     servers = await database.all_servers()
     distinct_servers = await get_distinct_servers(servers)
     queried_servers = await query_servers(distinct_servers)
@@ -976,7 +979,8 @@ async def __tasks_query_servers():
     failed = sum(server.status is False for server in queried_servers)
     success = len(queried_servers) - failed
     percent = len(queried_servers) > 0 and int(failed / len(queried_servers) * 100) or 0
-    Logger.info(f'Query servers: Total = {len(queried_servers)}, Success = {success}, Failed = {failed} ({percent}% fail)')
+    execution_time = datetime.now().timestamp() - start_time
+    Logger.info(f'Query servers: Total = {len(queried_servers)}, Success = {success}, Failed = {failed} ({percent}% fail), Time used = {execution_time:.2f} seconds')
 
 
 async def query_servers(distinct_servers: dict[tuple[str, str, int, str], list[Server]]):
@@ -1118,6 +1122,7 @@ async def tasks_fetch_messages():
     servers = await database.all_servers()
     grouped_servers = group_servers_by_message_id(servers)
     Logger.debug(f'Fetch messages: Tasks: {len(grouped_servers)} messages')
+    start_time = datetime.now().timestamp()
 
     tasks = [fetch_message(servers[0]) for servers in grouped_servers.values()]
     results = []
@@ -1131,13 +1136,15 @@ async def tasks_fetch_messages():
 
     failed = sum(result is None for result in results)
     success = len(results) - failed
-    Logger.info(f'Fetch messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
+    execution_time = datetime.now().timestamp() - start_time
+    Logger.info(f'Fetch messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail), Time used = {execution_time:.2f} seconds')
 
 
 async def tasks_edit_messages(servers: list[Server]):
     """Edit messages tasks"""
     grouped_servers = group_servers_by_message_id(servers)
     Logger.debug(f'Edit messages: Tasks: {len(grouped_servers)} messages')
+    start_time = datetime.now().timestamp()
 
     tasks = [edit_message(servers) for servers in grouped_servers.values()]
     results: list[bool] = []
@@ -1155,7 +1162,8 @@ async def tasks_edit_messages(servers: list[Server]):
 
     failed = sum(result is False for result in results)
     success = len(results) - failed
-    Logger.info(f'Edit messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail)')
+    execution_time = datetime.now().timestamp() - start_time
+    Logger.info(f'Edit messages: Total = {len(results)}, Success = {success}, Failed = {failed} ({success and int(failed / len(results) * 100) or 0}% fail), Time used = {execution_time:.2f} seconds')
 
 
 async def edit_message(servers: list[Server]):

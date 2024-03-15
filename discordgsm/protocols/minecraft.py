@@ -31,9 +31,11 @@ class Minecraft(Protocol):
             if "extra" in status["description"] and isinstance(
                 status["description"]["extra"], list
             ):
-                name = "".join(
-                    data.get("text", "") for data in status["description"]["extra"]
-                )
+                for data in status["description"]["extra"]:
+                    if isinstance(data, str):
+                        name += data
+                    else:
+                        name += data.get("text", "")
 
         name = "\n".join(row.strip() for row in name.split("\n"))
         players = [

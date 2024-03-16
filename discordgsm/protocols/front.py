@@ -48,7 +48,7 @@ class Front(Protocol):
         ip = await Socket.gethostbyname(host)
 
         base_url = os.getenv('OPENGSQ_MASTER_SERVER_URL', 'https://master-server.opengsq.com/').rstrip('/')
-        url = f"{base_url}/front/search?host={ip}&port={port}"
+        url = f"{base_url}/thefront/search?host={ip}&port={port}"
         start = time.time()
 
         async with aiohttp.ClientSession() as session:

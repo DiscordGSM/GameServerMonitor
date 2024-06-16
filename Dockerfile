@@ -17,3 +17,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the current directory contents into the container at /app
 COPY . .
+
+# Set default container start command
+CMD ["python3", "main.py"]

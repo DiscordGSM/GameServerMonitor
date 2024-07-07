@@ -22,7 +22,7 @@ asa,Ark: Survival Ascended (2023),asa,port=7777
 assettocorsa,Assetto Corsa (2014),assettocorsa,port=9610
 atlas,Atlas (2018),source,port=5761;port_query_offset=51800
 astrocolony,Astro Colony (2022),source,port_query=27015
-avorion,Avorion (2017),source,port=40017,port_query_offset=2
+avorion,Avorion (2017),source,port=40017;port_query_offset=2
 avp2,Aliens versus Predator 2 (2001),gamespy1,port=27888
 avp2010,Aliens vs. Predator (2010),source,port=27015
 

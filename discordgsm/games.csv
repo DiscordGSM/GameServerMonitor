@@ -21,6 +21,8 @@ armareforger,Arma Reforger (2022),source,port=2001;port_query=17777
 asa,Ark: Survival Ascended (2023),asa,port=7777
 assettocorsa,Assetto Corsa (2014),assettocorsa,port=9610
 atlas,Atlas (2018),source,port=5761;port_query_offset=51800
+astrocolony,Astro Colony (2022),source,port_query=27015
+avorion,Avorion (2017),source,port=40017;port_query_offset=2
 avp2,Aliens versus Predator 2 (2001),gamespy1,port=27888
 avp2010,Aliens vs. Predator (2010),source,port=27015
 
@@ -138,7 +140,9 @@ hll,Hell Let Loose (2021),source,port=27015
 homefront,Homefront (2011),source,port=27015
 homeworld2,Homeworld 2 (2003),gamespy1,port_query=6500
 hurtworld,Hurtworld (2015),source,port=12871;port_query=12881
+humanitz,HumanitZ (2023),source,port_query=27015
 
+icarus,ICARUS (2023),source,port_query=17015
 igi2,I.G.I.-2: Covert Strike (2003),gamespy1,port_query=26001
 il2,IL-2 Sturmovik (2001),gamespy1,port_query=21000
 insurgency,Insurgency (2014),source,port=27015

@@ -253,6 +253,9 @@ def query_server_modal(game: GamedigGame, locale: Locale):
         modal.add_item(query_extra['_api_key'])
         modal.remove_item(query_param['port'])
         query_param['port']._value = '0'
+    elif game['id'] == 'satisfactory':
+        query_extra['_token'] = TextInput(label='Application Token', placeholder='Server Application token')
+        modal.add_item(query_extra['_token'])
     elif game['id'] == 'gportal':
         query_extra['serverId'] = TextInput(label='GPORTAL server id')
         modal.add_item(query_extra['serverId'])

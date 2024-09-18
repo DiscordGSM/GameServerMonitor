@@ -8,6 +8,7 @@ from enum import Enum
 import threading
 from typing import Optional
 
+import base64
 import aiohttp
 import discord
 from discord import (AutoShardedClient, ButtonStyle, Embed,
@@ -226,54 +227,143 @@ async def send_alert(server: Server, alert: Alert):
 
 def query_server_modal(game: GamedigGame, locale: Locale):
     """Query server modal"""
+    # Define the basic parameters for the server query modal
     query_param: dict[str, TextInput] = {
         'host': TextInput(label=t('modal.text_input.address.label', locale), placeholder=t('command.option.address', locale)),
         'port': TextInput(
             label=t('modal.text_input.query_port.label', locale),
             placeholder=t('command.option.query_port', locale),
             max_length='5',
-            default=gamedig.default_port(game['id'])
+            default=gamedig.default_port(game['id'])  # Use the default port for the game
         )
     }
 
+    # Set the title for the modal, limiting the length to 45 characters
     title = game['fullname'].ljust(45)[:45]
-
     if len(game['fullname']) > 45:
         title = title[:-3] + '...'
 
+    # Create the modal and add the basic host and port fields
     modal = Modal(title=title).add_item(query_param['host']).add_item(query_param['port'])
     query_extra: dict[str, TextInput] = {}
 
-    if game['id'] == 'terraria':
+    # Add custom fields for each game based on its ID
+    # Palworld: Add username and password input field
+    if game['id'].lower() == 'palworld':
+        query_extra['credentials'] = TextInput(
+            label='Username:Password',
+            placeholder='Enter credentials in format: username:password',
+            required=True
+        )
+        modal.add_item(query_extra['credentials'])
+
+    # Terraria: Add REST user token input field
+    elif game['id'] == 'terraria':
         query_extra['_token'] = TextInput(label='REST user token')
         modal.add_item(query_extra['_token'])
+
+    # SCPSL: Add account ID and API key input fields, remove the port field
     elif game['id'] == 'scpsl':
         query_param['host'] = TextInput(label='Account ID', placeholder='API key for the account id')
         query_extra['_api_key'] = TextInput(label='API Key', placeholder='Account ID of the server')
         modal.add_item(query_extra['_api_key'])
         modal.remove_item(query_param['port'])
-        query_param['port']._value = '0'
+        query_param['port']._value = '0'  # Set port to '0' for SCPSL
+
+    # GPortal: Add server ID input field
     elif game['id'] == 'gportal':
         query_extra['serverId'] = TextInput(label='GPORTAL server id')
         modal.add_item(query_extra['serverId'])
+
+    # Discord: Use guild ID instead of host, remove the port field
     elif game['id'] == 'discord':
         query_param['host'].label = t('modal.text_input.guild_id.label', locale)
         modal.remove_item(query_param['port'])
-        query_param['port']._value = '0'
+        query_param['port']._value = '0'  # No port needed for Discord
+
+    # TeamSpeak 3: Add voice port field, default to 9987
     elif game['id'] == 'teamspeak3':
-        query_extra['voice_port'] = TextInput(label='Voice Port', placeholder='Voice port', default=9987)
+        query_extra['voice_port'] = TextInput(label='Voice Port', placeholder='Voice port', value='9987')  # Correct 'default' to 'value'
         modal.add_item(query_extra['voice_port'])
 
+    # Return the prepared modal, parameters, and extra input fields
     return modal, query_param, query_extra
 
 
-def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_add_server: bool):
+import base64
+import aiohttp
+from discordgsm.logger import Logger
+
+async def query_palworld_server(ip: str, port: int, password: str):
+    """Query Palworld server with authentication, assuming 'admin' as the username"""
+
+    # Username is always 'admin'
+    username = 'admin'
+
+    # Base64 encode the username and password for Basic Authentication
+    credentials = f'{username}:{password}'
+    encoded_credentials = base64.b64encode(credentials.encode('ascii')).decode('ascii')
+
+    # Construct the full URL to query the server
+    url = f"http://{ip}:{port}/v1/api/info"
+
+    # Set up the request headers, including Authorization and User-Agent
+    headers = {
+        'Authorization': f'Basic {encoded_credentials}',  # Basic Auth
+        'Accept': 'application/json',  # Expect JSON response
+        'User-Agent': 'curl/7.68.0'  # Match curl's User-Agent for consistency
+    }
+
+    # Log the query for debugging purposes
+    Logger.debug(f"Querying Palworld server at {url} with headers {headers}")
+
+    # Perform the query using aiohttp with error handling
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(url, headers=headers) as response:
+                Logger.debug(f"Response Status: {response.status}")
+                Logger.debug(f"Response Headers: {response.headers}")
+                response_text = await response.text()
+                Logger.debug(f"Response Text: {response_text}")
+
+                if response.status == 200:
+                    # Process the JSON response if successful
+                    try:
+                        data = await response.json()
+                        Logger.debug(f"Received JSON data: {data}")
+                    except Exception as json_error:
+                        Logger.error(f"Error parsing JSON: {json_error}")
+                        return {"status": "offline", "error": "Invalid JSON in response"}
+
+                    # Return the result, including server details
+                    return {
+                        "status": "online",  # Force status to online if response is successful
+                        "servername": data.get("servername", "Unknown"),
+                        "version": data.get("version", "Unknown"),
+                        "description": data.get("description", "No description provided")
+                    }
+                else:
+                    # Handle non-200 responses
+                    Logger.error(f"Failed to query Palworld server: HTTP {response.status}")
+                    return {"status": "offline", "error": f"HTTP {response.status}"}
+        except Exception as e:
+            # Log and handle any errors that occurred during the request
+            Logger.error(f"Exception querying Palworld server: {e}")
+            return {"status": "offline", "error": str(e)}
+
+
+
+
+
+
+async def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_add_server: bool):
     """Query server modal"""
     modal, query_param, query_extra = query_server_modal(game, interaction.locale)
 
     async def modal_on_submit(interaction: Interaction):
         params = {**query_param, **query_extra}
 
+        # Strip and clean the input values
         for item in params.values():
             item.default = item._value = str(item._value).strip()
 
@@ -286,9 +376,31 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
 
         await interaction.response.defer(ephemeral=is_add_server, thinking=True)
 
+        # Extract game_id, address, and port for the server
         game_id, address, query_port = game['id'], str(query_param['host']), int(str(query_param['port']))
 
-        # Check is the server already exists in database
+        # Special handling for Palworld servers
+        if game_id.lower() == 'palworld':
+            # Query the Palworld server
+            result = await query_palworld_server(address, query_port, query_extra['credentials'])
+
+            # Check if the result is online
+            if result["status"] == "online":
+                # Send a response with the server details
+                await interaction.followup.send(
+                    f"Server '{result['servername']}' is online!\n"
+                    f"Version: {result['version']}\n"
+                    f"Description: {result['description']}",
+                    ephemeral=True
+                )
+            else:
+                await interaction.followup.send(
+                    f"Failed to query server: {result['error']}",
+                    ephemeral=True
+                )
+            return  # Return here, as Palworld servers are handled
+
+        # For non-Palworld games, continue with the existing logic
         if is_add_server:
             try:
                 await database.find_server(interaction.channel.id, address, query_port)
@@ -298,16 +410,15 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
             except database.ServerNotFoundError:
                 pass
 
-        # Query the server
+        # Query the server for non-Palworld games
         try:
             result = await gamedig.run({**{'type': game_id}, **params})
         except Exception as e:
             content = t('function.query_server_modal.fail_to_query', interaction.locale).format(game_id=game_id, address=address, query_port=query_port)
             await interaction.followup.send(content, ephemeral=True)
-            Logger.debug(f'Query servers: ({game_id})[{address}:{query_port}] {type(e).__name__}: {e}')
             return
 
-        # Create new server object
+        # Create a new server object and add it to the database if needed
         server = Server.new(interaction.guild_id, interaction.channel_id, game_id, address, query_port, query_extra, result)
         style = Styles.get(server, 'Medium')
         server.style_id = style.id
@@ -322,7 +433,6 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
                     await webhook.send(content, embed=style.embed())
 
             server = await database.add_server(server)
-            Logger.info(f'Successfully added {game_id} server {address}:{query_port} to #{interaction.channel.name}({interaction.channel.id}).')
 
             if await resend_channel_messages(interaction):
                 await interaction.delete_original_response()
@@ -333,6 +443,9 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
     modal.on_submit = modal_on_submit
 
     return modal
+
+
+
 
 
 @tree.command(name='sponsor', description='Sponsor to DiscordGSM', guilds=whitelist_guilds)
@@ -390,7 +503,10 @@ async def command_addserver(interaction: Interaction, game_id: str):
                 await interaction.response.send_message(content, ephemeral=True)
                 return
 
-        await interaction.response.send_modal(query_server_modal_handler(interaction, game, True))
+        # Await the modal from query_server_modal_handler and pass it to send_modal
+        modal = await query_server_modal_handler(interaction, game, True)
+        await interaction.response.send_modal(modal)
+
 
 
 @tree.command(name='delserver', description='command.delserver.description', guilds=whitelist_guilds)

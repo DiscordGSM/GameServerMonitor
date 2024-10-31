@@ -274,6 +274,11 @@ def query_server_modal(game: GamedigGame, locale: Locale):
     elif game['id'] == 'gportal':
         query_extra['serverId'] = TextInput(label='GPORTAL server id')
         modal.add_item(query_extra['serverId'])
+      
+    # Satisfactory Add Token  
+    elif game['id'] == 'satisfactory':
+        query_extra['_token'] = TextInput(label='Application Token', placeholder='Server Application token')
+        modal.add_item(query_extra['_token'])
 
     # Discord: Use guild ID instead of host, remove the port field
     elif game['id'] == 'discord':

@@ -13,19 +13,24 @@ class Satisfactory(Protocol):
     name = "satisfactory"
 
     async def query(self):
-        host, port = str(self.kv["host"]), int(str(self.kv["port"]))
-        satisfactory = opengsq.Satisfactory(host, port, self.timeout)
+        host, port, app_token = (
+            str(self.kv["host"]),
+            int(str(self.kv["port"])),
+            str(self.kv["_token"]),
+        )
+
+        satisfactory = opengsq.Satisfactory(host, port, app_token, self.timeout)
         start = time.time()
         status = await satisfactory.get_status()
         ping = int((time.time() - start) * 1000)
 
         result: GamedigResult = {
-            "name": "",
+            "name": status.server_name,
             "map": "",
             "password": False,
-            "numplayers": 0,
+            "numplayers": status.num_players,
             "numbots": 0,
-            "maxplayers": 0,
+            "maxplayers": status.server_max_nb_players,
             "players": None,
             "bots": None,
             "connect": f"{host}:{port}",

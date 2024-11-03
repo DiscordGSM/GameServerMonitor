@@ -361,7 +361,7 @@ async def query_palworld_server(ip: str, port: int, password: str):
 
 
 
-async def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_add_server: bool):
+def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_add_server: bool):
     """Query server modal"""
     modal, query_param, query_extra = query_server_modal(game, interaction.locale)
 

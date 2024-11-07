@@ -2,6 +2,7 @@ Id,Name,Protocol,Options
 
 7d2d,7 Days to Die (2013),source,port=26900;port_query_offset=1
 
+abioticf,Abiotic Factor (2023),source,port=27015
 ageofchivalry,Age of Chivalry (2007),source,port=27015
 alienarena,Alien Arena (2004),quake2,port_query=27910
 alienswarm,Alien Swarm (2010),source,port=27015

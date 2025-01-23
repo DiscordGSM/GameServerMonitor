@@ -35,21 +35,17 @@ class Nadeo(Protocol):
                 })
 
             result: GamedigResult = {
-                "name": status.server.get("Name", ""),
-                "map": status.map.get("Name", ""),
-                "password": bool(status.server.get("Password", False)),
+                "name": status.server_options.name,
+                "map": status.map_info.name,
+                "password": status.server_options.password,
                 "numplayers": len(status.players),
                 "numbots": 0,
-                "maxplayers": int(status.server.get("CurrentMaxPlayers", 0)),
+                "maxplayers": status.server_options.max_players,
                 "players": players,
-                "bots": None,
+                "bots": [],
                 "connect": f"{host}:{port}",
                 "ping": ping,
-                "raw": {
-                    "version": status.version,
-                    "server": status.server,
-                    "map": status.map
-                }
+                "raw": status.server_options.__dict__
             }
 
             return result

@@ -7,9 +7,8 @@ Command-line tool to automate adding game servers to DiscordGSM's SQLite databas
 - Python 3.6+
 - SQLite3
 - Access to DiscordGSM's `servers.db` file
-- **Important**: Must run in DiscordGSM's virtual environment to ensure dependency compatibility
+- **Important**: Must run in DiscordGSM's virtual environment
   ```bash
-  # Activate DiscordGSM's venv first
   source /path/to/discordgsm/venv/bin/activate  # Linux/Mac
   # or
   \path\to\discordgsm\venv\Scripts\activate     # Windows
@@ -31,24 +30,26 @@ python3 add_server.py \
     --game_id GAME_ID \
     --address SERVER_ADDRESS \
     --query_port QUERY_PORT \
-    [--db_path PATH_TO_DB]
+    [--db_path PATH_TO_DB] \
+    [--ignore-existing]
 ```
 
-### Required Arguments
+### Arguments
 
+Required:
 - `--guild_id`: Discord server (guild) ID
 - `--channel_id`: Discord channel ID
 - `--game_id`: Game identifier (e.g., "minecraft", "valheim")
 - `--address`: Server address/hostname
 - `--query_port`: Query port number
 
-### Optional Arguments
-
+Optional:
 - `--db_path`: Custom path to `servers.db` (defaults to `./data/servers.db`)
+- `--ignore-existing`: Continue execution if server already exists
 
 ## Examples
 
-Add a Minecraft server:
+Basic usage:
 ```bash
 python3 add_server.py \
     --guild_id 123456789 \
@@ -58,7 +59,7 @@ python3 add_server.py \
     --query_port 25565
 ```
 
-Add a Valheim server with custom database path:
+Ignoring existing servers:
 ```bash
 python3 add_server.py \
     --guild_id 123456789 \
@@ -66,15 +67,27 @@ python3 add_server.py \
     --game_id valheim \
     --address valheim.example.com \
     --query_port 2457 \
-    --db_path /opt/discordgsm/data/servers.db
+    --ignore-existing
 ```
 
 ## Error Handling
 
-- Script checks for existing servers with same address and query port
-- Returns exit code 1 if server already exists or on error
-- Prints error message to stdout
+- Validates database existence
+- Checks for existing servers with same address and query port
+- Provides detailed error messages including channel and game info for existing servers
+- Returns exit code 1 on error unless `--ignore-existing` is set
 
 ## Ansible Integration
 
-Can be used with Ansible for automated deployment. See `add_servers.yml` for playbook example.
+Use `add_servers.yml` for automated deployment:
+
+```yaml
+vars:
+  ignore_existing: true  # Set to false to fail on existing servers
+```
+
+Key features:
+- Database existence validation
+- Optional failure on existing servers (`ignore_existing`)
+- Detailed output summary
+- Proper idempotency handling

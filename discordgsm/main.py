@@ -215,7 +215,7 @@ async def send_alert(server: Server, alert: Alert):
         content = None if not content else content
         username = 'Game Server Monitor Alert'
         avatar_url = 'https://avatars.githubusercontent.com/u/61296017'
-
+ 
         async with aiohttp.ClientSession() as session:
             webhook = Webhook.from_url(webhook_url, session=session)
             await webhook.send(content, username=username, avatar_url=avatar_url, embed=alert_embed(server, alert))
@@ -266,6 +266,11 @@ def query_server_modal(game: GamedigGame, locale: Locale):
     elif game['id'] == 'teamspeak3':
         query_extra['voice_port'] = TextInput(label='Voice Port', placeholder='Voice port', default=9987)
         modal.add_item(query_extra['voice_port'])
+    elif game['id'] == 'tmnf':
+        query_extra['username'] = TextInput(label='Username', placeholder='Query Username', default="User")
+        query_extra['password'] = TextInput(label='Password',  placeholder='Query Password', default="User")
+        modal.add_item(query_extra['username'])
+        modal.add_item(query_extra['password'])
 
     return modal, query_param, query_extra
 

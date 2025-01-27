@@ -1,0 +1,43 @@
+---
+- name: Add servers to DiscordGSM
+  hosts: localhost
+  gather_facts: no
+  
+  vars:
+    discordgsm_db: "/path/to/servers.db"
+    ignore_existing: true  # Set to false to fail on existing servers
+    servers:
+      - guild_id: 123456789
+        channel_id: 987654321
+        game_id: "minecraft"
+        address: "mc.example.com"
+        query_port: 25565
+      # Add more servers as needed
+
+  tasks:
+    - name: Ensure DiscordGSM database exists
+      stat:
+        path: "{{ discordgsm_db }}"
+      register: db_check
+      failed_when: not db_check.stat.exists
+      
+    - name: Add server to DiscordGSM
+      command: >
+        python3 add_server.py
+        --guild_id {{ item.guild_id }}
+        --channel_id {{ item.channel_id }}
+        --game_id {{ item.game_id }}
+        --address {{ item.address }}
+        --query_port {{ item.query_port }}
+        --db_path {{ discordgsm_db }}
+        {% if ignore_existing %}--ignore-existing{% endif %}
+      register: result
+      failed_when: 
+        - result.rc != 0 
+        - not ignore_existing
+      changed_when: "'Successfully added server' in result.stdout"
+      with_items: "{{ servers }}"
+      
+    - name: Show results
+      debug:
+        msg: "{{ result.results | map(attribute='stdout_lines') | list }}"

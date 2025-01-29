@@ -153,6 +153,7 @@ ironstorm,Iron Storm (2002),gamespy1,port_query=3505
 jamesbondnightfire,James Bond 007: Nightfire (2002),gamespy1,port_query=6550
 jbep3,Jabroni Brawl: Episode 3 (2022),source,port=27015
 jc3mp,Just Cause 3 - Multiplayer (2017),source,port=4200;port_query_offset=1
+jkja,Star Wars Jedi Knight: Jedi Academy (2003),quake3,port=29070
 
 killingfloor,Killing Floor (2009),unreal2,port=7707;port_query_offset=1
 killingfloor2,Killing Floor 2 (2016),source,port=7777;port_query=27015

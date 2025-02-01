@@ -1,45 +1,44 @@
-import os
 import time
 from typing import TYPE_CHECKING
 
-import aiohttp
-from opengsq.protocol_socket import Socket
+import opengsq
 
 from discordgsm.protocols.protocol import Protocol
 
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
-
 class Palworld(Protocol):
     name = "palworld"
 
     async def query(self):
-        host, port = str(self.kv["host"]), int(str(self.kv["port"]))
-        ip = await Socket.gethostbyname(host)
-
-        base_url = os.getenv('OPENGSQ_MASTER_SERVER_URL', 'https://master-server.opengsq.com/').rstrip('/')
-        url = f"{base_url}/palworld/search?host={ip}&port={port}"
+        host, port, api_port, admin_password = (
+            str(self.kv["host"]),
+            int(str(self.kv["port"])),
+            int(str(self.kv["api_port"])),
+            str(self.kv["admin_password"]),
+        )
+        palworld = opengsq.Palworld(host, api_port, "admin", admin_password, self.timeout)
         start = time.time()
-
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                response.raise_for_status()
-                data: dict = await response.json()
-                ping = int((time.time() - start) * 1000)
-
+        data = await palworld.get_status()
+        ping = int((time.time() - start) * 1000)
+        if data.server_name:
+            status = "online"
+        else:
+            status = "offline"
         result: GamedigResult = {
-            "name": data.get("name", ""),
-            "map": data.get("map_name", ""),
-            "password": data.get("is_password", False),
-            "numplayers": data.get("current_players", 0),
+            "status": status,
+            "name": data.server_name,
+            "map": None,
+            "password": False,
+            "numplayers": data.num_players,
             "numbots": 0,
-            "maxplayers": data.get("max_players", 0),
+            "maxplayers": data.max_players,
             "players": None,
             "bots": None,
             "connect": f"{host}:{port}",
             "ping": ping,
-            "raw": data,
+            "raw": data.__dict__,
         }
 
         return result

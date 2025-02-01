@@ -264,8 +264,13 @@ def query_server_modal(game: GamedigGame, locale: Locale):
         modal.remove_item(query_param['port'])
         query_param['port']._value = '0'
     elif game['id'] == 'teamspeak3':
-        query_extra['voice_port'] = TextInput(label='Voice Port', placeholder='Voice port', default=9987)
+        query_extra['voice_port'] = TextInput(label='Voice Port', placeholder='Voice port', default='9987')
         modal.add_item(query_extra['voice_port'])
+    elif game['id'] == 'palworld':
+        query_extra['api_port'] = TextInput(label='REST API Port', default='8213')
+        query_extra['admin_password'] = TextInput(label='Admin Password', placeholder='admin')
+        modal.add_item(query_extra['api_port'])
+        modal.add_item(query_extra['admin_password'])
 
     return modal, query_param, query_extra
 
@@ -300,7 +305,6 @@ def query_server_modal_handler(interaction: Interaction, game: GamedigGame, is_a
                 return
             except database.ServerNotFoundError:
                 pass
-
         # Query the server
         try:
             result = await gamedig.run({**{'type': game_id}, **params})

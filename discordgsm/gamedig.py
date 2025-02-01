@@ -123,6 +123,7 @@ class Gamedig:
         # Backward compatibility
         if server.game_id == 'forrest':
             server.game_id = 'forest'
+
         return await self.run({**{
             'type': server.game_id,
             'host': server.address,

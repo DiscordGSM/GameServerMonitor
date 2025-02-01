@@ -123,7 +123,8 @@ class Gamedig:
         # Backward compatibility
         if server.game_id == 'forrest':
             server.game_id = 'forest'
-
+        if server.game_id == 'palworld':
+            server.query_port = server.query_extra['api_port']
         return await self.run({**{
             'type': server.game_id,
             'host': server.address,

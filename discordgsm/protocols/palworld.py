@@ -12,7 +12,6 @@ class Palworld(Protocol):
     name = "palworld"
 
     async def query(self):
-        Logger.info("Querying Palworld")
         host, port, api_port, admin_password = (
             str(self.kv["host"]),
             int(str(self.kv["port"])),

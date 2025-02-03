@@ -16,6 +16,7 @@ from .gamespy3 import GameSpy3
 from .gportal import GPortal
 from .hexen2 import Hexen2
 from .minecraft import Minecraft
+from .nadeo import Nadeo
 from .nwn1 import NWN1
 from .nwn2 import NWN2
 from .palworld import Palworld

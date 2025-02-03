@@ -2,6 +2,7 @@ Id,Name,Protocol,Options
 
 7d2d,7 Days to Die (2013),source,port=26900;port_query_offset=1
 
+abioticf,Abiotic Factor(2023),source,port_query=27015
 ageofchivalry,Age of Chivalry (2007),source,port=27015
 alienarena,Alien Arena (2004),quake2,port_query=27910
 alienswarm,Alien Swarm (2010),source,port=27015
@@ -97,7 +98,7 @@ drakan,Drakan: Order of the Flame (1999),gamespy1,port=27045;port_query_offset=1
 
 eco,ECO (2018),eco,port=3001
 empyrion,Empyrion - Galactic Survival (2015),source,port=30000;port_query_offset=1
-enshroud,Enshrouded (2024),source,port=27015;port_query_offset=1
+enshrouded,Enshrouded (2024),source,port=27015;port_query_offset=1
 esf,Half Life: Earths Special Forces(2013),source,port=27015
 etqw,Enemy Territory: Quake Wars (2007),doom3,port=3074;port_query=27733
 

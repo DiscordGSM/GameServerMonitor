@@ -1,7 +1,7 @@
-aiohttp==3.10.11
+aiohttp==3.11.11
 backports.zoneinfo==0.2.1;python_version<"3.9"
 discord.py==2.4.0
-flask[async]==3.0.3
+flask[async]==3.1.0
 gunicorn==23.0.0
 opengsq==3.2.0
 psycopg2-binary==2.9.10

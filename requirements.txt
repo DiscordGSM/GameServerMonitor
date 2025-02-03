@@ -1,4 +1,4 @@
-aiohttp==3.9.5
+aiohttp==3.11.11
 backports.zoneinfo==0.2.1;python_version<"3.9"
 discord.py==2.3.2
 flask[async]==3.0.3

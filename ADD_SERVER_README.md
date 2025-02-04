@@ -4,7 +4,7 @@ Command-line tool to automate adding game servers to DiscordGSM's SQLite databas
 
 ## Requirements
 
-- Python 3.6+
+- Python 3.9+
 - SQLite3
 - Access to DiscordGSM's `servers.db` file
 - **Important**: Must run in DiscordGSM's virtual environment

@@ -5,14 +5,81 @@
   
   vars:
     discordgsm_db: "/path/to/servers.db"
-    ignore_existing: true  # Set to false to fail on existing servers
+    ignore_existing: true
+    style_defaults: &style_defaults
+      style: "Medium"
+      locale: "en-US"
+      timezone: "UTC"
+      clock_format: "12"
+
     servers:
+      # Minecraft Example
       - guild_id: 123456789
         channel_id: 987654321
         game_id: "minecraft"
         address: "mc.example.com"
         query_port: 25565
-      # Add more servers as needed
+        description: "Our Minecraft Server"
+        style: "Large"
+        timezone: "Europe/London"
+        
+      # Terraria Example
+      - guild_id: 123456789
+        channel_id: 987654321
+        game_id: "terraria"
+        address: "terraria.example.com"
+        query_port: 7777
+        token: "your_rest_token"
+        style: "Medium"
+        country: "US"
+      
+      # SCPSL Example
+      - guild_id: 123456789
+        channel_id: 987654321
+        game_id: "scpsl"
+        address: "dummy"
+        query_port: 0
+        account_id: "your_account_id"
+        api_key: "your_api_key"
+        style: "ExtraLarge"
+      
+      # GPortal Example
+      - guild_id: 123456789
+        channel_id: 987654321
+        game_id: "gportal"
+        address: "gportal.example.com"
+        query_port: 1234
+        server_id: "your_server_id"
+        style: "Small"
+      
+      # TeamSpeak3 Example
+      - guild_id: 123456789
+        channel_id: 987654321
+        game_id: "teamspeak3"
+        address: "ts.example.com"
+        query_port: 10011
+        voice_port: 9987
+        style: "ExtraSmall"
+        
+      # TMNF Example
+      - guild_id: 123456789
+        channel_id: 987654321
+        game_id: "tmnf"
+        address: "tmnf.example.com"
+        query_port: 5000
+        username: "query_user"
+        password: "query_pass"
+        description: "TrackMania Server"
+        image_url: "https://example.com/banner.png"
+        
+      # Discord Example
+      - guild_id: 123456789
+        channel_id: 987654321
+        game_id: "discord"
+        address: "discord_guild_id"
+        query_port: 0
+        style: "Large"
+        thumbnail_url: "https://example.com/icon.png"
 
   tasks:
     - name: Ensure DiscordGSM database exists
@@ -31,6 +98,22 @@
         --query_port {{ item.query_port }}
         --db_path {{ discordgsm_db }}
         {% if ignore_existing %}--ignore-existing{% endif %}
+        --style {{ item.style | default(style_defaults.style) }}
+        --locale {{ item.locale | default(style_defaults.locale) }}
+        --timezone {{ item.timezone | default(style_defaults.timezone) }}
+        --clock_format {{ item.clock_format | default(style_defaults.clock_format) }}
+        {% if item.description is defined %}--description "{{ item.description }}"{% endif %}
+        {% if item.fullname is defined %}--fullname "{{ item.fullname }}"{% endif %}
+        {% if item.image_url is defined %}--image_url "{{ item.image_url }}"{% endif %}
+        {% if item.thumbnail_url is defined %}--thumbnail_url "{{ item.thumbnail_url }}"{% endif %}
+        {% if item.country is defined %}--country "{{ item.country }}"{% endif %}
+        {% if item.token is defined %}--token "{{ item.token }}"{% endif %}
+        {% if item.account_id is defined %}--account_id "{{ item.account_id }}"{% endif %}
+        {% if item.api_key is defined %}--api_key "{{ item.api_key }}"{% endif %}
+        {% if item.server_id is defined %}--server_id "{{ item.server_id }}"{% endif %}
+        {% if item.voice_port is defined %}--voice_port {{ item.voice_port }}{% endif %}
+        {% if item.username is defined %}--username "{{ item.username }}"{% endif %}
+        {% if item.password is defined %}--password "{{ item.password }}"{% endif %}
       register: result
       failed_when: 
         - result.rc != 0 
@@ -38,6 +121,6 @@
       changed_when: "'Successfully added server' in result.stdout"
       with_items: "{{ servers }}"
       
-    - name: Show results
+    - name: Show results summary
       debug:
         msg: "{{ result.results | map(attribute='stdout_lines') | list }}"

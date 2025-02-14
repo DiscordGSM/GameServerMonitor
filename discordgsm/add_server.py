@@ -7,6 +7,20 @@ from pathlib import Path
 import argparse
 import sys
 
+VALID_STYLES = ['ExtraSmall', 'Small', 'Medium', 'Large', 'ExtraLarge']
+
+@dataclass
+class StyleConfig:
+    style_id: str = "Medium"
+    description: str = ""
+    fullname: str = ""
+    image_url: str = ""
+    thumbnail_url: str = ""
+    country: str = ""
+    locale: str = "en-US"
+    timezone: str = "UTC"
+    clock_format: str = "12"
+
 @dataclass
 class ServerConfig:
     guild_id: int
@@ -14,13 +28,31 @@ class ServerConfig:
     game_id: str
     address: str
     query_port: int
+    style_config: StyleConfig = None
     query_extra: Dict = None
-    style_id: str = "Medium"
-    style_data: Dict = None
-    position: Optional[int] = None
     status: bool = False
     result: Dict = None
     message_id: Optional[int] = None
+    position: Optional[int] = None
+
+    @staticmethod
+    def process_auth_params(game_id: str, auth_params: Dict) -> Dict:
+        query_extra = {}
+        if game_id == "terraria" and "token" in auth_params:
+            query_extra["_token"] = auth_params["token"]
+        elif game_id == "scpsl" and all(k in auth_params for k in ["account_id", "api_key"]):
+            query_extra["_api_key"] = auth_params["api_key"]
+            return {"address": auth_params["account_id"], "query_port": 0, "query_extra": query_extra}
+        elif game_id == "gportal" and "server_id" in auth_params:
+            query_extra["serverId"] = auth_params["server_id"]
+        elif game_id == "teamspeak3" and "voice_port" in auth_params:
+            query_extra["voice_port"] = auth_params["voice_port"]
+        elif game_id == "tmnf" and all(k in auth_params for k in ["username", "password"]):
+            query_extra.update({
+                "username": auth_params["username"],
+                "password": auth_params["password"]
+            })
+        return {"query_extra": query_extra} if query_extra else {}
 
 class DGSMAutomation:
     def __init__(self, db_path: str = None):
@@ -85,8 +117,34 @@ class DGSMAutomation:
                     config.position = cursor.fetchone()[0]
 
                 config.query_extra = config.query_extra or {}
-                config.style_data = config.style_data or {"locale": "en-US", "timezone": "UTC"}
-                config.result = config.result or {"name": "", "map": "", "password": False, "raw": {}, "connect": "", "numplayers": 0, "numbots": 0, "maxplayers": 0, "players": [], "bots": []}
+                
+                # Prepare style data
+                style_config = config.style_config or StyleConfig()
+                style_data = {
+                    "description": style_config.description,
+                    "fullname": style_config.fullname,
+                    "image_url": style_config.image_url,
+                    "thumbnail_url": style_config.thumbnail_url,
+                    "locale": style_config.locale,
+                    "timezone": style_config.timezone,
+                    "clock_format": style_config.clock_format
+                }
+                if style_config.country:
+                    style_data["country"] = style_config.country
+
+                # Default result structure
+                config.result = config.result or {
+                    "name": "", 
+                    "map": "", 
+                    "password": False,
+                    "raw": {},
+                    "connect": "",
+                    "numplayers": 0,
+                    "numbots": 0,
+                    "maxplayers": 0,
+                    "players": [],
+                    "bots": []
+                }
 
                 cursor.execute('''
                     INSERT INTO servers (
@@ -103,12 +161,13 @@ class DGSMAutomation:
                     json.dumps(config.query_extra),
                     int(config.status),
                     json.dumps(config.result),
-                    config.style_id,
-                    json.dumps(config.style_data),
+                    style_config.style_id,
+                    json.dumps(style_data),
                     config.message_id
                 ))
                 conn.commit()
                 return True, f"Successfully added server {config.address}:{config.query_port}"
+
         except sqlite3.Error as e:
             return False, f"Database error: {str(e)}"
         except Exception as e:
@@ -124,17 +183,60 @@ def main():
     parser.add_argument('--db_path', type=str, help='Path to servers.db')
     parser.add_argument('--ignore-existing', action='store_true', help='Continue if server exists')
     
+    # Style configuration
+    parser.add_argument('--style', choices=VALID_STYLES, default='Medium', help='Message style')
+    parser.add_argument('--description', type=str, help='Server description')
+    parser.add_argument('--fullname', type=str, help='Game full name')
+    parser.add_argument('--image_url', type=str, help='Embed image URL')
+    parser.add_argument('--thumbnail_url', type=str, help='Embed thumbnail URL')
+    parser.add_argument('--country', type=str, help='Server country (Medium style)')
+    parser.add_argument('--locale', type=str, default='en-US', help='Locale for translations')
+    parser.add_argument('--timezone', type=str, default='UTC', help='Timezone for timestamps')
+    parser.add_argument('--clock_format', choices=['12', '24'], default='12', help='Clock format')
+    
+    # Authentication parameters
+    parser.add_argument('--token', help='REST token for Terraria')
+    parser.add_argument('--account_id', help='Account ID for SCPSL')
+    parser.add_argument('--api_key', help='API key for SCPSL')
+    parser.add_argument('--server_id', help='Server ID for GPortal')
+    parser.add_argument('--voice_port', type=int, help='Voice port for TeamSpeak3')
+    parser.add_argument('--username', help='Query username for TMNF')
+    parser.add_argument('--password', help='Query password for TMNF')
+    
     args = parser.parse_args()
     
     try:
         automation = DGSMAutomation(db_path=args.db_path)
         
+        # Process authentication parameters
+        auth_params = {k: v for k, v in vars(args).items() if k in [
+            'token', 'account_id', 'api_key', 'server_id', 
+            'voice_port', 'username', 'password'
+        ] and v is not None}
+        
+        config_updates = ServerConfig.process_auth_params(args.game_id, auth_params)
+        
+        # Create style configuration
+        style_config = StyleConfig(
+            style_id=args.style,
+            description=args.description or "",
+            fullname=args.fullname or "",
+            image_url=args.image_url or "",
+            thumbnail_url=args.thumbnail_url or "",
+            country=args.country or "",
+            locale=args.locale,
+            timezone=args.timezone,
+            clock_format=args.clock_format
+        )
+
         server_config = ServerConfig(
             guild_id=args.guild_id,
             channel_id=args.channel_id,
             game_id=args.game_id,
-            address=args.address,
-            query_port=args.query_port
+            address=config_updates.get('address', args.address),
+            query_port=config_updates.get('query_port', args.query_port),
+            query_extra=config_updates.get('query_extra', {}),
+            style_config=style_config
         )
         
         success, message = automation.add_server(server_config)

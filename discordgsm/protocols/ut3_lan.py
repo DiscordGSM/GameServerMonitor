@@ -1,3 +1,7 @@
+#Debug Lines
+print("Available in opengsq:", dir(opengsq))
+print("UT3 available:", hasattr(opengsq, 'UT3'))
+
 import time
 from typing import TYPE_CHECKING
 
@@ -15,7 +19,9 @@ class UT3_LAN(Protocol):
     async def query(self):
         host, port = str(self.kv["host"]), int(str(self.kv["port"]))
 
-        ut3 = opengsq.UT3(host, port, self.timeout)
+        #ut3 = opengsq.UT3(host, port, self.timeout)
+        from opengsq.protocols.ut3 import UT3
+        ut3 = UT3(host, port, self.timeout)
         start = time.time()
 
         status = await ut3.get_status()

@@ -35,6 +35,7 @@ from .terraria import Terraria
 from .theisleevrima import TheIsleEvrima
 from .unreal2 import Unreal2
 from .ut3 import UT3
+from .ut3_lan import UT3_LAN
 from .vcmp import Vcmp
 from .won import WON
 

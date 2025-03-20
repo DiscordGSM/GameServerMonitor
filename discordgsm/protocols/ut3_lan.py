@@ -1,11 +1,10 @@
-#Debug Lines
-print("Available in opengsq:", dir(opengsq))
-print("UT3 available:", hasattr(opengsq, 'UT3'))
-
 import time
 from typing import TYPE_CHECKING
 
 import opengsq
+
+print("Available in opengsq:", dir(opengsq))
+print("UT3 available:", hasattr(opengsq, 'UT3'))
 
 from discordgsm.protocols.protocol import Protocol
 

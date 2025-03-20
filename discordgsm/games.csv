@@ -299,7 +299,7 @@ ut,Unreal Tournament,gamespy1,port=7777;port_query_offset=1
 ut2003,Unreal Tournament 2003,unreal2,port=7757;port_query_offset=1
 ut2004,Unreal Tournament 2004,unreal2,port=7777;port_query_offset=1
 ut3,Unreal Tournament 3,ut3,port=7777;port_query_offset=-1277
-ut3_lan, Unreal Tournament 3 (LAN Mode),ut3_lan,port=14001;port_query=14001
+ut3_lan, Unreal Tournament 3 (LAN Mode),ut3_lan,port=7777;port_query=14001
 
 v8supercar,V8 Supercar Challenge,gamespy1,port_query=16700
 valheim,Valheim (2021),source,port=2456;port_query_offset=1

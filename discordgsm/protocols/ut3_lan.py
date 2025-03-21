@@ -39,7 +39,7 @@ class UT3_LAN(Protocol):
             numbots = int(raw_data['numbots'])
 
         result: GamedigResult = {
-            "name": getattr(status, 'server_name', ''),
+            "name": getattr(status, 'name', ''),
             "map": getattr(status, 'map_name', status.map if hasattr(status, 'map') else ''),
             "password": getattr(status, 'password_protected', False),
             "numplayers": len(players),

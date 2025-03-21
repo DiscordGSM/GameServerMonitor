@@ -38,7 +38,7 @@ class RenegadeX(Protocol):
 
         result: GamedigResult = {
             "name": status.name,
-            "map": status.current_map,
+            "map": status.map,
             "password": variables.passworded,
             "numplayers": status.players,
             "numbots": 0,  # No bot information available

@@ -226,6 +226,7 @@ rallisportchallenge,RalliSport Challenge (2002),gamespy1,port_query=17500
 rallymasters,Rally Masters (2000),gamespy1,port_query=16666
 redline,Redline (1999),gamespy1,port_query=25252
 redm,Red Dead Redemption 2 - RedM (2016),fivem,port=30120
+renegadex_lan,RenegadeX (LAN Mode),renegadex_lan,port=7777,port_query_offset=37765
 redorchestra,Red Orchestra (2011),unreal2,port=7758;port_query_offset=1
 redorchestra2,Red Orchestra 2 (2011),source,port=7777;port_query=27015
 redorchestraost,Red Orchestra: Ostfront 41-45 (2006),gamespy1,port=7757;port_query_offset=10

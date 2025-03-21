@@ -25,6 +25,7 @@ from .quake1 import Quake1
 from .quake2 import Quake2
 from .quake3 import Quake3
 from .raknet import Raknet
+from .renegadex_lan import RenegadeX
 from .samp import Samp
 from .satisfactory import Satisfactory
 from .scpsl import SCPSL

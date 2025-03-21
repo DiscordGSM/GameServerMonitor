@@ -18,43 +18,50 @@ class UT3_LAN(Protocol):
         ut3 = opengsq.UT3(host, port, self.timeout)
         start = time.time()
 
-        result_dict = await ut3.get_status()
+        status = await ut3.get_status()
         ping = int((time.time() - start) * 1000)
 
-        # Based on the UDK implementation, players and bots are likely in result_dict
+        # Looking at ut3.py, the response is parsed from UDK base class 
+        # and then enhanced with UT3-specific data
+        
+        # Extract players from the status object
         players = []
-        for player in result_dict.get('players', []):
+        for player in getattr(status, 'players', []):
             players.append({
-                "name": player.get('name', ''),
-                "raw": player
+                "name": getattr(player, 'name', ''),
+                "raw": vars(player)  # Convert player object attributes to dictionary
             })
 
-        bots = []
-        # Check if there are bots in the response or use numbots from properties
-        bots_list = result_dict.get('bots', [])
-        numbots = len(bots_list)
-        # If there's no 'bots' field but there's a numbots in raw properties 
-        if not bots_list and 'raw' in result_dict and 'numbots' in result_dict['raw']:
-            numbots = int(result_dict['raw']['numbots'])
-
-        for bot in bots_list:
-            bots.append({
-                "name": bot.get('name', ''),
-                "raw": bot
-            })
+        # For numbots, use the value from raw properties if available
+        numbots = 0
+        raw_data = vars(status).get('raw', {})
+        if 'numbots' in raw_data:
+            numbots = int(raw_data['numbots'])
 
         result: GamedigResult = {
-            "name": result_dict.get('server_name', ''),
-            "map": result_dict.get('map', ''),
-            "password": result_dict.get('password_protected', False),
+            "name": getattr(status, 'server_name', ''),
+            "map": getattr(status, 'map_name', status.map if hasattr(status, 'map') else ''),
+            "password": getattr(status, 'password_protected', False),
             "numplayers": len(players),
             "numbots": numbots,
-            "maxplayers": result_dict.get('max_players', 0),
+            "maxplayers": getattr(status, 'max_players', 0),
             "players": players,
-            "bots": bots,
+            "bots": [],  # No bots list available, just use empty list
             "connect": f"{host}:{port}",
             "ping": ping,
-            "raw": result_dict.get('raw', {})
+            "raw": {
+                "game_type": getattr(status, 'game_type', ''),
+                "gamemode": raw_data.get('gamemode', ''),
+                "mutators": getattr(status, 'mutators', []),
+                "stock_mutators": getattr(status, 'stock_mutators', []),
+                "custom_mutators": getattr(status, 'custom_mutators', []),
+                "bot_skill": raw_data.get('bot_skill', ''),
+                "time_limit": raw_data.get('time_limit', 0),
+                "frag_limit": raw_data.get('frag_limit', 0),
+                "vs_bots": raw_data.get('vs_bots', ''),
+                "force_respawn": raw_data.get('force_respawn', False),
+                "pure_server": raw_data.get('pure_server', False)
+            }
         }
 
         return result

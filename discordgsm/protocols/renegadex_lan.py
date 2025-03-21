@@ -13,7 +13,7 @@ class RenegadeX(Protocol):
     name = "renegadex_lan"
 
     async def query(self):
-        host, port = str(self.kv["host"]), int(str(self.kv.get("port", 7777)))
+        host, port = str(self.kv["host"]), int(str(self.kv.get("port")))
 
         renegadex = opengsq.RenegadeX(host, port, self.timeout)
         start = time.time()

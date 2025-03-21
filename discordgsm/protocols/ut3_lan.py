@@ -3,9 +3,6 @@ from typing import TYPE_CHECKING
 
 import opengsq
 
-print("Available in opengsq:", dir(opengsq))
-print("UT3 available:", hasattr(opengsq, 'UT3'))
-
 from discordgsm.protocols.protocol import Protocol
 
 if TYPE_CHECKING:
@@ -18,52 +15,46 @@ class UT3_LAN(Protocol):
     async def query(self):
         host, port = str(self.kv["host"]), int(str(self.kv["port"]))
 
-        #ut3 = opengsq.UT3(host, port, self.timeout)
-        from opengsq.protocols.ut3 import UT3
-        ut3 = UT3(host, port, self.timeout)
+        ut3 = opengsq.UT3(host, port, self.timeout)
         start = time.time()
 
-        status = await ut3.get_status()
+        result_dict = await ut3.get_status()
         ping = int((time.time() - start) * 1000)
 
+        # Based on the UDK implementation, players and bots are likely in result_dict
         players = []
-        for player in status.players:
+        for player in result_dict.get('players', []):
             players.append({
-                "name": player.name,
-                "raw": player.__dict__
+                "name": player.get('name', ''),
+                "raw": player
             })
 
         bots = []
-        for bot in status.bots:
+        # Check if there are bots in the response or use numbots from properties
+        bots_list = result_dict.get('bots', [])
+        numbots = len(bots_list)
+        # If there's no 'bots' field but there's a numbots in raw properties 
+        if not bots_list and 'raw' in result_dict and 'numbots' in result_dict['raw']:
+            numbots = int(result_dict['raw']['numbots'])
+
+        for bot in bots_list:
             bots.append({
-                "name": bot.name,
-                "raw": bot.__dict__
+                "name": bot.get('name', ''),
+                "raw": bot
             })
 
         result: GamedigResult = {
-            "name": status.server_name,
-            "map": status.map_name,
-            "password": status.password_protected,
-            "numplayers": len(status.players),
-            "numbots": len(status.bots),
-            "maxplayers": status.max_players,
+            "name": result_dict.get('server_name', ''),
+            "map": result_dict.get('map', ''),
+            "password": result_dict.get('password_protected', False),
+            "numplayers": len(players),
+            "numbots": numbots,
+            "maxplayers": result_dict.get('max_players', 0),
             "players": players,
             "bots": bots,
             "connect": f"{host}:{port}",
             "ping": ping,
-            "raw": {
-                "game_type": status.game_type,
-                "gamemode": status.raw.get("gamemode"),
-                "mutators": status.mutators,
-                "stock_mutators": status.stock_mutators,
-                "custom_mutators": status.custom_mutators,
-                "bot_skill": status.raw.get("bot_skill"),
-                "time_limit": status.raw.get("time_limit"),
-                "frag_limit": status.raw.get("frag_limit"),
-                "vs_bots": status.raw.get("vs_bots"),
-                "force_respawn": status.raw.get("force_respawn"),
-                "pure_server": status.raw.get("pure_server")
-            }
+            "raw": result_dict.get('raw', {})
         }
 
         return result

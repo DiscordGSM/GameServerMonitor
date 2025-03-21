@@ -285,6 +285,7 @@ thps3,Tony Hawk's Pro Skater 3,gamespy1,port_query=6500
 thps4,Tony Hawk's Pro Skater 4,gamespy1,port_query=6500
 thu2,Tony Hawk's Underground 2,gamespy1,port_query=5153
 towerunite,Tower Unite,source,port=27015
+toxikk_lan,Toxikk (LAN_Mode),toxikk_lan,port=7777;port_query_offset=6224
 tmnf,Trackmania Nations Forever,nadeo,port=5000
 tremulous,Tremulous,quake3,port_query=30720
 tribesvengeance,Tribes: Vengeance,gamespy2,port=7777;port_query_offset=1

@@ -33,6 +33,7 @@ from .source import Source
 from .teamspeak3 import Teamspeak3
 from .terraria import Terraria
 from .theisleevrima import TheIsleEvrima
+from .toxikk_lan import Toxikk_LAN
 from .unreal2 import Unreal2
 from .ut3 import UT3
 from .ut3_lan import UT3_LAN

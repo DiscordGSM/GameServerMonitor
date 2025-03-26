@@ -315,6 +315,7 @@ wheeloftime,Wheel of Time,gamespy1,port=7777;port_query_offset=1
 wolfenstein2009,Wolfenstein 2009,doom3,port=27666
 wolfensteinet,Wolfenstein: Enemy Territory,quake3,port_query=27960
 
+xonotic,Xonotic,quake3,port=26000;port_query=26000
 xpandrally,Xpand Rally,ase,port=28015;port_query_offset=123
 
 zombiemaster,Zombie Master,source,port=27015

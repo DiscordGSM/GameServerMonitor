@@ -25,6 +25,7 @@ from .quake1 import Quake1
 from .quake2 import Quake2
 from .quake3 import Quake3
 from .raknet import Raknet
+from .renegadex_lan import RenegadeX
 from .samp import Samp
 from .satisfactory import Satisfactory
 from .scpsl import SCPSL
@@ -33,8 +34,10 @@ from .source import Source
 from .teamspeak3 import Teamspeak3
 from .terraria import Terraria
 from .theisleevrima import TheIsleEvrima
+from .toxikk_lan import Toxikk_LAN
 from .unreal2 import Unreal2
 from .ut3 import UT3
+from .ut3_lan import UT3_LAN
 from .vcmp import Vcmp
 from .won import WON
 

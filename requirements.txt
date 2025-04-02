@@ -7,6 +7,6 @@ opengsq==3.2.0
 psycopg2-binary==2.9.10
 pymongo==4.11.1
 python-dotenv==1.0.1
-pywin32==308;platform_system=="Windows"
+pywin32==310;platform_system=="Windows"
 typing-extensions==4.12.2
 tzdata==2025.1

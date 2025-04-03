@@ -6,7 +6,7 @@ gunicorn==23.0.0
 opengsq==3.3.0
 psycopg2-binary==2.9.10
 pymongo==4.11.3
-python-dotenv==1.0.1
+python-dotenv==1.1.0
 pywin32==310;platform_system=="Windows"
 typing-extensions==4.12.2
 tzdata==2025.1

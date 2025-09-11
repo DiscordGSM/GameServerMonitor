@@ -5,7 +5,7 @@ flask[async]==3.1.0
 gunicorn==23.0.0
 opengsq==3.3.0
 psycopg2-binary==2.9.10
-pymongo==4.11.3
+pymongo==4.15.0
 python-dotenv==1.0.1
 pywin32==310;platform_system=="Windows"
 typing-extensions==4.12.2

@@ -20,7 +20,7 @@ app = Flask(
     template_folder="public",
 )
 cmd = [
-    command.to_dict()
+    command.to_dict(tree)
     for command in tree.get_commands(
         guild=None if public or len(whitelist_guilds) <= 0 else whitelist_guilds[0]
     )

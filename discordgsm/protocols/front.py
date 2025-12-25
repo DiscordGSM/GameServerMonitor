@@ -36,7 +36,7 @@ class Front(Protocol):
             "maxplayers": info["MaxPlayers"],
             "players": None,
             "bots": None,
-            "connect": f'{host}:{info["GamePort"]}',
+            "connect": f"{host}:{info['GamePort']}",
             "ping": ping,
             "raw": info,
         }
@@ -47,7 +47,9 @@ class Front(Protocol):
         host, port = str(self.kv["host"]), int(str(self.kv["port"]))
         ip = await Socket.gethostbyname(host)
 
-        base_url = os.getenv('OPENGSQ_MASTER_SERVER_URL', 'https://master-server.opengsq.com/').rstrip('/')
+        base_url = os.getenv(
+            "OPENGSQ_MASTER_SERVER_URL", "https://master-server.opengsq.com/"
+        ).rstrip("/")
         url = f"{base_url}/thefront/search?host={ip}&port={port}"
         start = time.time()
 
@@ -77,6 +79,7 @@ class Front(Protocol):
 
 
 if __name__ == "__main__":
+
     async def main():
         front = Front({"host": "", "port": 27015})
         print(await front.query())

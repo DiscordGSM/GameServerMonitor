@@ -484,8 +484,12 @@ class Database:
                                 "$each": [
                                     {
                                         "s": server.status,
-                                        "p": server.result["numplayers"] if server.status else 0,
-                                        "b": server.result["numbots"] if server.status else 0,
+                                        "p": server.result["numplayers"]
+                                        if server.status
+                                        else 0,
+                                        "b": server.result["numbots"]
+                                        if server.status
+                                        else 0,
                                         "m": server.result["maxplayers"],
                                         "c": datetime.utcnow(),
                                     }

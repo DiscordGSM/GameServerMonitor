@@ -19,7 +19,9 @@ class BeamMP(Protocol):
         host, port = str(self.kv["host"]), int(str(self.kv["port"]))
         ip = await Socket.gethostbyname(host)
 
-        base_url = os.getenv('OPENGSQ_MASTER_SERVER_URL', 'https://master-server.opengsq.com/').rstrip('/')
+        base_url = os.getenv(
+            "OPENGSQ_MASTER_SERVER_URL", "https://master-server.opengsq.com/"
+        ).rstrip("/")
         url = f"{base_url}/beammp/search?host={ip}&port={port}"
         start = time.time()
 

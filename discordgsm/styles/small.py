@@ -9,11 +9,11 @@ class Small(Style):
 
     @property
     def display_name(self) -> str:
-        return t('style.small.display_name', self.locale)
+        return t("style.small.display_name", self.locale)
 
     @property
     def description(self) -> str:
-        return t('style.small.description', self.locale)
+        return t("style.small.description", self.locale)
 
     def embed(self) -> Embed:
         title, description, color = self.embed_data()

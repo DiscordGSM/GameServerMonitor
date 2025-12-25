@@ -66,7 +66,9 @@ class Factorio(Protocol):
             data = dict(Factorio.master_servers[host_address])
             ping = 0
         else:
-            base_url = os.getenv('OPENGSQ_MASTER_SERVER_URL', 'https://master-server.opengsq.com/').rstrip('/')
+            base_url = os.getenv(
+                "OPENGSQ_MASTER_SERVER_URL", "https://master-server.opengsq.com/"
+            ).rstrip("/")
             url = f"{base_url}/factorio/search?host={ip}&port={port}"
             start = time.time()
 

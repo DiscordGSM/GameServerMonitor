@@ -15,8 +15,8 @@ class Hexen2(Protocol):
     async def query(self):
         host, port = str(self.kv["host"]), int(str(self.kv["port"]))
         quake1 = opengsq.Quake1(host, port, self.timeout)
-        quake1._request_header = b"\xFFstatus\x0a"
-        quake1._response_header = b"\xFFn"
+        quake1._request_header = b"\xffstatus\x0a"
+        quake1._response_header = b"\xffn"
 
         start = time.time()
         status = await quake1.get_status()

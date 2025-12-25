@@ -7,7 +7,7 @@ from .medium import Medium
 from .small import Small
 from .style import Style
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from server import Server
 else:
     from discordgsm.server import Server
@@ -27,4 +27,6 @@ class Styles:
 
     @staticmethod
     def get(server: Server, style_id: Optional[str] = None) -> Style:
-        return _styles.get(style_id if style_id else server.style_id, _styles['Medium'])(server)
+        return _styles.get(
+            style_id if style_id else server.style_id, _styles["Medium"]
+        )(server)

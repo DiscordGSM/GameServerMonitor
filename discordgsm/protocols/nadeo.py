@@ -23,16 +23,15 @@ class Nadeo(Protocol):
         async with nadeo:
             if username and password:
                 await nadeo.authenticate(username, password)
-            
+
             status = await nadeo.get_status()
             ping = int((time.time() - start) * 1000)
 
             players = []
             for player in status.players:
-                players.append({
-                    "name": player.get("Name", player.get("Login", "")),
-                    "raw": player
-                })
+                players.append(
+                    {"name": player.get("Name", player.get("Login", "")), "raw": player}
+                )
 
             result: GamedigResult = {
                 "name": status.server_options.name,
@@ -45,7 +44,7 @@ class Nadeo(Protocol):
                 "bots": [],
                 "connect": f"{host}:{port}",
                 "ping": ping,
-                "raw": status.server_options.__dict__
+                "raw": status.server_options.__dict__,
             }
 
             return result

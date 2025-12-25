@@ -8,6 +8,7 @@ from discordgsm.protocols.protocol import Protocol
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
+
 class Palworld(Protocol):
     name = "palworld"
 
@@ -18,7 +19,9 @@ class Palworld(Protocol):
             int(str(self.kv["api_port"])),
             str(self.kv["admin_password"]),
         )
-        palworld = opengsq.Palworld(host, api_port, "admin", admin_password, self.timeout)
+        palworld = opengsq.Palworld(
+            host, api_port, "admin", admin_password, self.timeout
+        )
         start = time.time()
         data = await palworld.get_status()
         ping = int((time.time() - start) * 1000)

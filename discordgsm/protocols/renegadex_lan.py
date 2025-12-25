@@ -24,14 +24,16 @@ class RenegadeX(Protocol):
         # RenegadeX doesn't provide individual player information
         # Just the total count
         players = []
-        
+
         # Create empty player objects based on the total count
         # since we don't have individual player data
         for _ in range(status.players):
-            players.append({
-                "name": "",  # No player names available
-                "raw": {}
-            })
+            players.append(
+                {
+                    "name": "",  # No player names available
+                    "raw": {},
+                }
+            )
 
         # Get variables from status
         variables = status.variables
@@ -56,8 +58,8 @@ class RenegadeX(Protocol):
                 "team_mode": variables.team_mode,
                 "spawn_crates": variables.spawn_crates,
                 "game_type": variables.game_type,
-                "ranked": variables.ranked
-            }
+                "ranked": variables.ranked,
+            },
         }
 
         return result

@@ -25,7 +25,15 @@ class Server:
     style_data: dict
 
     @staticmethod
-    def new(guild_id: int, channel_id: int, game_id: str, address: str, query_port: int, query_extra: dict, result: GamedigResult) -> Server:
+    def new(
+        guild_id: int,
+        channel_id: int,
+        game_id: str,
+        address: str,
+        query_port: int,
+        query_extra: dict,
+        result: GamedigResult,
+    ) -> Server:
         return Server(
             id=None,
             position=None,
@@ -39,7 +47,7 @@ class Server:
             status=True,
             result=result,
             style_id=None,
-            style_data={}
+            style_data={},
         )
 
     @staticmethod
@@ -49,8 +57,14 @@ class Server:
 
         if filter_secret:
             # Filter key started with _ and filter the description since it may contain secrets
-            query_extra = {k: v for k, v in query_extra.items() if not str(k).startswith('_')}
-            style_data = {k: v for k, v in style_data.items() if not str(k).startswith('_') and k != 'description'}
+            query_extra = {
+                k: v for k, v in query_extra.items() if not str(k).startswith("_")
+            }
+            style_data = {
+                k: v
+                for k, v in style_data.items()
+                if not str(k).startswith("_") and k != "description"
+            }
 
         return Server(
             id=row[0],
@@ -71,25 +85,33 @@ class Server:
     @staticmethod
     def from_docs(data: dict, filter_secret=False) -> Server:
         server = Server(
-            id=data['_id'],
-            position=data['position'],
-            guild_id=data['guild_id'],
-            channel_id=data['channel_id'],
-            message_id=data.get('message_id'),
-            game_id=data['game_id'],
-            address=data['address'],
-            query_port=data['query_port'],
-            query_extra=data['query_extra'],
-            status=data['status'],
-            result=data['result'],
-            style_id=data['style_id'],
-            style_data=data['style_data']
+            id=data["_id"],
+            position=data["position"],
+            guild_id=data["guild_id"],
+            channel_id=data["channel_id"],
+            message_id=data.get("message_id"),
+            game_id=data["game_id"],
+            address=data["address"],
+            query_port=data["query_port"],
+            query_extra=data["query_extra"],
+            status=data["status"],
+            result=data["result"],
+            style_id=data["style_id"],
+            style_data=data["style_data"],
         )
 
         if filter_secret:
             # Filter key started with _ and filter the description since it may contain secrets
-            server.query_extra = {k: v for k, v in server.query_extra.items() if not str(k).startswith('_')}
-            server.style_data = {k: v for k, v in server.style_data.items() if not str(k).startswith('_') and k != 'description'}
-            server.id = str(data['_id'])  # Convert ObjectId to str
+            server.query_extra = {
+                k: v
+                for k, v in server.query_extra.items()
+                if not str(k).startswith("_")
+            }
+            server.style_data = {
+                k: v
+                for k, v in server.style_data.items()
+                if not str(k).startswith("_") and k != "description"
+            }
+            server.id = str(data["_id"])  # Convert ObjectId to str
 
         return server

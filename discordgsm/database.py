@@ -363,22 +363,6 @@ class Database:
         return servers
 
     def server_limit(self, s: Server):
-        if self.driver == Driver.MongoDB:
-            pipeline = [
-                {
-                    "$group": {
-                        "_id": {
-                            "game_id": "$game_id",
-                            "address": "$address",
-                            "query_port": "$query_port",
-                            "query_extra": "$query_extra",
-                            "status": "$status",
-                            "result": "$result",
-                        }
-                    }
-                }
-            ]
-
         return int(os.getenv("APP_PUBLIC_SERVER_LIMIT", "10"))
 
     @run_in_executor

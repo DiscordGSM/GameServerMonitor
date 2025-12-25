@@ -215,7 +215,7 @@ async def send_alert(server: Server, alert: Alert):
         content = None if not content else content
         username = 'Game Server Monitor Alert'
         avatar_url = 'https://avatars.githubusercontent.com/u/61296017'
- 
+
         async with aiohttp.ClientSession() as session:
             webhook = Webhook.from_url(webhook_url, session=session)
             await webhook.send(content, username=username, avatar_url=avatar_url, embed=alert_embed(server, alert))
@@ -1000,7 +1000,7 @@ async def query_servers(distinct_servers: dict[tuple[str, str, int, str], list[S
 
     async for chunks in to_chunks(query_tasks, int(os.getenv('TASK_QUERY_CHUNK_SIZE', '50'))):
         if exit_signal.is_set():
-            Logger.debug(f'Exit signal received. Terminating server queries.')
+            Logger.debug('Exit signal received. Terminating server queries.')
             break
 
         await asyncio.gather(*chunks)

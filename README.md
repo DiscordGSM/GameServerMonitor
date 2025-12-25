@@ -34,6 +34,9 @@ Learn more: https://discordgsm.com/guide/supported-games
 ## Languages
 Feel free to contribute! Learn more: [Contributor's Guide: Adding Translations](https://github.com/DiscordGSM/GameServerMonitor/issues/1)
 
+<details>
+<summary>All translations</summary>
+  
 | Language Name | Native Name | Supported | Locale File | Contributors |
 | ------------- | ----------- | --------- | ----------- | ------------ |
 | <img src="https://discordgsm.com/images/flags/da.png" width=20 /> Danish | Dansk | ✔️ | [da.json](/discordgsm/translations/da.json) | [@XiqZo](https://github.com/XiqZo) |
@@ -43,13 +46,13 @@ Feel free to contribute! Learn more: [Contributor's Guide: Adding Translations](
 | <img src="https://discordgsm.com/images/flags/es-ES.png" width=20 /> Spanish | Español | ✔️ | [es-ES.json](/discordgsm/translations/es-ES.json) | [@Akagioni](https://github.com/Akagioni) |
 | <img src="https://discordgsm.com/images/flags/fr.png" width=20 /> French | Français | ✔️ | [fr.json](/discordgsm/translations/fr.json) | [@Sami6053](https://github.com/Sami6053) |
 | <img src="https://discordgsm.com/images/flags/hr.png" width=20 /> Croatian | Hrvatski | ❌ | [hr.json](/discordgsm/translations/hr.json) |  |
-| <img src="https://discordgsm.com/images/flags/it.png" width=20 /> Italian | Italiano | ❌ | [it.json](/discordgsm/translations/it.json) |  |
-| <img src="https://discordgsm.com/images/flags/lt.png" width=20 /> Lithuanian | Lietuviškai | ❌ | [lt.json](/discordgsm/translations/lt.json) |  |
+| <img src="https://discordgsm.com/images/flags/it.png" width=20 /> Italian | Italiano | ✔️ | [it.json](/discordgsm/translations/it.json) | [@ricardoguimaraes2021](https://github.com/ricardoguimaraes2021) |
+| <img src="https://discordgsm.com/images/flags/lt.png" width=20 /> Lithuanian | Lietuviškai | ✔️ | [lt.json](/discordgsm/translations/lt.json) | [@Kodashas](https://github.com/Kodashas) |
 | <img src="https://discordgsm.com/images/flags/hu.png" width=20 /> Hungarian | Magyar | ✔️ | [hu.json](/discordgsm/translations/hu.json) | [@w4sb0y](https://github.com/w4sb0y)  |
-| <img src="https://discordgsm.com/images/flags/nl.png" width=20 /> Dutch | Nederlands | ✔️ | [nl.json](/discordgsm/translations/nl.json) | [@CounterForce](https://github.com/CounterForce)  |
+| <img src="https://discordgsm.com/images/flags/nl.png" width=20 /> Dutch | Nederlands | ✔️ | [nl.json](/discordgsm/translations/nl.json) | [@CounterForce](https://github.com/CounterForce) |
 | <img src="https://discordgsm.com/images/flags/no.png" width=20 /> Norwegian | Norsk | ❌ | [no.json](/discordgsm/translations/no.json) |  |
 | <img src="https://discordgsm.com/images/flags/pl.png" width=20 /> Polish | Polski | ✔️ | [pl.json](/discordgsm/translations/pl.json) | [@StarterX4](https://github.com/StarterX4) |
-| <img src="https://discordgsm.com/images/flags/pt-BR.png" width=20 /> Portuguese, Brazilian | Português do Brasil | ✔️ | [pt-BR.json](/discordgsm/translations/pt-BR.json) | [@ricardoguimaraes2021](https://github.com/ricardoguimaraes2021)  |
+| <img src="https://discordgsm.com/images/flags/pt-BR.png" width=20 /> Portuguese, Brazilian | Português do Brasil | ✔️ | [pt-BR.json](/discordgsm/translations/pt-BR.json) | [@ricardoguimaraes2021](https://github.com/ricardoguimaraes2021) |
 | <img src="https://discordgsm.com/images/flags/ro.png" width=20 /> Romanian, Romania	| Română | ❌ | [ro.json](/discordgsm/translations/ro.json) |  |
 | <img src="https://discordgsm.com/images/flags/fi.png" width=20 /> Finnish | Suomi | ✔️ | [fi.json](/discordgsm/translations/fi.json) | [@sestain](https://github.com/sestain) |
 | <img src="https://discordgsm.com/images/flags/sv-SE.png" width=20 /> Swedish | Svenska | ❌ | [sv-SE.json](/discordgsm/translations/sv-SE.json) |  |
@@ -67,10 +70,15 @@ Feel free to contribute! Learn more: [Contributor's Guide: Adding Translations](
 | <img src="https://discordgsm.com/images/flags/ja.png" width=20 /> Japanese | 日本語 | ✔️ | [ja.json](/discordgsm/translations/ja.json) | [@koimoee](https://github.com/koimoee) |
 | <img src="https://discordgsm.com/images/flags/zh-TW.png" width=20 /> Chinese, Taiwan | 繁體中文 | ✔️ | [zh-TW.json](/discordgsm/translations/zh-TW.json) | [@BattlefieldDuck](https://github.com/BattlefieldDuck) |
 | <img src="https://discordgsm.com/images/flags/ko.png" width=20 /> Korean | 한국어 | ✔️ | [ko.json](/discordgsm/translations/ko.json) | [@koimoee](https://github.com/koimoee), [@angrystar170](https://github.com/angrystar170) |
+</details>
+
+## Contributing
+Contributions are welcome! Please feel free to submit pull requests or open issues.
+
+![https://github.com/DiscordGSM/GameServerMonitor/graphs/contributors](https://contrib.rocks/image?repo=DiscordGSM/GameServerMonitor)
 
 ## Support Server
 Got any questions or feedback? Join our Discord Server: https://discordgsm.com/discord
 
 ## Stargazers over time
 [![Stargazers over time](https://starchart.cc/DiscordGSM/GameServerMonitor.svg?variant=adaptive)](https://starchart.cc/DiscordGSM/GameServerMonitor)
-

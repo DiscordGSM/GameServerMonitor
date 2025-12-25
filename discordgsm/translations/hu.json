@@ -1,5 +1,5 @@
 {
-    "command.option.game_id": "Játék azonosító. További információ: https://discordgsm.com/guide/supported-games", 
+    "command.option.game_id": "Játék azonosító. További információ: https://discordgsm.com/guide/supported-games",
     "command.option.address": "IP cím, vagy domain",
     "command.option.query_port": "Lekérdezési port",
     "command.option.channel": "Discord csatorna",

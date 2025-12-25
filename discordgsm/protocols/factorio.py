@@ -1,6 +1,4 @@
-import os
 import re
-import time
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -29,10 +27,10 @@ class Factorio(Protocol):
         )
 
         if self.username and self.token:
-            self.pre_query_required = True
+            Factorio.pre_query_required = True
 
     async def pre_query(self):
-        if not self.pre_query_required:
+        if not Factorio.pre_query_required:
             return
 
         url = f"https://multiplayer.factorio.com/get-games?username={self.username}&token={self.token}"
@@ -51,32 +49,22 @@ class Factorio(Protocol):
         Factorio.master_servers = master_servers
 
     async def query(self):
+        if not Factorio.pre_query_required:
+            raise Exception(
+                "Cannot find FACTORIO_USERNAME and FACTORIO_TOKEN, get them on https://www.factorio.com/profile"
+            )
+
+        if Factorio.master_servers is None:
+            await self.pre_query()
+
         host, port = str(self.kv["host"]), int(str(self.kv["port"]))
         ip = await Socket.gethostbyname(host)
+        host_address = f"{ip}:{port}"
 
-        if self.pre_query_required:
-            if Factorio.master_servers is None:
-                await self.pre_query()
+        if host_address not in Factorio.master_servers:
+            raise Exception("Server not found")
 
-            host_address = f"{ip}:{port}"
-
-            if host_address not in Factorio.master_servers:
-                raise Exception("Server not found")
-
-            data = dict(Factorio.master_servers[host_address])
-            ping = 0
-        else:
-            base_url = os.getenv(
-                "OPENGSQ_MASTER_SERVER_URL", "https://master-server.opengsq.com/"
-            ).rstrip("/")
-            url = f"{base_url}/factorio/search?host={ip}&port={port}"
-            start = time.time()
-
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
-                    response.raise_for_status()
-                    data: dict = await response.json()
-                    ping = int((time.time() - start) * 1000)
+        data = dict(Factorio.master_servers[host_address])
 
         # Remove the rich text formatting
         # https://wiki.factorio.com/Rich_text
@@ -93,7 +81,7 @@ class Factorio(Protocol):
             "players": [{"name": player, "raw": player} for player in players],
             "bots": None,
             "connect": data["host_address"],
-            "ping": ping,
+            "ping": 0,
             "raw": data,
         }
 

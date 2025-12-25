@@ -1,5 +1,5 @@
 import asyncio
-import os
+import json
 import time
 from typing import TYPE_CHECKING
 
@@ -17,7 +17,24 @@ if TYPE_CHECKING:
 
 
 class Front(Protocol):
+    pre_query_required = True
     name = "front"
+    master_servers = None
+
+    async def pre_query(self):
+        url = "https://privatelist.playthefront.com/private_list"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                res = await response.json(content_type=None)
+
+        if res["msg"] != "ok":
+            raise LookupError(res["msg"])
+
+        servers = list(res["server_list"])
+        Front.master_servers = {
+            f"{server['addr']}:{server['port']}": server for server in servers
+        }
 
     # old method
     async def _query(self):
@@ -44,22 +61,15 @@ class Front(Protocol):
         return result
 
     async def query(self):
+        if Front.master_servers is None:
+            await self.pre_query()
+
         host, port = str(self.kv["host"]), int(str(self.kv["port"]))
         ip = await Socket.gethostbyname(host)
+        key = f"{ip}:{port}"
 
-        base_url = os.getenv(
-            "OPENGSQ_MASTER_SERVER_URL", "https://master-server.opengsq.com/"
-        ).rstrip("/")
-        url = f"{base_url}/thefront/search?host={ip}&port={port}"
-        start = time.time()
-
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                response.raise_for_status()
-                data: dict = await response.json()
-                ping = int((time.time() - start) * 1000)
-
-        info = dict(data["info"])
+        data: dict = Front.master_servers[key]
+        info: dict = json.loads(data["info"])
 
         result: GamedigResult = {
             "name": data.get("server_name", ""),
@@ -71,7 +81,7 @@ class Front(Protocol):
             "players": None,
             "bots": None,
             "connect": f"{host}:{port}",
-            "ping": ping,
+            "ping": 0,
             "raw": data,
         }
 
@@ -81,7 +91,7 @@ class Front(Protocol):
 if __name__ == "__main__":
 
     async def main():
-        front = Front({"host": "", "port": 27015})
+        front = Front({"host": "", "port": 5001})
         print(await front.query())
 
     asyncio.run(main())

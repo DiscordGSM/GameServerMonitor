@@ -34,6 +34,23 @@ class Source(Protocol):
                 source.get_info(), get_players(), source.get_rules()
             )
             info.name = rules["ServerName_s"]  # Override the info server name
+        # Exfil accurate player count fix
+        elif self.kv["type"] == "exfil":
+            try:
+                info, players, rules = await asyncio.gather(
+                    source.get_info(), get_players(), source.get_rules()
+                )
+                # Override player count with accurate count from A2S_RULES
+                if "Players_s" in rules:
+                    # Players_s format is "current/max" like "1/24", extract current players
+                    players_str = str(rules["Players_s"])
+                    if "/" in players_str:
+                        info.players = int(players_str.split("/")[0])
+                    else:
+                        info.players = int(players_str)
+            except Exception:
+                # Fallback to standard query if rules query fails
+                info, players = await asyncio.gather(source.get_info(), get_players())
         else:
             info, players = await asyncio.gather(source.get_info(), get_players())
 

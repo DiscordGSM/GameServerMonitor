@@ -68,7 +68,7 @@ class ASA(Protocol):
             return result
         except Exception:
             # EOS failed, fallback to BattleMetrics
-            pass
+            start = time.time()  # Restart timer for BattleMetrics query
         
         # Fallback: Query BattleMetrics API by IP:port
         async with aiohttp.ClientSession() as session:

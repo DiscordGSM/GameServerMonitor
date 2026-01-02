@@ -1,11 +1,11 @@
-aiohttp==3.13.2
+aiohttp==3.13.3
 audioop-lts==0.2.2; python_version>="3.13"
 discord.py==2.6.4
 flask[async]==3.1.2
 gunicorn==23.0.0
 opengsq==3.6.0
 psycopg2-binary==2.9.11
-pymongo==4.15.5
+pymongo==4.16.0
 python-dotenv==1.2.1
 pywin32==311;platform_system=="Windows"
 typing-extensions==4.15.0

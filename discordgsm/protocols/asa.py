@@ -38,7 +38,7 @@ class ASA(Protocol):
 
         host, port = str(self.kv["host"]), int(str(self.kv["port"]))
         start = time.time()
-        
+
         # Try EOS first
         try:
             eos = opengsq.EOS(
@@ -47,7 +47,6 @@ class ASA(Protocol):
             info = await eos.get_info()
             ping = int((time.time() - start) * 1000)
 
-            # Credits: @dkoz https://github.com/DiscordGSM/GameServerMonitor/pull/54/files
             attributes = dict(info.get("attributes", {}))
             settings = dict(info.get("settings", {}))
 
@@ -64,37 +63,42 @@ class ASA(Protocol):
                 "ping": ping,
                 "raw": info,
             }
-
             return result
         except Exception:
             # EOS failed, fallback to BattleMetrics
             start = time.time()  # Restart timer for BattleMetrics query
-        
+
         # Fallback: Query BattleMetrics API by IP:port
         async with aiohttp.ClientSession() as session:
             url = f"https://api.battlemetrics.com/servers?filter[game]=arksa&filter[search]={host}:{port}"
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=self.timeout)) as response:
                 if response.status != 200:
                     raise Exception(f"BattleMetrics API returned {response.status}")
-                
+
                 data = await response.json()
                 servers = data.get("data", [])
-                
-                # Find the online server matching our IP:port
+
+                # Find the online server matching our IP:port (robust, PHP-parity logic)
                 server_info = None
                 for server in servers:
                     attrs = server.get("attributes", {})
-                    if attrs.get("ip") == host and attrs.get("port") == port and attrs.get("status") == "online":
+                    # Must match both IP and port, and be online
+                    if (
+                        attrs.get("ip") == host
+                        and attrs.get("port") == port
+                        and attrs.get("status") == "online"
+                    ):
                         server_info = server
                         break
-                
+
                 if not server_info:
+                    # No online server found for this IP:port
                     raise Exception(f"No online server found on BattleMetrics for {host}:{port}")
-                
+
                 ping = int((time.time() - start) * 1000)
                 attrs = server_info.get("attributes", {})
                 details = attrs.get("details", {})
-                
+
                 result: GamedigResult = {
                     "name": attrs.get("name", ""),
                     "map": details.get("map", ""),
@@ -108,5 +112,4 @@ class ASA(Protocol):
                     "ping": ping,
                     "raw": attrs,
                 }
-
                 return result

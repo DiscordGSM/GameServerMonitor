@@ -21,8 +21,8 @@ armar,ARMA: Resistance (2011),gamespy1,port=2302;port_query_offset=1
 armareforger,Arma Reforger (2022),source,port=2001;port_query=17777
 asa,Ark: Survival Ascended (2023),asa,port=7777
 assettocorsa,Assetto Corsa (2014),assettocorsa,port=9610
-atlas,Atlas (2018),source,port=5761;port_query_offset=51800
 astrocolony,Astro Colony (2022),source,port_query=27015
+atlas,Atlas (2018),source,port=5761;port_query_offset=51800
 avorion,Avorion (2017),source,port=40017;port_query_offset=2
 avp2,Aliens versus Predator 2 (2001),gamespy1,port=27888
 avp2010,Aliens vs. Predator (2010),source,port=27015
@@ -142,8 +142,8 @@ hldms,Half-Life Deathmatch: Source (2005),source,port=27015
 hll,Hell Let Loose (2021),source,port=27015
 homefront,Homefront (2011),source,port=27015
 homeworld2,Homeworld 2 (2003),gamespy1,port_query=6500
-hurtworld,Hurtworld (2015),source,port=12871;port_query=12881
 humanitz,HumanitZ (2023),source,port_query=27015
+hurtworld,Hurtworld (2015),source,port=12871;port_query=12881
 
 icarus,ICARUS (2023),source,port_query=17015
 igi2,I.G.I.-2: Covert Strike (2003),gamespy1,port_query=26001
@@ -188,12 +188,12 @@ nascarthunder2004,NASCAR Thunder 2004 (2003),gamespy2,port_query=13333
 netpanzer,netPanzer (2002),gamespy1,port=3030
 nexuiz,Nexuiz (2005),quake3,port_query=26000
 nfshp2,Need for Speed: Hot Pursuit 2 (2002),gamespy1,port_query=61220
-notd,Night of the Dead(2020),source,port_query=22815
 nitrofamily,Nitro Family (2004),gamespy1,port_query=25601
 nmrih,No More Room in Hell (2011),source,port=27015
 nolf,The Operative: No One Lives Forever (2000),gamespy1,port_query=27888
 nolf2,No One Lives Forever 2: A Spy in H.A.R.M.'s Way (2002),gamespy1,port_query=27890
 nos,No One Survived (2023),source,port_query=48203
+notd,Night of the Dead(2020),source,port_query=22815
 ns,Natural Selection (2002),source,port=27015
 ns2,Natural Selection 2 (2012),source,port_query_offset=1
 nucleardawn,Nuclear Dawn (2011),source,port=27015
@@ -227,10 +227,10 @@ rallisportchallenge,RalliSport Challenge (2002),gamespy1,port_query=17500
 rallymasters,Rally Masters (2000),gamespy1,port_query=16666
 redline,Redline (1999),gamespy1,port_query=25252
 redm,Red Dead Redemption 2 - RedM (2016),fivem,port=30120
-renegadex_lan,RenegadeX (LAN Mode),renegadex_lan,port=7777;port_query=45542
 redorchestra,Red Orchestra (2011),unreal2,port=7758;port_query_offset=1
 redorchestra2,Red Orchestra 2 (2011),source,port=7777;port_query=27015
 redorchestraost,Red Orchestra: Ostfront 41-45 (2006),gamespy1,port=7757;port_query_offset=10
+renegadex_lan,RenegadeX (LAN Mode),renegadex_lan,port=7777;port_query=45542
 ricochet,Ricochet (2000),source,port=27015
 riseofnations,Rise of Nations (2003),gamespy1,port_query=6501
 rs2,Rising Storm 2: Vietnam (2017),source,port=27015
@@ -245,9 +245,9 @@ scum,SCUM (2018),scum,port=27015
 shatteredhorizon,Shattered Horizon (2009),source,port=27015
 ship,The Ship (2006),source,port=27015
 shogo,Shogo (1998),gamespy1,port_query=27888
+silica,Silica (2023),source,port=27015
 sin,SiN,gamespy1,port_query=22450
 sinep,SiN Episodes,source,port=27015
-silica,Silica (2023),source,port=27015,port_query_offset=1
 sniperelite4,Sniper Elite 4 (2017),source,port_query=27050
 sof,Soldier of Fortune,quake1,port_query=28910
 sof2,Soldier of Fortune 2,quake3,port_query=20100
@@ -287,9 +287,9 @@ thespecialists,The Specialists (2002),source,port=27015
 thps3,Tony Hawk's Pro Skater 3,gamespy1,port_query=6500
 thps4,Tony Hawk's Pro Skater 4,gamespy1,port_query=6500
 thu2,Tony Hawk's Underground 2,gamespy1,port_query=5153
+tmnf,Trackmania Nations Forever,nadeo,port=5000
 towerunite,Tower Unite,source,port=27015
 toxikk_lan,Toxikk (LAN_Mode),toxikk_lan,port=7777;port_query_offset=6224
-tmnf,Trackmania Nations Forever,nadeo,port=5000
 tremulous,Tremulous,quake3,port_query=30720
 tribesvengeance,Tribes: Vengeance,gamespy2,port=7777;port_query_offset=1
 tron20,Tron 2.0,gamespy2,port_query=27888
@@ -303,7 +303,7 @@ ut,Unreal Tournament,gamespy1,port=7777;port_query_offset=1
 ut2003,Unreal Tournament 2003,unreal2,port=7757;port_query_offset=1
 ut2004,Unreal Tournament 2004,unreal2,port=7777;port_query_offset=1
 ut3,Unreal Tournament 3,ut3,port=7777;port_query_offset=-1277
-ut3_lan, Unreal Tournament 3 (LAN Mode),ut3_lan,port=7777;port_query_offset=6224
+ut3_lan,Unreal Tournament 3 (LAN Mode),ut3_lan,port=7777;port_query_offset=6224
 
 v8supercar,V8 Supercar Challenge,gamespy1,port_query=16700
 valheim,Valheim (2021),source,port=2456;port_query_offset=1

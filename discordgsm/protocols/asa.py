@@ -38,7 +38,7 @@ class ASA(Protocol):
 
         host, port = str(self.kv["host"]), int(str(self.kv["port"]))
         start = time.time()
-        
+
         # Try EOS first
         try:
             eos = opengsq.EOS(
@@ -47,7 +47,6 @@ class ASA(Protocol):
             info = await eos.get_info()
             ping = int((time.time() - start) * 1000)
 
-            # Credits: @dkoz https://github.com/DiscordGSM/GameServerMonitor/pull/54/files
             attributes = dict(info.get("attributes", {}))
             settings = dict(info.get("settings", {}))
 
@@ -64,49 +63,105 @@ class ASA(Protocol):
                 "ping": ping,
                 "raw": info,
             }
-
             return result
         except Exception:
             # EOS failed, fallback to BattleMetrics
             start = time.time()  # Restart timer for BattleMetrics query
-        
-        # Fallback: Query BattleMetrics API by IP:port
-        async with aiohttp.ClientSession() as session:
-            url = f"https://api.battlemetrics.com/servers?filter[game]=arksa&filter[search]={host}:{port}"
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=self.timeout)) as response:
-                if response.status != 200:
-                    raise Exception(f"BattleMetrics API returned {response.status}")
-                
-                data = await response.json()
-                servers = data.get("data", [])
-                
-                # Find the online server matching our IP:port
-                server_info = None
-                for server in servers:
-                    attrs = server.get("attributes", {})
-                    if attrs.get("ip") == host and attrs.get("port") == port and attrs.get("status") == "online":
-                        server_info = server
-                        break
-                
-                if not server_info:
-                    raise Exception(f"No online server found on BattleMetrics for {host}:{port}")
-                
-                ping = int((time.time() - start) * 1000)
-                attrs = server_info.get("attributes", {})
-                details = attrs.get("details", {})
-                
-                result: GamedigResult = {
-                    "name": attrs.get("name", ""),
-                    "map": details.get("map", ""),
-                    "password": details.get("password", False),
-                    "numplayers": attrs.get("players", 0),
-                    "numbots": 0,
-                    "maxplayers": attrs.get("maxPlayers", 0),
-                    "players": None,
-                    "bots": None,
-                    "connect": f"{host}:{port}",
-                    "ping": ping,
-                    "raw": attrs,
-                }
 
-                return result
+        # Fallback: Query BattleMetrics API with multi-stage strategy
+        # Stage 1: Direct fuzzy search with exact IP:port verification
+        # Stage 2: Pagination search by game filter only
+        # Stage 3: Retry with alternative game codes
+        
+        async def battlemetrics_lookup(game_codes=None):
+            """
+            Multi-stage BattleMetrics lookup with exact IP:port matching.
+            Returns server info dict or None if not found.
+            """
+            if game_codes is None:
+                game_codes = ["arksa", "ark"]
+            
+            async with aiohttp.ClientSession() as session:
+                for game_code in game_codes:
+                    # Stage 1: Direct fuzzy search
+                    try:
+                        url = (
+                            f"https://api.battlemetrics.com/servers?filter[game]={game_code}"
+                            f"&filter[search]={host}:{port}&page[size]=100"
+                        )
+                        async with session.get(url, timeout=aiohttp.ClientTimeout(total=self.timeout)) as response:
+                            if response.status == 200:
+                                data = await response.json()
+                                servers = data.get("data", [])
+                                
+                                # Check for exact match in fuzzy results
+                                for server in servers:
+                                    attrs = server.get("attributes", {})
+                                    if (attrs.get("ip") == host and 
+                                        (attrs.get("port") == port or attrs.get("portQuery") == port)):
+                                        return server
+                    except Exception:
+                        pass
+                    
+                    # Stage 2: Pagination search by game filter only (more reliable for exact matches)
+                    try:
+                        page = 1
+                        per_page = 100
+                        max_pages = 5
+                        
+                        while page <= max_pages:
+                            url = (
+                                f"https://api.battlemetrics.com/servers?filter[game]={game_code}"
+                                f"&page[size]={per_page}&page[number]={page}"
+                            )
+                            async with session.get(url, timeout=aiohttp.ClientTimeout(total=self.timeout)) as response:
+                                if response.status != 200:
+                                    break
+                                
+                                data = await response.json()
+                                servers = data.get("data", [])
+                                
+                                if not servers:
+                                    break
+                                
+                                # Look for exact match
+                                for server in servers:
+                                    attrs = server.get("attributes", {})
+                                    if (attrs.get("ip") == host and 
+                                        attrs.get("port") == port):
+                                        return server
+                                
+                                # Check if there are more pages
+                                meta = data.get("meta", {})
+                                pagination = meta.get("pagination", {})
+                                total_pages = pagination.get("totalPages")
+                                if total_pages is None or page >= total_pages:
+                                    break
+                                page += 1
+                    except Exception:
+                        continue
+            
+            return None
+        
+        server_info = await battlemetrics_lookup()
+        if not server_info:
+            raise Exception(f"No server found on BattleMetrics for {host}:{port}")
+
+        ping = int((time.time() - start) * 1000)
+        attrs = server_info.get("attributes", {})
+        details = attrs.get("details", {})
+
+        result: GamedigResult = {
+            "name": attrs.get("name", ""),
+            "map": details.get("map", ""),
+            "password": details.get("password", False),
+            "numplayers": attrs.get("players", 0),
+            "numbots": 0,
+            "maxplayers": attrs.get("maxPlayers", 0),
+            "players": None,
+            "bots": None,
+            "connect": f"{host}:{port}",
+            "ping": ping,
+            "raw": attrs,
+        }
+        return result

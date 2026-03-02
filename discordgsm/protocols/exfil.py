@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
 logger = logging.getLogger(__name__)
-
+12
 
 class Exfil(Protocol):
     name = "exfil"
@@ -107,9 +107,9 @@ class Exfil(Protocol):
 
         # Extract and map fields from API response
         # Try multiple possible field names for server name
-        name = (api_data.get("serverName") or 
-                api_data.get("name") or 
-                api_data.get("SteamServerName_s") or 
+        name = (api_data.get("serverName") or
+                api_data.get("name") or
+                api_data.get("SteamServerName_s") or
                 "Unknown")
         map_name = api_data.get("map", "Unknown")
         password = api_data.get("password", False)

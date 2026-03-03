@@ -1,6 +1,5 @@
 import asyncio
 import time
-import logging
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -12,8 +11,6 @@ from discordgsm.protocols.protocol import Protocol
 if TYPE_CHECKING:
     from discordgsm.gamedig import GamedigResult
 
-logger = logging.getLogger(__name__)
-12
 
 class Exfil(Protocol):
     name = "exfil"
@@ -30,20 +27,17 @@ class Exfil(Protocol):
                     if response.status == 200:
                         data = await response.json()
                         if isinstance(data, dict):
-                            # Successfully got API response
-                            logger.debug(f"Exfil HTTP API success for {host}:{port}")
                             result = await self._build_result_from_api(data, host, port, start, time.time())
                             return result
                     else:
-                        logger.debug(f"Exfil HTTP API failed with status {response.status} for {host}:{port}")
+                        pass
         except asyncio.TimeoutError:
-            logger.debug(f"Exfil HTTP API timeout for {host}:{port}")
-        except Exception as e:
-            logger.debug(f"Exfil HTTP API exception for {host}:{port}: {type(e).__name__}: {e}")
+            pass
+        except Exception:
+            pass
 
         # Stage 2: Fallback to Source protocol (A2S query)
         try:
-            logger.debug(f"Exfil falling back to Source protocol for {host}:{port}")
             source = opengsq.Source(host, port, self.timeout)
 
             async def get_players():
@@ -90,11 +84,9 @@ class Exfil(Protocol):
                 "ping": ping,
                 "raw": info.__dict__,
             }
-            logger.debug(f"Exfil Source protocol success for {host}:{port}")
             return result
 
         except Exception as e:
-            logger.error(f"Exfil protocol failed for {host}:{port}: {type(e).__name__}: {e}")
             raise Exception(f"Both HTTP API and Source protocol failed for {host}:{port}: {str(e)}")
 
     async def _build_result_from_api(self, api_data: dict, host: str, port: int, start_time: float, end_time: float) -> "GamedigResult":

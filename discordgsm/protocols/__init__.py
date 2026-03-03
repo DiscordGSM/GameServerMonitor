@@ -7,6 +7,7 @@ from .beammp import BeamMP
 from .discord import Discord
 from .doom3 import Doom3
 from .eco import Eco
+from .exfil import Exfil
 from .factorio import Factorio
 from .fivem import FiveM
 from .front import Front

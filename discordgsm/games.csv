@@ -102,7 +102,7 @@ enshrouded,Enshrouded (2024),source,port=27015;port_query_offset=1
 esf,Half Life: Earths Special Forces(2013),source,port=27015
 etqw,Enemy Territory: Quake Wars (2007),doom3,port=3074;port_query=27733
 ets2,Euro Truck Simulator 2,source,port_query=27016
-exfil,EXFIL (2024),source,port_query=27015
+exfil,EXFIL (2024),exfil,port_query=27015
 
 f12002,Formula One 2002 (2002),gamespy1,port_query=3297
 f1c9902,F1 Challenge '99-'02 (2002),gamespy1,port_query=34397

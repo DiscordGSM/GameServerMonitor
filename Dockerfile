@@ -1,6 +1,10 @@
 # Use an official Python runtime as a parent image
 FROM python:3.13-alpine
 
+# Update the OS
+RUN apk update \
+  && apk upgrade
+
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -20,3 +24,11 @@ COPY . .
 
 # Set default container start command
 CMD ["python", "main.py"]
+
+# Create the non-privileged user
+RUN adduser -D gsm
+
+# Grant permissions to the logs directory
+RUN chown -R gsm:gsm /usr/src/app/data/logs
+
+USER gsm

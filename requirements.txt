@@ -9,4 +9,4 @@ pymongo==4.17.0
 python-dotenv==1.2.2
 pywin32==311;platform_system=="Windows"
 typing-extensions==4.15.0
-tzdata==2025.3
+tzdata==2026.2
